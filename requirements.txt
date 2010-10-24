@@ -1,0 +1,7 @@
+Django==1.2.3
+-e git://github.com/chrischambers/django-threaded-multihost.git#egg=django-threaded-multihost
+-e git://github.com/django-extensions/django-extensions.git@be3ee0a06ec350431e66efbcbcead28075056f55#egg=django_extensions-0.5-py2.6-dev
+NoseDjango==0.8.1
+nose==0.11.4
+python-dateutil==1.5
+vobject==0.8.1c

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}500 Error - Server Error - {{ block.super }}{% endblock %}
+
+{% block primary %}
+    {% block page_title %}
+    <br />
+    <h1>500 - Server Error</h1>
+    <br />
+    {% endblock %}
+
+    <div id="main_content" class="grid_6 alpha">
+      <p>We're really sorry, but an error prevented the server from completing 
+        your request. Try refreshing this page.</p>
+
+      <p>If there are still problems, you could try going to our 
+        <a href="/">homepage</a>, or 
+        <a href="javascript:history.back()">back to your previous page</a>, 
+        or even browsing around using the navigation buttons above.
+      </p>
+
+    <script type="text/javascript">
+      //<![CDATA[
+        var GOOG_FIXURL_LANG = 'en';
+        var GOOG_FIXURL_SITE = 'http://www.languagelab.com/';
+      //]]>
+    </script>
+    <script type="text/javascript" 
+            src="http://linkhelp.clients.google.com/tbproxy/lh/wm/fixurl.js">
+    </script>
+
+    </div><!-- end div.main_content -->
+{% endblock %}
+
+
+
