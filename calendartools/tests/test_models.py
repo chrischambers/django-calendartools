@@ -12,11 +12,11 @@ class TestEvent(TestCase):
         self.event = Event.objects.create(
             name='Event', slug='event', creator=self.creator
         )
+        self.start = datetime.now() + timedelta(minutes=30)
+        self.finish = self.start + timedelta(hours=2)
 
     def test_add_occurrences_basic(self):
-        start = datetime.now()
-        finish = start + timedelta(hours=2)
-        self.event.add_occurrences(start, finish)
+        self.event.add_occurrences(self.start, self.finish)
         assert_equal(self.event.occurrences.count(), 1)
         assert_equal(
             self.event.occurrences.latest().start.replace(microsecond=0),
@@ -28,20 +28,20 @@ class TestEvent(TestCase):
         )
 
     def test_add_occurrences_with_count(self):
-        start = datetime.now()
-        finish = start + timedelta(hours=2)
-        self.event.add_occurrences(start, finish, count=3)
+        self.event.add_occurrences(self.start, self.finish, count=3)
         assert_equal(self.event.occurrences.count(), 3)
-        expected = [start, start + timedelta(1), start + timedelta(2)]
+        expected = [
+            self.start,
+            self.start + timedelta(1),
+            self.start + timedelta(2)
+        ]
         expected = set([dt.replace(microsecond=0) for dt in expected])
         actual = set(self.event.occurrences.values_list('start', flat=True))
         assert_equal(expected, actual)
 
     def test_add_occurrences_with_until(self):
-        start = datetime.now()
-        finish = start + timedelta(hours=2)
-        until = start + timedelta(5)
-        self.event.add_occurrences(start, finish, until=until)
+        until = self.start + timedelta(5)
+        self.event.add_occurrences(self.start, self.finish, until=until)
         assert_equal(self.event.occurrences.count(), 6)
 
 
@@ -51,18 +51,26 @@ class TestOccurrence(TestCase):
         self.event = Event.objects.create(
             name='Event', slug='event', creator=self.creator
         )
+        self.start = datetime.now() + timedelta(minutes=30)
 
     def test_finish_must_be_greater_than_start(self):
-        start = datetime.utcnow()
-        for finish in [start, start - timedelta(microseconds=1)]:
+        for finish in [self.start, self.start - timedelta(microseconds=1)]:
             assert_raises(
                 ValidationError,
                 Occurrence.objects.create,
-                event=self.event, start=start, finish=finish
+                event=self.event, start=self.start, finish=finish
             )
         Occurrence.objects.create(
             event=self.event,
-            start=start,
-            finish=start + timedelta(microseconds=1)
+            start=self.start,
+            finish=self.start + timedelta(microseconds=1)
         )
 
+    def test_occurrences_must_occur_in_future(self):
+        start = datetime.now()
+        finish = start + timedelta(hours=2)
+        assert_raises(
+            ValidationError,
+            Occurrence.objects.create,
+            event=self.event, start=start - timedelta.resolution, finish=finish
+        )

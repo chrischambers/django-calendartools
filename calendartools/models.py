@@ -1,3 +1,4 @@
+from datetime import datetime
 from dateutil import rrule
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -87,10 +88,16 @@ class Occurrence(AuditedModel):
 
     def clean(self):
         from django.core.exceptions import ValidationError
+        now = datetime.now()
         if self.start >= self.finish:
             raise ValidationError(
                 'Finish date/time must be greater than start date/time'
             )
+        if self.start < now:
+            raise ValidationError(
+                'Event occurrences cannot be created in the past'
+            )
+
 
     def save(self, *args, **kwargs):
         self.full_clean()
