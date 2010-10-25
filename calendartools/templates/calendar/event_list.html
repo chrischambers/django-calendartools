@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Events - {{ block.super }}{% endblock %}
+
+{% block primary %}
+  <h1>Events</h1>
+
+  <ul class="event-list">
+  {% for event in object_list %}
+    <li>
+      <ul>
+        <li><strong><a href="{{ event.get_absolute_url }}">{{ event.name }}</a></strong></li>
+        <li>{{ event.description }}</li>
+      </ul>
+    </li>
+  {% endfor %}
+  </ul>
+{% endblock primary %}
+

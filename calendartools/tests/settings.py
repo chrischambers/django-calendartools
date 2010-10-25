@@ -1,5 +1,6 @@
 # Minimal settings used for testing.
 import os
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 APPLICATION_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 DEBUG = TEMPLATE_DEBUG = True
@@ -34,6 +35,7 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.load_template_source',
 )
 
-TEMPLATE_DIRS = os.path.join(APPLICATION_DIR, 'templates')
+TEMPLATE_DIRS = [os.path.join(APPLICATION_DIR, 'templates'),
+                 os.path.join(CURRENT_DIR, 'templates')]
 
 ROOT_URLCONF = 'calendartools.urls'

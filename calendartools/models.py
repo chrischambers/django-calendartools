@@ -33,7 +33,7 @@ class Event(AuditedModel):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('event_detail', [], {'slug': self.slug})
+        return ('event-detail', [], {'slug': self.slug})
 
 
 class Occurrence(AuditedModel):
@@ -54,7 +54,7 @@ class Occurrence(AuditedModel):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('occurrence_detail', [], {
+        return ('occurrence-detail', [], {
             'slug':   self.event.slug,
             'pk':     self.pk
         })

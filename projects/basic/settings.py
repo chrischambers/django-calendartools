@@ -5,7 +5,7 @@ DEBUG = TEMPLATE_DEBUG = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'dev.db',
+        'NAME':   'basic.db',
     }
 }
 
@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.admin',
 
+    'django_extensions',
     'calendartools',
 )
 

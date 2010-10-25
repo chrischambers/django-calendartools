@@ -5,11 +5,59 @@ from django.test import TestCase
 from calendartools.models import Event, Occurrence
 from nose.tools import *
 
+
+class TestEventListView(TestCase):
+    def setUp(self):
+        self.creator = User.objects.create(username='TestyMcTesterson')
+        self.event = Event.objects.create(
+            name='The Test Event',
+            slug='event-version-1',
+            description="This is the description.",
+            creator=self.creator
+        )
+
+    def test_event_list_context(self):
+        response = self.client.get(reverse('event-list'), follow=True)
+        assert_equal(
+            set(response.context['object_list']),
+            set(Event.objects.all())
+        )
+
+    def test_event_list(self):
+        response = self.client.get(reverse('event-list'), follow=True)
+        assert_equal(response.status_code, 200)
+
+
+class TestEventDetailView(TestCase):
+    def setUp(self):
+        self.creator = User.objects.create(username='TestyMcTesterson')
+        self.event = Event.objects.create(
+            name='The Test Event',
+            slug='event-version-1',
+            description="This is the description.",
+            creator=self.creator
+        )
+
+    def test_event_detail_context(self):
+        response = self.client.get(
+            reverse('event-detail', args=(self.event.slug,)), follow=True
+        )
+        assert_equal(response.context['event'], self.event)
+
+    def test_event_detail(self):
+        response = self.client.get(
+            reverse('event-detail', args=(self.event.slug,)), follow=True
+        )
+        assert_equal(response.status_code, 200)
+        self.assertContains(response, self.event.description, count=1)
+        self.assertContains(response, self.event.name)
+
+
 class TestOccurrenceDetailRedirect(TestCase):
     def setUp(self):
         self.creator = User.objects.create(username='TestyMcTesterson')
         self.event = Event.objects.create(
-            name='Event', slug='event'
+            name='Event', slug='event', creator=self.creator
         )
         now = datetime.utcnow()
         self.occurrence = Occurrence.objects.create(
