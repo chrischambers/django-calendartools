@@ -3,6 +3,7 @@ import os
 CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 APPLICATION_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
+APPEND_SLASH = True
 DEBUG = TEMPLATE_DEBUG = True
 DATABASES = {
     'default': {

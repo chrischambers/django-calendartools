@@ -26,6 +26,7 @@ class TestEventListView(TestCase):
     def test_event_list(self):
         response = self.client.get(reverse('event-list'), follow=True)
         assert_equal(response.status_code, 200)
+        self.assertContains(response, self.event.name)
 
 
 class TestEventDetailView(TestCase):
@@ -47,6 +48,39 @@ class TestEventDetailView(TestCase):
     def test_event_detail(self):
         response = self.client.get(
             reverse('event-detail', args=(self.event.slug,)), follow=True
+        )
+        assert_equal(response.status_code, 200)
+        self.assertContains(response, self.event.description, count=1)
+        self.assertContains(response, self.event.name)
+
+
+class TestOccurrenceDetailView(TestCase):
+    def setUp(self):
+        self.creator = User.objects.create(username='TestyMcTesterson')
+        self.event = Event.objects.create(
+            name='The Test Event',
+            slug='event-version-1',
+            description="This is the description.",
+            creator=self.creator
+        )
+        now = datetime.utcnow()
+        self.occurrence = Occurrence.objects.create(
+            event=self.event,
+            start=now,
+            finish=now + timedelta(hours=2)
+        )
+
+    def test_occurrence_detail_context(self):
+        response = self.client.get(
+            reverse('occurrence-detail',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
+        )
+        assert_equal(response.context['event'], self.event)
+
+    def test_occurrence_detail(self):
+        response = self.client.get(
+            reverse('occurrence-detail',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
         )
         assert_equal(response.status_code, 200)
         self.assertContains(response, self.event.description, count=1)
@@ -75,5 +109,6 @@ class TestOccurrenceDetailRedirect(TestCase):
         )
         response = self.client.get(url, follow=True)
         self.assertRedirects(response, reverse('occurrence-detail',
-            args=(self.event.slug, self.occurrence.pk))
+            args=(self.event.slug, self.occurrence.pk)),
+            status_code=301
         )
