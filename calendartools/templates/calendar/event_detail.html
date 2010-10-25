@@ -5,5 +5,17 @@
   <h1>{{ event.name }}</h1>
   <p>{{ event.description }}</p>
 
+  <form action="" method="post">{% csrf_token %}
+    <table>
+      <tfoot>
+        <tr>
+          <td colspan="2"><input type="submit" name="_add" value="Add" /></td>
+        </tr>
+      </tfoot>
+      <tbody>
+        {% include "calendar/includes/recurring_form.html" %}
+      </tbody>
+    </table>
+  </form>
 {% endblock %}
 

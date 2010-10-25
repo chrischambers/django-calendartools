@@ -1,3 +1,4 @@
+from dateutil import rrule
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import (
@@ -34,6 +35,31 @@ class Event(AuditedModel):
     @models.permalink
     def get_absolute_url(self):
         return ('event-detail', [], {'slug': self.slug})
+
+    def add_occurrences(self, start, finish, **rrule_params):
+        '''
+        Add one or more occurrences to the event using a comparable API to
+        ``dateutil.rrule``.
+
+        If ``rrule_params`` does not contain a ``freq``, one will be defaulted
+        to ``rrule.DAILY``.
+
+        Because ``rrule.rrule`` returns an iterator that can essentially be
+        unbounded, we need to slightly alter the expected behavior here in
+        order to enforce a finite number of occurrence creation.
+
+        If both ``count`` and ``until`` entries are missing from
+        ``rrule_params``, only a single ``Occurrence`` instance will be created
+        using the exact ``start`` and ``finish`` values.
+        '''
+        rrule_params.setdefault('freq', rrule.DAILY)
+
+        if 'count' not in rrule_params and 'until' not in rrule_params:
+            self.occurrences.create(start=start, finish=finish)
+        else:
+            delta = finish - start
+            for ev in rrule.rrule(dtstart=start, **rrule_params):
+                self.occurrences.create(start=ev, finish=ev + delta)
 
 
 class Occurrence(AuditedModel):
