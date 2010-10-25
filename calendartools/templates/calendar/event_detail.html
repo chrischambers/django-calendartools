@@ -4,6 +4,20 @@
 {% block primary %}
   <h1>{{ event.name }}</h1>
   <p>{{ event.description }}</p>
+  <form action="" method="post">{% csrf_token %}
+    <table>
+      <tfoot>
+        <tr>
+          <td colspan="2">
+            <input type="submit" name="_update" value="Update" />
+          </td>
+        </tr>
+      </tfoot>
+      <tbody>
+        {{ event_form.as_table }}
+      </tbody>
+    </table>
+  </form>
 
   <form action="" method="post">{% csrf_token %}
     <table>

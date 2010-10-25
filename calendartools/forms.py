@@ -20,6 +20,18 @@ from calendartools.defaults import (
     MINUTES_INTERVAL, SECONDS_INTERVAL, default_timeslot_offset_options,
 )
 
+
+class EventForm(forms.ModelForm):
+    '''
+    A simple form for adding and updating Event attributes
+
+    '''
+
+    class Meta:
+        model = Event
+        fields = ('name', 'description',)
+
+
 class MultipleOccurrenceForm(forms.Form):
     """
     day
@@ -223,18 +235,4 @@ class MultipleOccurrenceForm(forms.Form):
             )
 
         return params
-
-
-class EventForm(forms.ModelForm):
-    '''
-    A simple form for adding and updating Event attributes
-
-    '''
-
-    class Meta:
-        model = Event
-
-    def __init__(self, *args, **kws):
-        super(EventForm, self).__init__(*args, **kws)
-        self.fields['description'].required = False
 

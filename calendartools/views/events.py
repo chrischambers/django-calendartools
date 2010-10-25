@@ -15,9 +15,9 @@ def event_list(request, *args, **kwargs):
     return list_detail.object_list(request, *args, **kwargs)
 
 def event_detail(request, slug, template='calendar/event_detail.html',
-                 event_form_class=forms.EventForm, success_url=None,
-                 extra_context=None,
-                 recurrence_form_class=forms.MultipleOccurrenceForm):
+                 event_form_class=forms.EventForm,
+                 recurrence_form_class=forms.MultipleOccurrenceForm,
+                 success_url=None, extra_context=None):
 
     success_url = success_url or request.path
     extra_context = extra_context or {}
@@ -59,7 +59,7 @@ def event_create(request, *args, **kwargs):
 
 def occurrence_detail(request, slug, pk, *args, **kwargs):
     occurrence = get_object_or_404(
-        Occurrence.objects.filter(event__slug=slug),
+        Occurrence.objects.filter(event__slug=slug).select_related('event'),
         pk=pk
     )
     data = {'occurrence': occurrence, 'event': occurrence.event}

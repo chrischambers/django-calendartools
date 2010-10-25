@@ -50,7 +50,7 @@ class TestEventDetailView(TestCase):
             reverse('event-detail', args=(self.event.slug,)), follow=True
         )
         assert_equal(response.status_code, 200)
-        self.assertContains(response, self.event.description, count=1)
+        self.assertContains(response, self.event.description)
         self.assertContains(response, self.event.name)
 
 
