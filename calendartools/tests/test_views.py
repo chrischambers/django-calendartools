@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from calendartools.models import Event, Occurrence
@@ -6,6 +7,7 @@ from nose.tools import *
 
 class TestOccurrenceDetailRedirect(TestCase):
     def setUp(self):
+        self.creator = User.objects.create(username='TestyMcTesterson')
         self.event = Event.objects.create(
             name='Event', slug='event'
         )

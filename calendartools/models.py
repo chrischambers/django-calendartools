@@ -58,3 +58,14 @@ class Occurrence(AuditedModel):
             'slug':   self.event.slug,
             'pk':     self.pk
         })
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.start >= self.finish:
+            raise ValidationError(
+                'Finish date/time must be greater than start date/time'
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super(Occurrence, self).save(*args, **kwargs)
