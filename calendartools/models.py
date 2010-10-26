@@ -77,7 +77,9 @@ class Occurrence(AuditedModel):
         get_latest_by = 'datetime_created'
 
     def __unicode__(self):
-        return u"%s @ %s" % (self.event.name, self.start.isoformat())
+        return u"%s @ %s" % (
+            self.event.name, self.start.strftime('%Y-%m-%d %H:%M:%S')
+        )
 
     @models.permalink
     def get_absolute_url(self):
