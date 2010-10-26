@@ -66,7 +66,7 @@ class TestOccurrence(TestCase):
             finish=self.start + timedelta(microseconds=1)
         )
 
-    def test_occurrences_must_occur_in_future(self):
+    def test_created_occurrences_must_occur_in_future(self):
         start = datetime.now()
         finish = start + timedelta(hours=2)
         assert_raises(
@@ -74,3 +74,19 @@ class TestOccurrence(TestCase):
             Occurrence.objects.create,
             event=self.event, start=start - timedelta.resolution, finish=finish
         )
+
+    def test_updated_occurrences_need_not_occur_in_future(self):
+        occurrence = Occurrence.objects.create(
+            event=self.event,
+            start=self.start,
+            finish=self.start + timedelta(hours=2)
+        )
+        occurrence.start = datetime.now() - timedelta.resolution
+        occurrence.finish = occurrence.start + timedelta(hours=2)
+        try:
+            occurrence.save()
+        except ValidationError, e:
+            self.fail(
+                'Editing Occurrence triggers must-occur-in-future validation:'
+                '\n%s' % e
+            )

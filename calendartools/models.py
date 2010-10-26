@@ -93,11 +93,11 @@ class Occurrence(AuditedModel):
         now = datetime.now()
         if self.start >= self.finish:
             raise ValidationError(
-                'Finish date/time must be greater than start date/time'
+                'Finish date/time must be greater than start date/time.'
             )
-        if self.start < now:
+        if not self.id and self.start < now:
             raise ValidationError(
-                'Event occurrences cannot be created in the past'
+                'Event occurrences cannot be created in the past.'
             )
 
 
