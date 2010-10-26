@@ -27,7 +27,7 @@ class EventForm(forms.ModelForm):
 
     '''
 
-    class Meta:
+    class Meta(object):
         model = Event
         fields = ('name', 'description',)
 

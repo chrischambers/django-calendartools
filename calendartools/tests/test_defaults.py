@@ -1,30 +1,45 @@
 from datetime import timedelta, time
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser, Permission
 from django.test import TestCase
 from nose.tools import *
 from calendartools.defaults import (
-    default_permission_check,
+    change_event_permission_check,
+    add_occurrence_permission_check,
     timeslot_options,
     timeslot_offset_options
 )
 
 
-class TestPermissionCheck(TestCase):
+class TestAddOccurrencePermCheck(TestCase):
     def setUp(self):
-        self.user = User.objects.create(username='TestyMcTesterson')
-        self.user.set_password('password')
-        self.user.save()
+        self.user = User.objects.create_user(
+            'TestyMcTesterson',
+            'Testy@test.com',
+            'password'
+        )
         self.assertTrue(self.client.login(
             username=self.user.username, password='password')
         )
         self.mock_request = lambda *a, **kw: True
         self.mock_request.user = self.user
 
-    def test_default_permission_check(self):
-        assert not default_permission_check(self.mock_request)
-        self.user.is_staff = True
-        self.user.save()
-        assert default_permission_check(self.mock_request)
+    def test_permission_check(self):
+        assert not add_occurrence_permission_check(self.mock_request)
+        perm = Permission.objects.get(codename='add_occurrence')
+        self.user.user_permissions.add(perm)
+        assert add_occurrence_permission_check(self.mock_request)
+        self.mock_request.user = AnonymousUser()
+        assert not add_occurrence_permission_check(self.mock_request)
+
+
+class TestChangeEventPermCheck(TestAddOccurrencePermCheck):
+    def test_permission_check(self):
+        assert not change_event_permission_check(self.mock_request)
+        perm = Permission.objects.get(codename='change_event')
+        self.user.user_permissions.add(perm)
+        assert change_event_permission_check(self.mock_request)
+        self.mock_request.user = AnonymousUser()
+        assert not change_event_permission_check(self.mock_request)
 
 
 class TestTimeSlotOptions(TestCase):
