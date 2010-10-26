@@ -4,6 +4,8 @@
 {% block primary %}
   <h1>{{ event.name }}</h1>
   <p>{{ event.description }}</p>
+
+  {% if can_edit_events %}
   <form action="" method="post">{% csrf_token %}
     <table>
       <tfoot>
@@ -18,7 +20,9 @@
       </tbody>
     </table>
   </form>
+  {% endif %}
 
+  {% if can_add_occurrences %}
   <form action="" method="post">{% csrf_token %}
     <table>
       <tfoot>
@@ -31,5 +35,6 @@
       </tbody>
     </table>
   </form>
+  {% endif %}
 {% endblock %}
 

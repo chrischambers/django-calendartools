@@ -5,7 +5,7 @@ from django.template import RequestContext
 from django.views.generic import list_detail
 
 from calendartools.models import Event, Occurrence
-from calendartools import forms
+from calendartools import forms, defaults
 
 def event_list(request, *args, **kwargs):
     kwargs.update({
@@ -17,6 +17,8 @@ def event_list(request, *args, **kwargs):
 def event_detail(request, slug, template='calendar/event_detail.html',
                  event_form_class=forms.EventForm,
                  recurrence_form_class=forms.MultipleOccurrenceForm,
+                 check_edit_events=defaults.change_event_permission_check,
+                 check_add_occurrences=defaults.add_occurrence_permission_check,
                  success_url=None, extra_context=None):
 
     success_url = success_url or request.path
@@ -24,13 +26,16 @@ def event_detail(request, slug, template='calendar/event_detail.html',
     event = get_object_or_404(Event, slug=slug)
     event_form = recurrence_form = None
 
+    can_edit_events = check_edit_events(request)
+    can_add_occurrences = check_add_occurrences(request)
+
     if request.method == 'POST':
-        if '_update' in request.POST:
+        if '_update' in request.POST and can_edit_events:
             event_form = event_form_class(request.POST, instance=event)
             if event_form.is_valid():
                 event_form.save(event)
                 return http.HttpResponseRedirect(success_url)
-        elif '_add' in request.POST:
+        elif '_add' in request.POST and can_add_occurrences:
             recurrence_form = recurrence_form_class(request.POST)
             if recurrence_form.is_valid():
                 recurrence_form.save(event)
@@ -47,9 +52,14 @@ def event_detail(request, slug, template='calendar/event_detail.html',
 
     data = {
         'event': event,
-        'event_form': event_form,
-        'recurrence_form': recurrence_form
+        'can_edit_events': can_edit_events,
+        'can_add_occurrences': can_add_occurrences
     }
+    if can_edit_events:
+        data['event_form'] = event_form
+    if can_add_occurrences:
+        data['recurrence_form'] = recurrence_form
+
     data.update(extra_context)
     return render_to_response(template, data,
                             context_instance=RequestContext(request))
