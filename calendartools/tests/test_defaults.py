@@ -26,20 +26,37 @@ class TestAddOccurrencePermCheck(TestCase):
     def test_permission_check(self):
         assert not add_occurrence_permission_check(self.mock_request)
         perm = Permission.objects.get(codename='add_occurrence')
+
         self.user.user_permissions.add(perm)
+        # reloading user to purge the _perm_cache
+        self.mock_request.user = User.objects.get(pk=self.user.pk)
         assert add_occurrence_permission_check(self.mock_request)
+
         self.mock_request.user = AnonymousUser()
         assert not add_occurrence_permission_check(self.mock_request)
 
+        self.mock_request.user = User.objects.create(
+            username='Super', is_superuser=True
+        )
+        assert add_occurrence_permission_check(self.mock_request)
 
 class TestChangeEventPermCheck(TestAddOccurrencePermCheck):
     def test_permission_check(self):
         assert not change_event_permission_check(self.mock_request)
         perm = Permission.objects.get(codename='change_event')
+
         self.user.user_permissions.add(perm)
+        # reloading user to purge the _perm_cache
+        self.mock_request.user = User.objects.get(pk=self.user.pk)
         assert change_event_permission_check(self.mock_request)
+
         self.mock_request.user = AnonymousUser()
         assert not change_event_permission_check(self.mock_request)
+
+        self.mock_request.user = User.objects.create(
+            username='Super', is_superuser=True
+        )
+        assert add_occurrence_permission_check(self.mock_request)
 
 
 class TestTimeSlotOptions(TestCase):

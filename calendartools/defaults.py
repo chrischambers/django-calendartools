@@ -34,22 +34,11 @@ DEFAULT_OCCURRENCE_DURATION = timedelta(hours=+1)
 # If not None, passed to the calendar module's setfirstweekday function.
 CALENDAR_FIRST_WEEKDAY = 6
 
-from django.contrib.auth.models import Permission
 def add_occurrence_permission_check(request):
-    # return request.user.has_perm('calendartools.add_occurrence')
-    perm = Permission.objects.get(
-        content_type__app_label='calendartools',
-        codename='add_occurrence'
-    )
-    return perm in request.user.user_permissions.all()
+    return request.user.has_perm('calendartools.add_occurrence')
 
 def change_event_permission_check(request):
-    # return request.user.has_perm('calendartools.change_event')
-    perm = Permission.objects.get(
-        content_type__app_label='calendartools',
-        codename='change_event'
-    )
-    return perm in request.user.user_permissions.all()
+    return request.user.has_perm('calendartools.change_event')
 
 # ----------------------------------------------------------------------------
 MINUTES_INTERVAL = getattr(
