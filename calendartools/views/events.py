@@ -9,7 +9,7 @@ from calendartools import forms, defaults
 
 def event_list(request, *args, **kwargs):
     kwargs.update({
-        'queryset': Event.objects.all(),
+        'queryset': Event.objects.visible(),
         'template_name': 'calendar/event_list.html'
     })
     return list_detail.object_list(request, *args, **kwargs)
@@ -23,7 +23,7 @@ def event_detail(request, slug, template='calendar/event_detail.html',
 
     success_url = success_url or request.path
     extra_context = extra_context or {}
-    event = get_object_or_404(Event, slug=slug)
+    event = get_object_or_404(Event.objects.visible(request.user), slug=slug)
     event_form = recurrence_form = None
 
     can_edit_events = check_edit_events(request)
@@ -69,8 +69,9 @@ def event_create(request, *args, **kwargs):
 
 def occurrence_detail(request, slug, pk, *args, **kwargs):
     occurrence = get_object_or_404(
-        Occurrence.objects.filter(event__slug=slug).select_related('event'),
-        pk=pk
+        Occurrence.objects.visible(request.user).filter(
+            event__slug=slug).select_related('event'),
+            pk=pk
     )
     data = {'occurrence': occurrence, 'event': occurrence.event}
     return render_to_response("calendar/occurrence_detail.html", data,

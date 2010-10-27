@@ -6,6 +6,7 @@ from django_extensions.db.fields import (
     CreationDateTimeField, ModificationDateTimeField
 )
 from threaded_multihost.fields import CreatorField, EditorField
+from calendartools.managers import EventManager, OccurrenceManager
 
 
 class AuditedModel(models.Model):
@@ -19,10 +20,34 @@ class AuditedModel(models.Model):
         abstract = True
 
 
-class Event(AuditedModel):
+class EventBase(AuditedModel):
+    """Encapsulates common elements for Occurrence/Event models."""
+    INACTIVE, HIDDEN, CANCELLED, PUBLISHED = 1, 2, 3, 4
+    STATUS_CHOICES = (
+        (INACTIVE,  _('Inactive')),
+        (HIDDEN,    _('Hidden')),
+        (CANCELLED, _('Cancelled')),
+        (PUBLISHED, _('Published')),
+    )
+
+    class Meta(object):
+        abstract = True
+
+
+class Event(EventBase):
     name = models.CharField(_('name'), max_length=255)
     slug = models.SlugField(_('slug'), unique=True)
     description = models.TextField(_('description'), blank=True)
+    status = models.SmallIntegerField(_('status'),
+        choices=EventBase.STATUS_CHOICES,
+        default=EventBase.PUBLISHED,
+        help_text=_(
+            'Toggle events inactive rather than deleting them. '
+            'Toggling the status of an event results in the same effect '
+            'for all of its occurrences.'
+        )
+    )
+    objects = EventManager()
 
 
     class Meta(object):
@@ -63,12 +88,18 @@ class Event(AuditedModel):
                 self.occurrences.create(start=ev, finish=ev + delta)
 
 
-class Occurrence(AuditedModel):
+class Occurrence(EventBase):
     event = models.ForeignKey(Event, verbose_name=_('event'),
         related_name='occurrences'
     )
     start = models.DateTimeField(_('start'))
     finish = models.DateTimeField(_('finish'))
+    status = models.SmallIntegerField(_('status'),
+        choices=EventBase.STATUS_CHOICES,
+        default=EventBase.PUBLISHED,
+        help_text=_('Toggle occurrences inactive rather than deleting them.')
+    )
+    objects = OccurrenceManager()
 
 
     class Meta(object):
