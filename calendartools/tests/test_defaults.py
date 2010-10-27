@@ -31,7 +31,7 @@ class TestViewHiddenEventPermCheck(TestPermsBase):
         super(TestViewHiddenEventPermCheck, self).setUp()
         self.function = view_hidden_events_check
 
-    def test_permission_check(self):
+    def test_permission_check_with_request(self):
         assert not self.function(self.mock_request)
         self.mock_request.user.is_staff = True
         self.mock_request.user.save()
@@ -44,6 +44,25 @@ class TestViewHiddenEventPermCheck(TestPermsBase):
             username='Super', is_superuser=True
         )
         assert self.function(self.mock_request)
+
+    def test_permission_check_with_user(self):
+        assert not self.function(user=self.user)
+        self.user.is_staff = True
+        self.user.save()
+        assert self.function(user=self.user)
+
+        self.user = AnonymousUser()
+        assert not self.function(user=self.user)
+
+        self.user = User.objects.create(
+            username='Super', is_superuser=True
+        )
+        assert self.function(user=self.user)
+
+    def test_permission_check_with_no_params_raises_error(self):
+        assert_raises(ValueError, self.function)
+        assert_raises(ValueError, self.function, request=None)
+        assert_raises(ValueError, self.function, user=None)
 
 
 class TestViewHiddenOccurrencePermCheck(TestViewHiddenEventPermCheck):
