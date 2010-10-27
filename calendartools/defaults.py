@@ -34,6 +34,12 @@ DEFAULT_OCCURRENCE_DURATION = timedelta(hours=+1)
 # If not None, passed to the calendar module's setfirstweekday function.
 CALENDAR_FIRST_WEEKDAY = 6
 
+def view_hidden_events_check(request):
+    return request.user.is_superuser or request.user.is_staff
+
+def view_hidden_occurrences_check(request):
+    return request.user.is_superuser or request.user.is_staff
+
 def add_occurrence_permission_check(request):
     return request.user.has_perm('calendartools.add_occurrence')
 

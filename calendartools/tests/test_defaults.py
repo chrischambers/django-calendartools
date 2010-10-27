@@ -6,11 +6,13 @@ from calendartools.defaults import (
     change_event_permission_check,
     add_occurrence_permission_check,
     timeslot_options,
-    timeslot_offset_options
+    timeslot_offset_options,
+    view_hidden_events_check,
+    view_hidden_occurrences_check
 )
 
 
-class TestAddOccurrencePermCheck(TestCase):
+class TestPermsBase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             'TestyMcTesterson',
@@ -23,6 +25,34 @@ class TestAddOccurrencePermCheck(TestCase):
         self.mock_request = lambda *a, **kw: True
         self.mock_request.user = self.user
 
+
+class TestViewHiddenEventPermCheck(TestPermsBase):
+    def setUp(self):
+        super(TestViewHiddenEventPermCheck, self).setUp()
+        self.function = view_hidden_events_check
+
+    def test_permission_check(self):
+        assert not self.function(self.mock_request)
+        self.mock_request.user.is_staff = True
+        self.mock_request.user.save()
+        assert self.function(self.mock_request)
+
+        self.mock_request.user = AnonymousUser()
+        assert not self.function(self.mock_request)
+
+        self.mock_request.user = User.objects.create(
+            username='Super', is_superuser=True
+        )
+        assert self.function(self.mock_request)
+
+
+class TestViewHiddenOccurrencePermCheck(TestViewHiddenEventPermCheck):
+    def setUp(self):
+        super(TestViewHiddenEventPermCheck, self).setUp()
+        self.function = view_hidden_occurrences_check
+
+
+class TestAddOccurrencePermCheck(TestPermsBase):
     def test_permission_check(self):
         assert not add_occurrence_permission_check(self.mock_request)
         perm = Permission.objects.get(codename='add_occurrence')
@@ -40,7 +70,8 @@ class TestAddOccurrencePermCheck(TestCase):
         )
         assert add_occurrence_permission_check(self.mock_request)
 
-class TestChangeEventPermCheck(TestAddOccurrencePermCheck):
+
+class TestChangeEventPermCheck(TestPermsBase):
     def test_permission_check(self):
         assert not change_event_permission_check(self.mock_request)
         perm = Permission.objects.get(codename='change_event')
