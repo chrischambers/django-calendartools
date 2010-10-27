@@ -3,6 +3,12 @@
 
 {% block primary %}
   <h1>{{ event.name }}</h1>
+  {% if occurrence.is_cancelled %}
+    <div class="error">
+      <p>This event has been cancelled.</p>
+    </div>
+  {% endif %}
+
   <p>{{ event.description }}</p>
   <p>{{ occurrence.start }}</p>
   <p>{{ occurrence.finish }}</p>

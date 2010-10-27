@@ -29,11 +29,13 @@ class EventQuerySet(QuerySet):
 
 class OccurrenceQuerySet(QuerySet):
     def visible(self, user=None):
-        from calendartools.models import Occurrence
+        from calendartools.models import Event, Occurrence
         if user and defaults.view_hidden_occurrences_check(user=user):
-            return self.filter(status__gte=Occurrence.HIDDEN)
+            return (self.filter(status__gte=Occurrence.HIDDEN) &
+                    self.filter(event__status__gte=Occurrence.HIDDEN))
         else:
-            return self.filter(status__gte=Occurrence.CANCELLED)
+            return (self.filter(status__gte=Event.CANCELLED) &
+                    self.filter(event__status__gte=Event.CANCELLED))
 
 
 class EventManager(DRYManager):

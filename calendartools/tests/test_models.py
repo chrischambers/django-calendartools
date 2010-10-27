@@ -44,6 +44,21 @@ class TestEvent(TestCase):
         self.event.add_occurrences(self.start, self.finish, until=until)
         assert_equal(self.event.occurrences.count(), 6)
 
+    def test_is_cancelled_property(self):
+        assert not self.event.is_cancelled
+        occurrence = Occurrence.objects.create(
+            event=self.event,
+            start=self.start,
+            finish=self.start + timedelta(microseconds=1)
+        )
+        occurrence.status = occurrence.CANCELLED
+        occurrence.save()
+        assert not self.event.is_cancelled
+        self.event.status = self.event.CANCELLED
+        self.event.save()
+        self.event = Event.objects.get(pk=self.event.pk)
+        assert self.event.is_cancelled
+
 
 class TestOccurrence(TestCase):
     def setUp(self):
@@ -90,3 +105,22 @@ class TestOccurrence(TestCase):
                 'Editing Occurrence triggers must-occur-in-future validation:'
                 '\n%s' % e
             )
+
+    def test_is_cancelled_property(self):
+        occurrence = Occurrence.objects.create(
+            event=self.event,
+            start=self.start,
+            finish=self.start + timedelta(microseconds=1)
+        )
+        assert not occurrence.is_cancelled
+        occurrence.status = occurrence.CANCELLED
+        occurrence.save()
+        occurrence = Occurrence.objects.get(pk=occurrence.pk)
+        assert occurrence.is_cancelled
+        occurrence.status = occurrence.PUBLISHED
+        occurrence.save()
+        assert not occurrence.is_cancelled
+        self.event.status = self.event.CANCELLED
+        self.event.save()
+        occurrence = Occurrence.objects.get(pk=occurrence.pk)
+        assert occurrence.is_cancelled

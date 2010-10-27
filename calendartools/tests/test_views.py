@@ -240,7 +240,7 @@ class TestOccurrenceDetailView(TestCase):
         self.assertContains(response, self.event.name)
 
     def test_inactive_occurrence_detail_not_displayed(self):
-        self.occurrence.status = self.event.INACTIVE
+        self.occurrence.status = self.occurrence.INACTIVE
         self.occurrence.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -249,7 +249,7 @@ class TestOccurrenceDetailView(TestCase):
         assert_equal(response.status_code, 404)
 
     def test_hidden_occurrence_detail_not_displayed(self):
-        self.occurrence.status = self.event.HIDDEN
+        self.occurrence.status = self.occurrence.HIDDEN
         self.occurrence.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -258,7 +258,7 @@ class TestOccurrenceDetailView(TestCase):
         assert_equal(response.status_code, 404)
 
     def test_hidden_occurrence_detail_displayed_for_permitted_users(self):
-        self.occurrence.status = self.event.HIDDEN
+        self.occurrence.status = self.occurrence.HIDDEN
         self.occurrence.save()
         self.user.is_staff = True
         self.user.save()
@@ -271,7 +271,7 @@ class TestOccurrenceDetailView(TestCase):
         self.assertContains(response, self.event.name)
 
     def test_cancelled_occurrence_detail_displayed(self):
-        self.occurrence.status = self.event.CANCELLED
+        self.occurrence.status = self.occurrence.CANCELLED
         self.occurrence.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -282,6 +282,60 @@ class TestOccurrenceDetailView(TestCase):
         self.assertContains(response, self.event.name)
 
     def test_published_occurrence_detail_displayed(self):
+        response = self.client.get(
+            reverse('occurrence-detail',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
+        )
+        assert_equal(response.status_code, 200)
+        self.assertContains(response, self.event.description)
+        self.assertContains(response, self.event.name)
+
+    def test_occurrence_with_inactive_event_not_displayed(self):
+        self.event.status = self.event.INACTIVE
+        self.event.save()
+        response = self.client.get(
+            reverse('occurrence-detail',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
+        )
+        assert_equal(response.status_code, 404)
+
+    def test_occurrence_with_hidden_event_not_displayed(self):
+        self.event.status = self.event.HIDDEN
+        self.event.save()
+        response = self.client.get(
+            reverse('occurrence-detail',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
+        )
+        assert_equal(response.status_code, 404)
+
+    def test_occurrence_with_hidden_event_displayed_for_permitted_users(self):
+        self.event.status = self.event.HIDDEN
+        self.event.save()
+        self.user.is_staff = True
+        self.user.save()
+        response = self.client.get(
+            reverse('occurrence-detail',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
+        )
+        assert_equal(response.status_code, 200)
+        self.assertContains(response, self.event.description)
+        self.assertContains(response, self.event.name)
+
+    def test_occurrence_with_cancelled_event_displayed_as_cancelled(self):
+        self.event.status = self.event.CANCELLED
+        self.event.save()
+        response = self.client.get(
+            reverse('occurrence-detail',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
+        )
+        assert_equal(response.status_code, 200)
+        self.assertContains(response, self.event.description)
+        self.assertContains(response, self.event.name)
+        self.assertContains(response, "This event has been cancelled")
+
+    def test_cancelled_occurrence_with_published_event_displayed(self):
+        self.occurrence.status = self.occurrence.CANCELLED
+        self.occurrence.save()
         response = self.client.get(
             reverse('occurrence-detail',
                     args=(self.event.slug, self.occurrence.pk)), follow=True

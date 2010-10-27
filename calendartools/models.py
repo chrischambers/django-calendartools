@@ -30,6 +30,7 @@ class EventBase(AuditedModel):
         (PUBLISHED, _('Published')),
     )
 
+
     class Meta(object):
         abstract = True
 
@@ -87,6 +88,10 @@ class Event(EventBase):
             for ev in rrule.rrule(dtstart=start, **rrule_params):
                 self.occurrences.create(start=ev, finish=ev + delta)
 
+    @property
+    def is_cancelled(self):
+        return self.status == self.CANCELLED
+
 
 class Occurrence(EventBase):
     event = models.ForeignKey(Event, verbose_name=_('event'),
@@ -131,7 +136,11 @@ class Occurrence(EventBase):
                 'Event occurrences cannot be created in the past.'
             )
 
-
     def save(self, *args, **kwargs):
         self.full_clean()
         return super(Occurrence, self).save(*args, **kwargs)
+
+    @property
+    def is_cancelled(self):
+        return (self.status == self.CANCELLED or
+                self.event.status == self.event.CANCELLED)
