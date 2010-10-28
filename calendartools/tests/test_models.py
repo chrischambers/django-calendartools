@@ -90,6 +90,14 @@ class TestOccurrence(TestCase):
             event=self.event, start=start - timedelta.resolution, finish=finish
         )
 
+    def test_validation_with_missing_start(self):
+        occurrence = Occurrence(event=self.event, start=self.start)
+        assert_raises(ValidationError, occurrence.save)
+
+    def test_validation_with_missing_end(self):
+        occurrence = Occurrence(event=self.event, finish=self.start)
+        assert_raises(ValidationError, occurrence.save)
+
     def test_updated_occurrences_need_not_occur_in_future(self):
         occurrence = Occurrence.objects.create(
             event=self.event,
