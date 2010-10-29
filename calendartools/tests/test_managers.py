@@ -5,112 +5,61 @@ from nose.tools import *
 from calendartools.models import Event, Occurrence
 
 
-class TestEventManager(TestCase):
+class TestCommonManager(TestCase):
     def setUp(self):
         self.creator = User.objects.create(username='TestyMcTesterson')
 
-        self.inactive_event = Event.objects.create(
-            name='Event', slug='inactive-event', creator=self.creator,
-            status=Event.INACTIVE
+        self.events = []
+        for status, label in Event.STATUS_CHOICES:
+            self.events.append(Event.objects.create(
+                name='Event',
+                slug='%s-event' % label.lower(),
+                creator=self.creator,
+                status=status
+            ))
+
+        self.start = datetime.now() + timedelta(minutes=30)
+        self.finish = self.start + timedelta(hours=2)
+
+        self.occurrence = []
+        for status, label in Occurrence.STATUS_CHOICES:
+            self.occurrence.append(Occurrence.objects.create(
+                event=self.events[0], start=self.start, finish=self.finish,
+                status=status
+            ))
+        self.model = Event
+
+    def _test_status_properties(self, prop, status):
+        assert_equal(
+            set(getattr(self.model.objects, prop)),
+            set(self.model.objects.filter(status=status))
         )
-        self.hidden_event = Event.objects.create(
-            name='Event', slug='hidden-event', creator=self.creator,
-            status=Event.HIDDEN
-        )
-        self.cancelled_event = Event.objects.create(
-            name='Event', slug='cancelled-event', creator=self.creator,
-            status=Event.CANCELLED
-        )
-        self.published_event = Event.objects.create(
-            name='Event', slug='event', creator=self.creator
-        )
+
+    def test_inactive_property(self):
+        self._test_status_properties('inactive', self.model.INACTIVE)
+
+    def test_hidden_property(self):
+        self._test_status_properties('hidden', self.model.HIDDEN)
+
+    def test_cancelled_property(self):
+        self._test_status_properties('cancelled', self.model.CANCELLED)
+
+    def test_published_property(self):
+        self._test_status_properties('published', self.model.PUBLISHED)
+
+
+class TestEventManager(TestCommonManager):
+    def setUp(self):
+        super(TestEventManager, self).setUp()
 
     def test_visible_method(self):
         pass
 
-    def _test_status_properties(self, prop, status):
-        assert_equal(
-            set(getattr(Event.objects, prop)),
-            set(Event.objects.filter(status=status))
-        )
 
-    def test_inactive_property(self):
-        assert_equal(
-            set(Event.objects.inactive),
-            set(Event.objects.filter(status=Event.INACTIVE))
-        )
-
-    def test_hidden_property(self):
-        assert_equal(
-            set(Event.objects.hidden),
-            set(Event.objects.filter(status=Event.HIDDEN))
-        )
-
-    def test_cancelled_property(self):
-        assert_equal(
-            set(Event.objects.cancelled),
-            set(Event.objects.filter(status=Event.CANCELLED))
-        )
-
-    def test_published_property(self):
-        assert_equal(
-            set(Event.objects.published),
-            set(Event.objects.filter(status=Event.PUBLISHED))
-        )
-
-
-class TestOccurrenceManager(TestCase):
+class TestOccurrenceManager(TestCommonManager):
     def setUp(self):
-        self.creator = User.objects.create(username='TestyMcTesterson')
-        self.event = Event.objects.create(
-            name='Event', slug='event', creator=self.creator
-        )
-        self.start = datetime.now() + timedelta(minutes=30)
-        self.finish = self.start + timedelta(hours=2)
+        super(TestOccurrenceManager, self).setUp()
+        self.model = Occurrence
 
-        self.inactive_occurrence = Occurrence.objects.create(
-            event=self.event, start=self.start, finish=self.finish,
-            status=Occurrence.INACTIVE
-        )
-        self.hidden_occurrence = Occurrence.objects.create(
-            event=self.event, start=self.start, finish=self.finish,
-            status=Occurrence.HIDDEN
-        )
-        self.cancelled_occurrence = Occurrence.objects.create(
-            event=self.event, start=self.start, finish=self.finish,
-            status=Occurrence.CANCELLED
-        )
-        self.published_occurrence = Occurrence.objects.create(
-            event=self.event, start=self.start, finish=self.finish,
-            status=Occurrence.PUBLISHED
-        )
-
-    def _test_status_properties(self, prop, status):
-        assert_equal(
-            set(getattr(Occurrence.objects, prop)),
-            set(Occurrence.objects.filter(status=status))
-        )
-
-    def test_inactive_property(self):
-        assert_equal(
-            set(Occurrence.objects.inactive),
-            set(Occurrence.objects.filter(status=Occurrence.INACTIVE))
-        )
-
-    def test_hidden_property(self):
-        assert_equal(
-            set(Occurrence.objects.hidden),
-            set(Occurrence.objects.filter(status=Occurrence.HIDDEN))
-        )
-
-    def test_cancelled_property(self):
-        assert_equal(
-            set(Occurrence.objects.cancelled),
-            set(Occurrence.objects.filter(status=Occurrence.CANCELLED))
-        )
-
-    def test_published_property(self):
-        assert_equal(
-            set(Occurrence.objects.published),
-            set(Occurrence.objects.filter(status=Occurrence.PUBLISHED))
-        )
+    def test_visible_method(self):
+        pass
