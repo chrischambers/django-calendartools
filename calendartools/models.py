@@ -7,7 +7,7 @@ from django_extensions.db.fields import (
 from threaded_multihost.fields import CreatorField, EditorField
 from calendartools.managers import EventManager, OccurrenceManager
 from calendartools.signals import collect_occurrence_validators
-from calendartools.validators import activate_default_validators
+from calendartools.validators.defaults import activate_default_validators
 
 
 class AuditedModel(models.Model):

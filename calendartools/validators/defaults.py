@@ -1,18 +1,7 @@
 from datetime import datetime
 from django.core.exceptions import ValidationError
 from calendartools.signals import collect_occurrence_validators
-
-
-class BaseValidator(object):
-    priority = 10
-
-    def __init__(self, sender, **kwargs):
-        self.sender = sender
-        self.kwargs = kwargs
-
-    def validate(self):
-        """Raises ValidationError if validation is unsuccessful."""
-        raise NotImplementedError
+from calendartools.validators.base import BaseValidator
 
 
 class FinishGTStartValidator(BaseValidator):
