@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from calendartools.models import Event, Occurrence
+from calendartools.exceptions import MaxOccurrenceCreationsExceeded
+from calendartools import defaults
 from calendartools.signals import collect_occurrence_validators
 from calendartools.validators import BaseValidator
 from nose.tools import *
@@ -62,6 +64,13 @@ class TestEvent(TestCase):
         assert_equal(
             [o.pk for o in occurrences],
             [None, None, None]
+        )
+
+    def test_add_occurrences_maximum_creation_count_exceeded(self):
+        assert_raises(MaxOccurrenceCreationsExceeded,
+            self.event.add_occurrences,
+            self.start, self.finish, commit=False,
+            count=defaults.MAX_OCCURRENCE_CREATION_COUNT + 1
         )
 
     def test_is_cancelled_property(self):

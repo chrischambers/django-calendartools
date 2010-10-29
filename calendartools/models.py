@@ -5,6 +5,8 @@ from django_extensions.db.fields import (
     CreationDateTimeField, ModificationDateTimeField
 )
 from threaded_multihost.fields import CreatorField, EditorField
+from calendartools import defaults
+from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools.managers import EventManager, OccurrenceManager
 from calendartools.signals import collect_occurrence_validators
 from calendartools.validators.defaults import activate_default_validators
@@ -100,10 +102,15 @@ class Event(EventBase):
         if 'count' not in rrule_params and 'until' not in rrule_params:
             return [make_occurrence(start=start, finish=finish)]
         else:
+            creation_count = 0
             occurrences = []
             delta = finish - start
             for ev in rrule.rrule(dtstart=start, **rrule_params):
+                if (defaults.MAX_OCCURRENCE_CREATION_COUNT and
+                    creation_count >= defaults.MAX_OCCURRENCE_CREATION_COUNT):
+                    raise MaxOccurrenceCreationsExceeded
                 occurrences.append(make_occurrence(start=ev, finish=ev + delta))
+                creation_count += 1
             return occurrences
 
     @property

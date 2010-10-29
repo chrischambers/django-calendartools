@@ -34,6 +34,13 @@ DEFAULT_OCCURRENCE_DURATION = timedelta(hours=+1)
 # If not None, passed to the calendar module's setfirstweekday function.
 CALENDAR_FIRST_WEEKDAY = 6
 
+# If not None/0, raises a ``MaxOccurrenceCreationsExceeded`` Exception if the
+# ``Event.add_occurrences`` utility function creates more Occurrence objects
+# than specified. This is to mitigate the damage caused by unforeseen bugs
+# which may result in ``rrule.rrule`` producing an iterable of unlimited
+# length.
+MAX_OCCURRENCE_CREATION_COUNT = 100
+
 def view_hidden_events_check(request=None, user=None):
     user = request and request.user or user
     if not user:
