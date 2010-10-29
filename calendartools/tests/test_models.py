@@ -46,6 +46,24 @@ class TestEvent(TestCase):
         self.event.add_occurrences(self.start, self.finish, until=until)
         assert_equal(self.event.occurrences.count(), 6)
 
+    def test_add_occurrences_with_commit_false(self):
+        occurrences = self.event.add_occurrences(
+            self.start, self.finish, commit=False
+        )
+        assert_equal(self.event.occurrences.count(), 0)
+        assert_equal(len(occurrences), 1)
+        assert not occurrences[0].pk
+
+        occurrences = self.event.add_occurrences(
+            self.start, self.finish, count=3, commit=False
+        )
+        assert_equal(self.event.occurrences.count(), 0)
+        assert_equal(len(occurrences), 3)
+        assert_equal(
+            [o.pk for o in occurrences],
+            [None, None, None]
+        )
+
     def test_is_cancelled_property(self):
         assert not self.event.is_cancelled
         occurrence = Occurrence.objects.create(

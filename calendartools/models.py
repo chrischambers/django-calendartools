@@ -9,6 +9,11 @@ from calendartools.managers import EventManager, OccurrenceManager
 from calendartools.signals import collect_occurrence_validators
 from calendartools.validators.defaults import activate_default_validators
 
+try:
+    from functools import partial
+except ImportError: # Python 2.3, 2.4 fallback.
+    from django.utils.functional import curry as partial
+
 
 class AuditedModel(models.Model):
     datetime_created  = CreationDateTimeField(_('Created'))
@@ -66,10 +71,10 @@ class Event(EventBase):
     def get_absolute_url(self):
         return ('event-detail', [], {'slug': self.slug})
 
-    def add_occurrences(self, start, finish, **rrule_params):
+    def add_occurrences(self, start, finish, commit=True, **rrule_params):
         '''
         Add one or more occurrences to the event using a comparable API to
-        ``dateutil.rrule``.
+        ``dateutil.rrule``. Returns a list of created ``Occurrence`` objects.
 
         If ``rrule_params`` does not contain a ``freq``, one will be defaulted
         to ``rrule.DAILY``.
@@ -81,15 +86,25 @@ class Event(EventBase):
         If both ``count`` and ``until`` entries are missing from
         ``rrule_params``, only a single ``Occurrence`` instance will be created
         using the exact ``start`` and ``finish`` values.
+
+        If ``commit`` is ``False``, the ``Occurrence`` objects are not saved to
+        the database.
         '''
         rrule_params.setdefault('freq', rrule.DAILY)
 
-        if 'count' not in rrule_params and 'until' not in rrule_params:
-            self.occurrences.create(start=start, finish=finish)
+        if commit:
+            make_occurrence = self.occurrences.create
         else:
+            make_occurrence = partial(Occurrence, event=self)
+
+        if 'count' not in rrule_params and 'until' not in rrule_params:
+            return [make_occurrence(start=start, finish=finish)]
+        else:
+            occurrences = []
             delta = finish - start
             for ev in rrule.rrule(dtstart=start, **rrule_params):
-                self.occurrences.create(start=ev, finish=ev + delta)
+                occurrences.append(make_occurrence(start=ev, finish=ev + delta))
+            return occurrences
 
     @property
     def is_cancelled(self):
