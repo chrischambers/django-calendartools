@@ -1,4 +1,3 @@
-from datetime import datetime
 from dateutil import rrule
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -7,6 +6,8 @@ from django_extensions.db.fields import (
 )
 from threaded_multihost.fields import CreatorField, EditorField
 from calendartools.managers import EventManager, OccurrenceManager
+from calendartools.signals import collect_occurrence_validators
+from calendartools.validators import activate_default_validators
 
 
 class AuditedModel(models.Model):
@@ -127,18 +128,13 @@ class Occurrence(EventBase):
         })
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-        now = datetime.now()
         if not self.start or not self.finish:
-            return
-        if self.start >= self.finish:
-            raise ValidationError(
-                'Finish date/time must be greater than start date/time.'
-            )
-        if not self.id and self.start < now:
-            raise ValidationError(
-                'Event occurrences cannot be created in the past.'
-            )
+            return # to be dealt with by built-in validators
+        validators = collect_occurrence_validators.send(sender=self)
+        validators = [v[1] for v in validators] # instances only
+        validators.sort(key=lambda v: v.priority, reverse=True)
+        for validator in validators:
+            validator.validate()
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -148,3 +144,5 @@ class Occurrence(EventBase):
     def is_cancelled(self):
         return (self.status == self.CANCELLED or
                 self.event.status == self.event.CANCELLED)
+
+activate_default_validators()

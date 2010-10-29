@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from calendartools.models import Event, Occurrence
+from calendartools.signals import collect_occurrence_validators
+from calendartools.validators import BaseValidator
 from nose.tools import *
 
 
@@ -113,6 +115,34 @@ class TestOccurrence(TestCase):
                 'Editing Occurrence triggers must-occur-in-future validation:'
                 '\n%s' % e
             )
+
+    def test_pluggable_validators_priority(self):
+        class AngryValidator(BaseValidator):
+            priority = 9000
+            error_message = "Angry Validator is Angry."
+
+            def validate(self):
+                raise ValidationError(self.error_message)
+
+        occurrence = Occurrence(
+            event=self.event,
+            start=self.start,
+            finish=self.start # also fails finish > start check.
+        )
+        try:
+            collect_occurrence_validators.connect(AngryValidator)
+            occurrence.save()
+            self.fail('ValidationError of top priority not triggered first')
+        except ValidationError, e:
+            assert_equal(e.messages[0], AngryValidator.error_message)
+            AngryValidator.priority = -1
+            try:
+                occurrence.save()
+                self.fail('ValidationError of top priority not triggered first')
+            except ValidationError, e:
+                assert_not_equal(e.messages[0], AngryValidator.error_message)
+        finally:
+            collect_occurrence_validators.disconnect(AngryValidator)
 
     def test_is_cancelled_property(self):
         occurrence = Occurrence.objects.create(
