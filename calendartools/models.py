@@ -129,11 +129,13 @@ class Occurrence(EventBase):
     def clean(self):
         from django.core.exceptions import ValidationError
         now = datetime.now()
-        if self.start and self.finish and self.start >= self.finish:
+        if not self.start or not self.finish:
+            return
+        if self.start >= self.finish:
             raise ValidationError(
                 'Finish date/time must be greater than start date/time.'
             )
-        if not self.id and self.start and self.start < now:
+        if not self.id and self.start < now:
             raise ValidationError(
                 'Event occurrences cannot be created in the past.'
             )
