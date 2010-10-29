@@ -18,7 +18,25 @@ class DRYManager(models.Manager):
             return getattr(self.get_query_set(), attr, *args)
 
 
-class EventQuerySet(QuerySet):
+class CommonQuerySet(QuerySet):
+    @property
+    def inactive(self):
+        return self.filter(status=self.model.INACTIVE)
+
+    @property
+    def hidden(self):
+        return self.filter(status=self.model.HIDDEN)
+
+    @property
+    def cancelled(self):
+        return self.filter(status=self.model.CANCELLED)
+
+    @property
+    def published(self):
+        return self.filter(status=self.model.PUBLISHED)
+
+
+class EventQuerySet(CommonQuerySet):
     def visible(self, user=None):
         from calendartools.models import Event
         if user and defaults.view_hidden_events_check(user=user):
@@ -27,7 +45,7 @@ class EventQuerySet(QuerySet):
             return self.filter(status__gte=Event.CANCELLED)
 
 
-class OccurrenceQuerySet(QuerySet):
+class OccurrenceQuerySet(CommonQuerySet):
     def visible(self, user=None):
         from calendartools.models import Event, Occurrence
         if user and defaults.view_hidden_occurrences_check(user=user):
