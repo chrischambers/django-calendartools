@@ -127,14 +127,19 @@ class Occurrence(EventBase):
             'pk':     self.pk
         })
 
-    def clean(self):
-        if not self.start or not self.finish:
-            return # to be dealt with by built-in validators
+    def collect_and_run_validators(self):
+        """Collects all pluggable validation checks and runs them, in order of
+        priority."""
         validators = collect_occurrence_validators.send(sender=self)
         validators = [v[1] for v in validators] # instances only
         validators.sort(key=lambda v: v.priority, reverse=True)
         for validator in validators:
             validator.validate()
+
+    def clean(self):
+        if not self.start or not self.finish:
+            return # to be dealt with by built-in validators
+        self.collect_and_run_validators()
 
     def save(self, *args, **kwargs):
         self.full_clean()
