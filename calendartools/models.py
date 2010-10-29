@@ -43,9 +43,11 @@ class Event(EventBase):
         choices=EventBase.STATUS_CHOICES,
         default=EventBase.PUBLISHED,
         help_text=_(
-            'Toggle events inactive rather than deleting them. '
-            'Toggling the status of an event results in the same effect '
-            'for all of its occurrences.'
+            "Toggle events inactive rather than deleting them. "
+            "Changing an Event from 'published' to inactive/hidden/cancelled "
+            "will deactivate/hide/cancel all its occurrences. "
+            "Toggling it back to 'published' will restore all of them to "
+            "their former state."
         )
     )
     objects = EventManager()
