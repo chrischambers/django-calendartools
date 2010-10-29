@@ -5,7 +5,17 @@
   <h1>{{ event.name }}</h1>
   <p>{{ event.description }}</p>
 
+  {% if occurrences %}
+  <h2>Occurrences</h2>
+  <ul>
+    {% for occurrence in occurrences %}
+    <li{% if occurrence.is_cancelled %} class="cancelled"{% endif %}><a href="{{ occurrence.get_absolute_url }}">{{ occurrence }}</a></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
   {% if can_edit_events %}
+  <h3>Edit Event Details</h3>
   <form action="" method="post">{% csrf_token %}
     <table>
       <tfoot>
@@ -23,6 +33,7 @@
   {% endif %}
 
   {% if can_add_occurrences %}
+  <h3>Add Occurrences</h3>
   <form action="" method="post">{% csrf_token %}
     <table>
       <tfoot>

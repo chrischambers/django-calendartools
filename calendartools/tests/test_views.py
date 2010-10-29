@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from calendartools.models import Event, Occurrence
 from calendartools.forms import EventForm, MultipleOccurrenceForm
+from calendartools import views
 from nose.tools import *
 
 
@@ -87,9 +88,19 @@ class TestEventDetailView(TestCase):
             content_type__app_label='calendartools',
             codename='add_occurrence'
         )
+        self.start = datetime.utcnow() + timedelta(hours=2)
+        self.occurrence = Occurrence.objects.create(
+            event=self.event,
+            start=self.start,
+            finish=self.start + timedelta(hours=2)
+        )
         self.assertTrue(self.client.login(
             username=self.user.username, password='password')
         )
+
+    def tearDown(self):
+        super(TestEventDetailView, self).tearDown()
+        Occurrence.objects.all().delete()
 
     def test_event_detail_context(self):
         response = self.client.get(
@@ -198,6 +209,53 @@ class TestEventDetailView(TestCase):
             reverse('event-detail', args=(self.event.slug,)), data=data
         )
         assert_equal(response.status_code, 200)
+
+    def test_list_occurrences(self):
+        for status, label in Occurrence.STATUS_CHOICES:
+            Occurrence.objects.create(
+                event=self.event,
+                start=self.start,
+                finish=self.start + timedelta(hours=2),
+                status=status
+            )
+        response = self.client.get(
+            reverse('event-detail', args=(self.event.slug,)), follow=True
+        )
+        assert_equal(
+            set(response.context['occurrences']),
+            set(Occurrence.objects.visible())
+        )
+
+
+class TestEventDetailView2(TestCase):
+    urls = 'calendartools.tests.test_urls.event_detail_no_list_occurrences'
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            'TestyMcTesterson',
+            'Testy@test.com',
+            'password'
+        )
+        self.event = Event.objects.create(
+            name='The Test Event',
+            slug='event-version-1',
+            description="This is the description.",
+            creator=self.user
+        )
+        self.start = datetime.utcnow() + timedelta(hours=2)
+
+    def test_list_occurrences(self):
+        for status, label in Occurrence.STATUS_CHOICES:
+            Occurrence.objects.create(
+                event=self.event,
+                start=self.start,
+                finish=self.start + timedelta(hours=2),
+                status=status
+            )
+        response = self.client.get(
+            reverse('event-detail', args=(self.event.slug,)), follow=True
+        )
+        assert not response.context[-1].get('occurrences')
 
 
 class TestOccurrenceDetailView(TestCase):

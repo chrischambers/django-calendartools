@@ -19,7 +19,7 @@ def event_detail(request, slug, template='calendar/event_detail.html',
                  recurrence_form_class=forms.MultipleOccurrenceForm,
                  check_edit_events=defaults.change_event_permission_check,
                  check_add_occurrences=defaults.add_occurrence_permission_check,
-                 success_url=None, extra_context=None):
+                 list_occurrences=True, success_url=None, extra_context=None):
 
     success_url = success_url or request.path
     extra_context = extra_context or {}
@@ -28,6 +28,12 @@ def event_detail(request, slug, template='calendar/event_detail.html',
 
     can_edit_events = check_edit_events(request)
     can_add_occurrences = check_add_occurrences(request)
+
+    data = {
+        'event': event,
+        'can_edit_events': can_edit_events,
+        'can_add_occurrences': can_add_occurrences
+    }
 
     if request.method == 'POST':
         if '_update' in request.POST and can_edit_events:
@@ -50,15 +56,13 @@ def event_detail(request, slug, template='calendar/event_detail.html',
             initial={'dtstart': datetime.now()}
         )
 
-    data = {
-        'event': event,
-        'can_edit_events': can_edit_events,
-        'can_add_occurrences': can_add_occurrences
-    }
     if can_edit_events:
         data['event_form'] = event_form
     if can_add_occurrences:
         data['recurrence_form'] = recurrence_form
+    if list_occurrences:
+        data['occurrences'] = event.occurrences.select_related('event'
+                              ).visible()
 
     data.update(extra_context)
     return render_to_response(template, data,
