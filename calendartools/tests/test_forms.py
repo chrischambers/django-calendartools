@@ -28,9 +28,10 @@ class TestMultipleOccurrenceForm(TestCase):
 
             # Repetitions:
             'repeats':                'count',
-            # 'count':                  '1',
+            'count':                  '1',
+
             'repeats':                'until',
-            # 'until':                '', (Whatever SelectDateWidget returns)
+            'until':                  self.tomorrow + timedelta(3),
 
             # Frequency + Variations:
             # Variant 1: Daily
