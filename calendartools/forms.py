@@ -188,13 +188,15 @@ class MultipleOccurrenceForm(forms.Form):
             )
 
     def add_field_error(self, fieldname, errmsg):
-        """This will clobber any existing errors."""
+        # Note: This will clobber any existing errors.
         self.cleaned_data.pop(fieldname, None)
         self._errors[fieldname] = self.error_class([errmsg])
 
     def check_for_required_fields(self):
         """Many fields on this form depend on the values of other fields to
-        determine whether they are required or not."""
+        determine whether they are required or not. This method handles those
+        checks as part of the cleaning process."""
+
         required_errmsg = forms.Field.default_error_messages['required']
 
         if (self.cleaned_data['repeats'] == 'count' and
@@ -254,7 +256,7 @@ class MultipleOccurrenceForm(forms.Form):
     def clean(self):
         if (not self.cleaned_data.get('repeats') or
             self.cleaned_data.get('freq') is None):
-            # required field not provided, let default validators handle:
+            # required fields not provided, let default validators handle:
             return
 
         self.check_for_required_fields()
@@ -263,12 +265,13 @@ class MultipleOccurrenceForm(forms.Form):
         self.cleaned_data['start_time'] = day + timedelta(
             seconds=self.cleaned_data['start_time_delta']
         )
-
         self.cleaned_data['end_time'] = day + timedelta(
             seconds=self.cleaned_data['end_time_delta']
         )
 
-        log.debug("Recurrence-form, Cleaned Data\n%s" % pformat(self.cleaned_data))
+        log.debug("Recurrence-form, Cleaned Data\n%s" % (
+            pformat(self.cleaned_data))
+        )
         return self.cleaned_data
 
     def save(self, event):
