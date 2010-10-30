@@ -82,3 +82,13 @@ DEBUG_TOOLBAR_PANELS = (
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
 }
+
+
+import logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+    datefmt='%a, %d %b %Y %H:%M:%S'
+)
+log = logging.getLogger('calendartools.forms')
+log.setLevel(logging.DEBUG)
