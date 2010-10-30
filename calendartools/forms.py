@@ -27,6 +27,7 @@ class EventForm(forms.ModelForm):
 
     '''
 
+
     class Meta(object):
         model = Event
         fields = ('name', 'description',)
@@ -120,12 +121,19 @@ class MultipleOccurrenceForm(forms.Form):
     month_option = forms.ChoiceField(
         choices=(('on',_(u'On the')), ('each',_(u'Each:'))),
         initial='each',
+        required=False,
         widget=forms.RadioSelect(),
         label=_(u'Monthly options')
     )
 
-    month_ordinal = forms.IntegerField(widget=forms.Select(choices=ORDINAL))
-    month_ordinal_day = forms.IntegerField(widget=forms.Select(choices=WEEKDAY_LONG))
+    month_ordinal = forms.IntegerField(
+        required=False,
+        widget=forms.Select(choices=ORDINAL)
+    )
+    month_ordinal_day = forms.IntegerField(
+        required=False,
+        widget=forms.Select(choices=WEEKDAY_LONG)
+    )
     each_month_day = MultipleIntegerField(
         [(i,i) for i in range(1,32)],
         widget=forms.CheckboxSelectMultiple
@@ -139,8 +147,11 @@ class MultipleOccurrenceForm(forms.Form):
     )
 
     is_year_month_ordinal = forms.BooleanField(required=False)
-    year_month_ordinal = forms.IntegerField(widget=forms.Select(choices=ORDINAL))
+    year_month_ordinal = forms.IntegerField(
+        required=False,
+        widget=forms.Select(choices=ORDINAL))
     year_month_ordinal_day = forms.IntegerField(
+        required=False,
         widget=forms.Select(choices=WEEKDAY_LONG)
     )
 
