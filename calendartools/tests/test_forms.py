@@ -26,10 +26,11 @@ class TestMultipleOccurrenceForm(TestCase):
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
-            # Repetitions:
+            # Repetitions - a given count:
             'repeats':                'count',
             'count':                  '1',
 
+            # Repetitions - until specified date:
             'repeats':                'until',
             'until':                  self.tomorrow + timedelta(3),
 
@@ -79,6 +80,8 @@ class TestMultipleOccurrenceForm(TestCase):
     def test_repeats_method_count_must_have_count_gt_1(self):
         """If repeats method == 'count', 'count' parameter
         must be provided, and its value must be gt 1."""
+        invalid_inputs = [None, -2, -1, 0, 1000]
+        valid_inputs = [1, 10, 20, 50, 100, 500, 999]
         data = {
             'day':                    self.tomorrow_str,
             'start_time_delta':       '28800',
@@ -89,39 +92,37 @@ class TestMultipleOccurrenceForm(TestCase):
             'freq':                   rrule.DAILY,
             'interval':               1, # days
         }
-        # data = {
-        #      'day':                    self.tomorrow_str,
-        #      'start_time_delta':       '28800',
-        #      'end_time_delta':         '29700',
-        #      'year_month_ordinal_day': '2',
-        #      'month_ordinal_day':      '2',
-        #      'year_month_ordinal':     '1',
-        #      'month_option':           'each',
-        #      'repeats':                'count',
-        #      'freq':                   '2',
-        #      'month_ordinal':          '1',
-        # }
         form = MultipleOccurrenceForm(data)
         assert not form.is_valid(), (
             "form with repeats=count and no count key valid."
         )
-        data['count'] = None
-        form = MultipleOccurrenceForm(data)
-        assert not form.is_valid(), (
-            "form with repeats=count and count == None valid."
-        )
-        data['count'] = 0
-        form = MultipleOccurrenceForm(data)
-        assert not form.is_valid(), (
-            "form with repeats=count and count == 0 valid."
-        )
-        data['count'] = 1
-        form = MultipleOccurrenceForm(data)
-        assert form.is_valid(), form.errors.as_text()
+        for i in invalid_inputs:
+            data['count'] = i
+            form = MultipleOccurrenceForm(data)
+            assert not form.is_valid(), (
+                "Invalid count value %s identified as valid" % i
+            )
+        for i in valid_inputs:
+            data['count'] = i
+            form = MultipleOccurrenceForm(data)
+            assert form.is_valid(), form.errors.as_text()
 
     def test_repeats_method_until_must_have_datetime_gt_now(self):
         """If repeats method == 'until', 'until' parameter
         must be provided, and its value must be a date greater than now."""
+        invalid_inputs = (
+            None,
+            date.today(),
+            date.today() - timedelta(1),
+            self.tomorrow,
+        )
+        valid_inputs = (
+            self.tomorrow + timedelta(1),
+            self.tomorrow + timedelta(2),
+            self.tomorrow + timedelta(10),
+            self.tomorrow + timedelta(100),
+        )
+
         data = {
             'day':                    self.tomorrow_str,
             'start_time_delta':       '28800',
@@ -136,16 +137,20 @@ class TestMultipleOccurrenceForm(TestCase):
         assert not form.is_valid(), (
             "form with repeats=until and no until key valid."
         )
-        data['until'] = None
-        form = MultipleOccurrenceForm(data)
-        assert not form.is_valid(), (
-            "form with repeats=until and until == None valid."
-        )
-        data['until'] = self.tomorrow + timedelta(5)
-        form = MultipleOccurrenceForm(data)
-        assert form.is_valid(), form.errors.as_text()
+        for i in invalid_inputs:
+            data['until'] = i
+            form = MultipleOccurrenceForm(data)
+            assert not form.is_valid(), (
+                "Invalid until value %s identified as valid" % i
+            )
+        for i in valid_inputs:
+            data['until'] = i
+            form = MultipleOccurrenceForm(data)
+            assert form.is_valid(), form.errors.as_text()
 
     def test_daily_freq_requires_interval_gt_1(self):
+        invalid_intervals = [None, 0, -1, 1000]
+        valid_intervals = [1,2,3,4,5,10,20,50,100,500,999]
         data = {
             'day':                    self.tomorrow_str,
             'start_time_delta':       '28800',
@@ -161,21 +166,24 @@ class TestMultipleOccurrenceForm(TestCase):
         assert not form.is_valid(), (
             "form with freq=DAILY and no interval key valid."
         )
-        data['interval'] = None
-        form = MultipleOccurrenceForm(data)
-        assert not form.is_valid(), (
-            "form with freq=DAILY and interval == None valid."
-        )
-        data['interval'] = 0
-        form = MultipleOccurrenceForm(data)
-        assert not form.is_valid(), (
-            "form with freq=DAILY and interval == 0 valid."
-        )
-        data['interval'] = 1
-        form = MultipleOccurrenceForm(data)
-        assert form.is_valid(), form.errors.as_text()
+        for i in invalid_intervals:
+            data['interval'] = i
+            form = MultipleOccurrenceForm(data)
+            assert not form.is_valid(), (
+                "form with freq=DAILY and interval == %s valid." % i
+            )
+        for i in valid_intervals:
+            data['interval'] = i
+            form = MultipleOccurrenceForm(data)
+            assert form.is_valid(), form.errors.as_text()
 
     def test_weekly_freq_requires_week_days(self):
+        valid_inputs = (
+            [[i] for i in self.weekday_long.values()] +
+            [[1,7], [1,2,3,4,5,6,7], [6,7], [1,2]]
+        )
+        invalid_inputs = [None, [None], [], [0], [8], [0,1,2], [6,7,8]]
+
         data = {
             'day':                    self.tomorrow_str,
             'start_time_delta':       '28800',
@@ -191,21 +199,20 @@ class TestMultipleOccurrenceForm(TestCase):
         assert not form.is_valid(), (
             "form with freq=WEEKLY and no week_days key valid."
         )
-        data['week_days'] = None
-        form = MultipleOccurrenceForm(data)
-        assert not form.is_valid(), (
-            "form with freq=WEEKLY and week_days == None valid."
-        )
-        data['week_days'] = []
-        form = MultipleOccurrenceForm(data)
-        assert not form.is_valid(), (
-            "form with freq=WEEKLY and week_days == [] valid."
-        )
-        data['week_days'] = [self.weekday_long['Tuesday']]
-        form = MultipleOccurrenceForm(data)
-        assert form.is_valid(), form.errors.as_text()
+        for i in invalid_inputs:
+            data['week_days'] = i
+            form = MultipleOccurrenceForm(data)
+            assert not form.is_valid(), (
+                "Invalid week_days value %s identified as valid" % i
+            )
+        for i in valid_inputs:
+            data['week_days'] = i
+            form = MultipleOccurrenceForm(data)
+            assert form.is_valid(), form.errors.as_text()
 
     def test_monthly_freq_requires_month_option(self):
+        invalid_inputs = [None, '', 'something', 'odd']
+        valid_inputs = ['on', 'each']
         data = {
             'day':                    self.tomorrow_str,
             'start_time_delta':       '28800',
@@ -224,12 +231,16 @@ class TestMultipleOccurrenceForm(TestCase):
         assert not form.is_valid(), (
             "form with freq=MONTHLY and no month_options key valid."
         )
-        data['month_option'] = 'on'
-        form = MultipleOccurrenceForm(data)
-        assert form.is_valid(), form.errors.as_text()
-        data['month_option'] = 'each'
-        form = MultipleOccurrenceForm(data)
-        assert form.is_valid(), form.errors.as_text()
+        for i in invalid_inputs:
+            data['month_option'] = i
+            form = MultipleOccurrenceForm(data)
+            assert not form.is_valid(), (
+                "Invalid month_options value %s identified as valid" % i
+            )
+        for i in valid_inputs:
+            data['month_option'] = i
+            form = MultipleOccurrenceForm(data)
+            assert form.is_valid(), form.errors.as_text()
 
     def test_monthly_freq_option_on_requires_ordinal(self):
         invalid_ordinals = [None, 0]
@@ -476,5 +487,3 @@ class TestMultipleOccurrenceForm(TestCase):
 
     # How are duplicate 'each_month_day' values handled? Introduce clean_field
     # method which tries to coerce to set?
-    def test_until_only_takes_date_object(self):
-        pass

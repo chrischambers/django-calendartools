@@ -8,6 +8,7 @@ from dateutil import rrule
 from pprint import pformat
 
 from django import forms
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.forms.extras.widgets import SelectDateWidget
 
@@ -23,6 +24,10 @@ from calendartools.defaults import (
 )
 
 log = logging.getLogger('calendartools.forms')
+
+# Form Validaton Helpers:
+greater_than_1 = MinValueValidator(1)
+less_than_1000 = MaxValueValidator(999)
 
 
 class EventForm(forms.ModelForm):
@@ -93,13 +98,14 @@ class MultipleOccurrenceForm(forms.Form):
         label=_(u'Total Occurrences'),
         initial=1,
         required=False,
-        widget=forms.TextInput(attrs=dict(size=2, max_length=2))
+        widget=forms.TextInput(attrs=dict(size=2, max_length=2)),
+        validators=[greater_than_1, less_than_1000],
     )
 
     until = forms.DateField(
         required=False,
         initial=date.today,
-        widget=SelectDateWidget()
+        widget=SelectDateWidget(),
     )
 
     freq = forms.IntegerField(
@@ -111,7 +117,8 @@ class MultipleOccurrenceForm(forms.Form):
     interval = forms.IntegerField(
         required=False,
         initial='1',
-        widget=forms.TextInput(attrs=dict(size=3, max_length=3))
+        widget=forms.TextInput(attrs=dict(size=3, max_length=3)),
+        validators=[greater_than_1, less_than_1000],
     )
 
     # weekly options
@@ -258,6 +265,11 @@ class MultipleOccurrenceForm(forms.Form):
             not self.cleaned_data.get('year_months')):
             self.add_field_error('year_months', required_errmsg)
 
+    def check_until_later_than_finish_datetime(self):
+        until = self.cleaned_data.get('until')
+        if until and until <= self.cleaned_data['end_time'].date():
+            raise forms.ValidationError(_('Date must occur in the future.'))
+
     def clean(self):
         self.check_for_required_fields()
 
@@ -269,6 +281,7 @@ class MultipleOccurrenceForm(forms.Form):
             seconds=self.cleaned_data['end_time_delta']
         )
 
+        self.check_until_later_than_finish_datetime()
         log.debug("Recurrence-form, Cleaned Data\n%s" % (
             pformat(self.cleaned_data))
         )
