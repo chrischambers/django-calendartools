@@ -193,7 +193,8 @@ class MultipleOccurrenceForm(forms.Form):
         self._errors['count'] = self.error_class([errmsg])
 
     def clean(self):
-        if not self.cleaned_data.get('repeats'):
+        if (not self.cleaned_data.get('repeats') or
+            self.cleaned_data.get('freq') is None):
             return # required field not provided
 
         required_errmsg = forms.Field.default_error_messages['required']
@@ -206,50 +207,50 @@ class MultipleOccurrenceForm(forms.Form):
             not self.cleaned_data.get('until')):
             self.add_field_error('until', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.DAILY and
+        if (self.cleaned_data['freq'] == rrule.DAILY and
             not self.cleaned_data.get('interval')):
             self.add_field_error('interval', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.WEEKLY and
+        if (self.cleaned_data['freq'] == rrule.WEEKLY and
             not self.cleaned_data.get('week_days')):
             self.add_field_error('week_days', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.MONTHLY and
+        if (self.cleaned_data['freq'] == rrule.MONTHLY and
             not self.cleaned_data.get('month_option')):
             self.add_field_error('month_options', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.MONTHLY and
-            self.cleaned_data.get('month_option', None) == 'on' and
-            not self.cleaned_data.get('month_ordinal', None)):
+        if (self.cleaned_data['freq'] == rrule.MONTHLY and
+            self.cleaned_data.get('month_option') == 'on' and
+            not self.cleaned_data.get('month_ordinal')):
             self.add_field_error('month_ordinal', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.MONTHLY and
-            self.cleaned_data.get('month_option', None) == 'on' and
-            not self.cleaned_data.get('month_ordinal_day', None)):
+        if (self.cleaned_data['freq'] == rrule.MONTHLY and
+            self.cleaned_data.get('month_option') == 'on' and
+            not self.cleaned_data.get('month_ordinal_day')):
             self.add_field_error('month_ordinal_day', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.MONTHLY and
-            self.cleaned_data.get('month_option', None) == 'each' and
-            not self.cleaned_data.get('each_month_day', None)):
+        if (self.cleaned_data['freq'] == rrule.MONTHLY and
+            self.cleaned_data.get('month_option') == 'each' and
+            not self.cleaned_data.get('each_month_day')):
             self.add_field_error('each_month_day', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.YEARLY and
-            self.cleaned_data.get('is_year_month_ordinal', None) is None):
+        if (self.cleaned_data['freq'] == rrule.YEARLY and
+            self.cleaned_data.get('is_year_month_ordinal') is None):
             self.add_field_error('is_year_month_ordinal', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.YEARLY and
-            self.cleaned_data.get('is_year_month_ordinal', None) and
-            not self.cleaned_data.get('year_month_ordinal', None)):
+        if (self.cleaned_data['freq'] == rrule.YEARLY and
+            self.cleaned_data.get('is_year_month_ordinal') and
+            not self.cleaned_data.get('year_month_ordinal')):
             self.add_field_error('year_month_ordinal', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.YEARLY and
-            self.cleaned_data.get('is_year_month_ordinal', None) and
-            not self.cleaned_data.get('year_month_ordinal_day', None)):
+        if (self.cleaned_data['freq'] == rrule.YEARLY and
+            self.cleaned_data.get('is_year_month_ordinal') and
+            not self.cleaned_data.get('year_month_ordinal_day')):
             self.add_field_error('year_month_ordinal_day', required_errmsg)
 
-        if (self.cleaned_data.get('freq', None) == rrule.YEARLY and
-            self.cleaned_data.get('is_year_month_ordinal', None) is False and
-            not self.cleaned_data.get('year_months', None)):
+        if (self.cleaned_data['freq'] == rrule.YEARLY and
+            self.cleaned_data.get('is_year_month_ordinal') is False and
+            not self.cleaned_data.get('year_months')):
             self.add_field_error('year_months', required_errmsg)
 
         day = datetime.combine(self.cleaned_data['day'], time(0))
