@@ -20,9 +20,8 @@ class TestMultipleOccurrenceForm(TestCase):
         )
         today = date.today()
         self.tomorrow = today + timedelta(1)
-        self.tomorrow_str = self.tomorrow.strftime('%Y-%m-%d')
         self.data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -83,7 +82,7 @@ class TestMultipleOccurrenceForm(TestCase):
         invalid_inputs = [None, -2, -1, 0, 1000]
         valid_inputs = [1, 10, 20, 50, 100, 500, 999]
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -124,7 +123,7 @@ class TestMultipleOccurrenceForm(TestCase):
         )
 
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -152,7 +151,7 @@ class TestMultipleOccurrenceForm(TestCase):
         invalid_intervals = [None, 0, -1, 1000]
         valid_intervals = [1,2,3,4,5,10,20,50,100,500,999]
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -185,7 +184,7 @@ class TestMultipleOccurrenceForm(TestCase):
         invalid_inputs = [None, [None], [], [0], [8], [0,1,2], [6,7,8]]
 
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -214,7 +213,7 @@ class TestMultipleOccurrenceForm(TestCase):
         invalid_inputs = [None, '', 'something', 'odd']
         valid_inputs = ['on', 'each']
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -246,7 +245,7 @@ class TestMultipleOccurrenceForm(TestCase):
         invalid_ordinals = [None, 0]
         valid_ordinals = [1,2,3,4,-1]
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -278,7 +277,7 @@ class TestMultipleOccurrenceForm(TestCase):
         invalid_ordinal_days = [None, 0]
         valid_ordinal_days = self.weekday_long.values()
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -316,7 +315,7 @@ class TestMultipleOccurrenceForm(TestCase):
             [0,1,2], [1,2,32],
         )
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -345,7 +344,7 @@ class TestMultipleOccurrenceForm(TestCase):
 
     def test_yearly_freq_requires_is_year_month_ordinal(self):
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -378,7 +377,7 @@ class TestMultipleOccurrenceForm(TestCase):
         invalid_ordinals = [None, 0]
         valid_ordinals = [1,2,3,4,-1]
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -410,7 +409,7 @@ class TestMultipleOccurrenceForm(TestCase):
         invalid_ordinal_days = [None, 0]
         valid_ordinal_days = self.weekday_long.values()
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
@@ -448,7 +447,7 @@ class TestMultipleOccurrenceForm(TestCase):
             None, [None], [0], [13], [20], [0,1,2], [10,11,12,13]
         )
         data = {
-            'day':                    self.tomorrow_str,
+            'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
 
