@@ -197,6 +197,11 @@ class MultipleOccurrenceForm(forms.Form):
         determine whether they are required or not. This method handles those
         checks as part of the cleaning process."""
 
+        if (not self.cleaned_data.get('repeats') or
+            self.cleaned_data.get('freq') is None):
+            # required fields not provided, let default validators handle:
+            return
+
         required_errmsg = forms.Field.default_error_messages['required']
 
         if (self.cleaned_data['repeats'] == 'count' and
@@ -254,11 +259,6 @@ class MultipleOccurrenceForm(forms.Form):
             self.add_field_error('year_months', required_errmsg)
 
     def clean(self):
-        if (not self.cleaned_data.get('repeats') or
-            self.cleaned_data.get('freq') is None):
-            # required fields not provided, let default validators handle:
-            return
-
         self.check_for_required_fields()
 
         day = datetime.combine(self.cleaned_data['day'], time(0))
