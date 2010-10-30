@@ -2,8 +2,10 @@
 Convenience forms for adding and updating ``Event`` and ``Occurrence``s.
 
 '''
+import logging
 from datetime import datetime, date, time, timedelta
 from dateutil import rrule
+from pprint import pformat
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
@@ -19,6 +21,8 @@ from calendartools.fields import MultipleIntegerField
 from calendartools.defaults import (
     MINUTES_INTERVAL, SECONDS_INTERVAL, default_timeslot_offset_options,
 )
+
+log = logging.getLogger('calendartools.forms')
 
 
 class EventForm(forms.ModelForm):
@@ -193,6 +197,7 @@ class MultipleOccurrenceForm(forms.Form):
             seconds=self.cleaned_data['end_time_delta']
         )
 
+        log.debug("Recurrence-form, Cleaned Data\n%s" % pformat(self.cleaned_data))
         return self.cleaned_data
 
     def save(self, event):
