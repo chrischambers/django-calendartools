@@ -190,13 +190,11 @@ class MultipleOccurrenceForm(forms.Form):
     def add_field_error(self, fieldname, errmsg):
         """This will clobber any existing errors."""
         self.cleaned_data.pop(fieldname, None)
-        self._errors['count'] = self.error_class([errmsg])
+        self._errors[fieldname] = self.error_class([errmsg])
 
-    def clean(self):
-        if (not self.cleaned_data.get('repeats') or
-            self.cleaned_data.get('freq') is None):
-            return # required field not provided
-
+    def check_for_required_fields(self):
+        """Many fields on this form depend on the values of other fields to
+        determine whether they are required or not."""
         required_errmsg = forms.Field.default_error_messages['required']
 
         if (self.cleaned_data['repeats'] == 'count' and
@@ -252,6 +250,14 @@ class MultipleOccurrenceForm(forms.Form):
             self.cleaned_data.get('is_year_month_ordinal') is False and
             not self.cleaned_data.get('year_months')):
             self.add_field_error('year_months', required_errmsg)
+
+    def clean(self):
+        if (not self.cleaned_data.get('repeats') or
+            self.cleaned_data.get('freq') is None):
+            # required field not provided, let default validators handle:
+            return
+
+        self.check_for_required_fields()
 
         day = datetime.combine(self.cleaned_data['day'], time(0))
         self.cleaned_data['start_time'] = day + timedelta(
