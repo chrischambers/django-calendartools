@@ -7,6 +7,7 @@ from calendartools import constants
 from calendartools.models import Event
 from calendartools.forms import MultipleOccurrenceForm
 
+
 class TestMultipleOccurrenceForm(TestCase):
     def setUp(self):
         # For readable tests:
@@ -70,8 +71,9 @@ class TestMultipleOccurrenceForm(TestCase):
             'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
+            'repeats':                'count',
+            'count':                  7,
         }
-
 
     def test_with_good_inputs(self):
         form = MultipleOccurrenceForm(self.full_data)
@@ -107,18 +109,18 @@ class TestMultipleOccurrenceForm(TestCase):
         """If repeats method == 'count', 'count' parameter
         must be provided, and its value must be gt 1."""
         invalid_inputs = [None, -2, -1, 0, 1000]
-        valid_inputs = [1, 10, 20, 50, 100, 500, 999]
+        valid_inputs   = [1, 10, 20, 50, 100, 500, 999]
         self.data.update({
-            'repeats':                'count',
-
             'freq':                   rrule.DAILY,
             'interval':               1, # days
         })
+        del self.data['count']
         self._test_formfield('count', invalid_inputs, valid_inputs)
 
-    def test_repeats_method_until_must_have_datetime_gt_now(self):
+    def test_repeats_method_until_must_have_datetime_gt_start(self):
         """If repeats method == 'until', 'until' parameter
-        must be provided, and its value must be a date greater than now."""
+        must be provided, and its value must be a date greater than the start
+        date provided."""
         invalid_inputs = (
             None,
             date.today(),
@@ -134,48 +136,31 @@ class TestMultipleOccurrenceForm(TestCase):
 
         self.data.update({
             'repeats':                'until',
-
             'freq':                   rrule.WEEKLY,
             'week_days':              [self.weekday_long['Tuesday']],
         })
         self._test_formfield('until', invalid_inputs, valid_inputs)
 
-
     def test_daily_freq_requires_interval_gt_1(self):
         invalid_inputs = [None, 0, -1, 1000]
-        valid_inputs = [1,2,3,4,5,10,20,50,100,500,999]
-        self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
-            'freq':                   rrule.DAILY,
-        })
+        valid_inputs   = [1,2,3,4,5,10,20,50,100,500,999]
+        self.data['freq'] = rrule.DAILY
         self._test_formfield('interval', invalid_inputs, valid_inputs)
 
     def test_weekly_freq_requires_week_days(self):
+        invalid_inputs = [None, [None], [], [0], [8], [0,1,2], [6,7,8]]
         valid_inputs = (
             [[i] for i in self.weekday_long.values()] +
             [[1,7], [1,2,3,4,5,6,7], [6,7], [1,2]]
         )
-        invalid_inputs = [None, [None], [], [0], [8], [0,1,2], [6,7,8]]
-
-        self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
-            'freq':                   rrule.WEEKLY,
-        })
+        self.data['freq'] = rrule.WEEKLY
         self._test_formfield('week_days', invalid_inputs, valid_inputs)
 
     def test_monthly_freq_requires_month_option(self):
         invalid_inputs = [None, '', 'something', 'odd']
-        valid_inputs = ['on', 'each']
+        valid_inputs   = ['on', 'each']
         self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
             'freq':                   rrule.MONTHLY,
-
             'month_ordinal':          '1',
             'month_ordinal_day':      self.weekday_long['Tuesday'],
             'each_month_day':         [1,3,5],
@@ -184,13 +169,9 @@ class TestMultipleOccurrenceForm(TestCase):
 
     def test_monthly_freq_option_on_requires_ordinal(self):
         invalid_inputs = [None, 0]
-        valid_inputs = [1,2,3,4,-1]
+        valid_inputs   = [1,2,3,4,-1]
         self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
             'freq':                   rrule.MONTHLY,
-
             'month_option':           'on',
             'month_ordinal_day':      self.weekday_long['Tuesday'],
         })
@@ -198,13 +179,9 @@ class TestMultipleOccurrenceForm(TestCase):
 
     def test_monthly_freq_option_on_requires_ordinal_day(self):
         invalid_inputs = [None, 0]
-        valid_inputs = self.weekday_long.values()
+        valid_inputs   = self.weekday_long.values()
         self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
             'freq':                   rrule.MONTHLY,
-
             'month_option':           'on',
             'month_ordinal':          1,
         })
@@ -220,24 +197,16 @@ class TestMultipleOccurrenceForm(TestCase):
             [1,2], [1,2,10], [1,2,10,20], [1,2,10,20,30], [1,2,10,20,30,31],
         )
         self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
             'freq':                   rrule.MONTHLY,
-
             'month_option':           'each',
         })
         self._test_formfield('each_month_day', invalid_inputs, valid_inputs)
 
     def test_yearly_freq_requires_is_year_month_ordinal(self):
         invalid_inputs = ['', None]
-        valid_inputs = [True, False]
+        valid_inputs   = [True, False]
         self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
             'freq':                   rrule.YEARLY,
-
             'year_months':            [1,12],
             'year_month_ordinal':     '1',
             'year_month_ordinal_day': self.weekday_long['Tuesday'],
@@ -246,13 +215,9 @@ class TestMultipleOccurrenceForm(TestCase):
 
     def test_yearly_freq_ord_true_requires_ordinal(self):
         invalid_inputs = [None, 0]
-        valid_inputs = [1,2,3,4,-1]
+        valid_inputs   = [1,2,3,4,-1]
         self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
             'freq':                   rrule.YEARLY,
-
             'is_year_month_ordinal':  True,
             'year_month_ordinal_day': self.weekday_long['Tuesday'],
         })
@@ -260,13 +225,9 @@ class TestMultipleOccurrenceForm(TestCase):
 
     def test_yearly_freq_ord_true_requires_ordinal_day(self):
         invalid_inputs = [None, 0]
-        valid_inputs = self.weekday_long.values()
+        valid_inputs   = self.weekday_long.values()
         self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
             'freq':                   rrule.YEARLY,
-
             'is_year_month_ordinal':  True,
             'year_month_ordinal':     '1',
         })
@@ -281,11 +242,7 @@ class TestMultipleOccurrenceForm(TestCase):
             [[1,2], [11,12], [1,2,3,4,5,6], [7,8,9,10,11,12]]
         )
         self.data.update({
-            'repeats':                'count',
-            'count':                  7,
-
             'freq':                   rrule.YEARLY,
-
             'is_year_month_ordinal':  False,
         })
         self._test_formfield('year_months', invalid_inputs, valid_inputs)
