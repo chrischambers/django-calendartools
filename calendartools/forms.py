@@ -195,9 +195,8 @@ class MultipleOccurrenceForm(forms.Form):
             )
 
     def add_field_error(self, fieldname, errmsg):
-        # Note: This will clobber any existing errors.
         self.cleaned_data.pop(fieldname, None)
-        self._errors[fieldname] = self.error_class([errmsg])
+        self._errors.setdefault(fieldname, self.error_class([errmsg]))
 
     def check_for_required_fields(self):
         """Many fields on this form depend on the values of other fields to
