@@ -206,16 +206,30 @@ class TestMultipleOccurrenceForm(TestCase):
         })
         self._test_formfield('each_month_day', invalid_inputs, valid_inputs)
 
-    def test_yearly_freq_requires_is_year_month_ordinal(self):
-        invalid_inputs = ['', None]
-        valid_inputs   = [True, False]
+    def test_is_year_month_ordinal(self):
+        """Should always be in cleaned data, and always equal bool(input)"""
+        falsey_inputs = ['', None, False, []]
+        truthy_inputs = [True, 1, '1', 'foo']
         self.data.update({
             'freq':                   rrule.YEARLY,
             'year_months':            [1,12],
             'year_month_ordinal':     '1',
             'year_month_ordinal_day': self.weekday_long['Tuesday'],
         })
-        self._test_formfield('is_year_month_ordinal', invalid_inputs, valid_inputs)
+        form = MultipleOccurrenceForm(event=self.event, data=self.data)
+        assert form.is_valid(), form.errors.as_text()
+        assert not form.cleaned_data['is_year_month_ordinal']
+
+        for i in falsey_inputs:
+            self.data['is_year_month_ordinal'] = i
+            form = MultipleOccurrenceForm(event=self.event, data=self.data)
+            assert form.is_valid(), form.errors.as_text()
+            assert not form.cleaned_data['is_year_month_ordinal']
+        for i in truthy_inputs:
+            self.data['is_year_month_ordinal'] = i
+            form = MultipleOccurrenceForm(event=self.event, data=self.data)
+            assert form.is_valid(), form.errors.as_text()
+            assert form.cleaned_data['is_year_month_ordinal']
 
     def test_yearly_freq_ord_true_requires_ordinal(self):
         invalid_inputs = [None, 0]

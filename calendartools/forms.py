@@ -158,7 +158,7 @@ class MultipleOccurrenceForm(forms.Form):
         widget=forms.CheckboxSelectMultiple
     )
 
-    is_year_month_ordinal = forms.NullBooleanField(required=False)
+    is_year_month_ordinal = forms.BooleanField(required=False)
     year_month_ordinal = forms.IntegerField(
         required=False,
         widget=forms.Select(choices=ORDINAL))
