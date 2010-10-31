@@ -146,6 +146,22 @@ class TestMultipleOccurrenceForm(TestCase):
         })
         self._test_formfield('until', invalid_inputs, valid_inputs)
 
+    def test_until_gt_start_only_applies_when_repeat_method_until(self):
+        invalid_inputs = (
+            None,
+            date.today(),
+            date.today() - timedelta(1),
+            self.tomorrow,
+        )
+        self.data.update({
+            'repeats':                'count',
+            'freq':                   rrule.DAILY,
+        })
+        for i in invalid_inputs:
+            self.data['until'] = i
+            form = MultipleOccurrenceForm(event=self.event, data=self.data)
+            assert form.is_valid(), form.errors.as_text()
+
     def test_interval(self):
         invalid_inputs = [None, 0, -1, 1000, self.maximum]
         valid_inputs   = [1,2,3,4,5,10,20,50, self.maximum - 1]

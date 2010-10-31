@@ -262,8 +262,10 @@ class MultipleOccurrenceForm(forms.Form):
             self.add_field_error('year_months', required_errmsg)
 
     def check_until_later_than_finish_datetime(self):
+        repeats = self.cleaned_data.get('repeats')
         until = self.cleaned_data.get('until')
-        if until and until <= self.cleaned_data['end_time'].date():
+        if (until and repeats and repeats == 'until'
+            and until <= self.cleaned_data['end_time'].date()):
             raise forms.ValidationError(_("'Until' date must occur in the future."))
 
     def clean(self):
