@@ -16,6 +16,7 @@ class TestMultipleOccurrenceForm(TestCase):
         # For readable tests:
         self.weekday_long = {}
         for val, key in constants.WEEKDAY_LONG:
+            # call method to force proxy evaluation:
             self.weekday_long[key.title()] = val
 
         self.creator = User.objects.create(username='TestyMcTesterson')
@@ -76,6 +77,7 @@ class TestMultipleOccurrenceForm(TestCase):
             'end_time_delta':         '29700',
             'repeats':                'count',
             'count':                  7,
+            'interval':               1, # days
         }
         self.maximum = defaults.MAX_OCCURRENCE_CREATION_COUNT
 
@@ -116,7 +118,6 @@ class TestMultipleOccurrenceForm(TestCase):
         valid_inputs   = [1, 10, 20, 30, self.maximum - 1]
         self.data.update({
             'freq':                   rrule.DAILY,
-            'interval':               1, # days
         })
         del self.data['count']
         self._test_formfield('count', invalid_inputs, valid_inputs)
@@ -145,10 +146,11 @@ class TestMultipleOccurrenceForm(TestCase):
         })
         self._test_formfield('until', invalid_inputs, valid_inputs)
 
-    def test_daily_freq_requires_interval_gt_1(self):
+    def test_interval(self):
         invalid_inputs = [None, 0, -1, 1000, self.maximum]
         valid_inputs   = [1,2,3,4,5,10,20,50, self.maximum - 1]
         self.data['freq'] = rrule.DAILY
+        del self.data['interval']
         self._test_formfield('interval', invalid_inputs, valid_inputs)
 
     def test_weekly_freq_requires_week_days(self):

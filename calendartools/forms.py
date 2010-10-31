@@ -116,7 +116,6 @@ class MultipleOccurrenceForm(forms.Form):
     )
 
     interval = forms.IntegerField(
-        required=False,
         initial='1',
         widget=forms.TextInput(attrs=dict(size=3, max_length=3)),
         validators=[greater_than_1, less_than_max],
@@ -219,10 +218,6 @@ class MultipleOccurrenceForm(forms.Form):
         if (self.cleaned_data['repeats'] == 'until' and
             not self.cleaned_data.get('until')):
             self.add_field_error('until', required_errmsg)
-
-        if (self.cleaned_data['freq'] == rrule.DAILY and
-            not self.cleaned_data.get('interval')):
-            self.add_field_error('interval', required_errmsg)
 
         if (self.cleaned_data['freq'] == rrule.WEEKLY and
             not self.cleaned_data.get('week_days')):
