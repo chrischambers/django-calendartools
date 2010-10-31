@@ -167,7 +167,8 @@ class MultipleOccurrenceForm(forms.Form):
         widget=forms.Select(choices=WEEKDAY_LONG)
     )
 
-    def __init__(self, *args, **kws):
+    def __init__(self, event, *args, **kws):
+        self.event = event
         super(MultipleOccurrenceForm, self).__init__(*args, **kws)
         dtstart = self.initial.get('dtstart', None)
         if dtstart:
@@ -287,19 +288,27 @@ class MultipleOccurrenceForm(forms.Form):
         )
         return self.cleaned_data
 
-    def save(self, event):
+    def _post_clean(self):
+        if self._errors:
+            return
+
         if self.cleaned_data['repeats'] == 'no':
             params = {}
         else:
             params = self._build_rrule_params()
 
-        event.add_occurrences(
+        self.occurrences = self.event.add_occurrences(
             self.cleaned_data['start_time'],
             self.cleaned_data['end_time'],
+            commit=False,
             **params
         )
+        return self.occurrences
 
-        return event
+    def save(self):
+        for occurrence in self.occurrences:
+            occurrence.save()
+        return self.occurrences
 
     def _build_rrule_params(self):
         iso = ISO_WEEKDAYS_MAP

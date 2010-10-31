@@ -80,9 +80,9 @@ class TestMultipleOccurrenceForm(TestCase):
         self.maximum = defaults.MAX_OCCURRENCE_CREATION_COUNT
 
     def test_with_good_inputs(self):
-        form = MultipleOccurrenceForm(self.full_data)
+        form = MultipleOccurrenceForm(event=self.event, data=self.full_data)
         assert form.is_valid(), form.errors.as_text()
-        form.save(self.event)
+        form.save()
 
     def test_initial_dtstart(self):
         pass
@@ -94,19 +94,19 @@ class TestMultipleOccurrenceForm(TestCase):
         """Utility method: encapsulates all the 'meat' of the test to reduce
         verbosity. Make sure ``self.data`` is in the right state before running
         this."""
-        form = MultipleOccurrenceForm(self.data)
+        form = MultipleOccurrenceForm(event=self.event, data=self.data)
         assert not form.is_valid(), (
             "form with no %s key valid when it should not be." % formfield
         )
         for i in invalid_inputs:
             self.data[formfield] = i
-            form = MultipleOccurrenceForm(self.data)
+            form = MultipleOccurrenceForm(event=self.event, data=self.data)
             assert not form.is_valid(), (
                 "Invalid %s value %s identified as valid." % (formfield, i)
             )
         for i in valid_inputs:
             self.data[formfield] = i
-            form = MultipleOccurrenceForm(self.data)
+            form = MultipleOccurrenceForm(event=self.event, data=self.data)
             assert form.is_valid(), form.errors.as_text()
 
     def test_repeats_method_count_must_have_count_gt_1(self):
@@ -245,11 +245,39 @@ class TestMultipleOccurrenceForm(TestCase):
             [[i] for i in range(1,13)] +
             [[1,2], [11,12], [1,2,3,4,5,6], [7,8,9,10,11,12]]
         )
+        first_day_of_next_month = self.today.replace(
+            month=self.today.month+1, day=1
+        )
+        # Necessary because of potential slow-down: see test below.
         self.data.update({
+            'day':                    first_day_of_next_month,
             'freq':                   rrule.YEARLY,
             'is_year_month_ordinal':  False,
         })
         self._test_formfield('year_months', invalid_inputs, valid_inputs)
+
+    def test_rrule_delay(self):
+        # The current implementation of rrule.rrule has a very long delay when
+        # you evaluate the (empty) iterable returned when you create
+        # occurrences on, say, every 31st of September of 30th of February
+        # (i.e. non-existent days):
+        last_day_of_month = date(2010, 10, 31)
+        rrule_params = {'count': 7, 'bymonth': [6], 'freq': 0, 'interval': 1}
+        iterable = rrule.rrule(dtstart=last_day_of_month, **rrule_params)
+        # list(iterable)
+
+        # The interesting thing is, however, that this delay doesn't apply when
+        # at least one of the months specified *does* have actual occurrences
+        # in it (even if all the other months would generate non-existent
+        # days):
+        rrule_params = {'count': 7, 'bymonth': [12,6], 'freq': 0, 'interval': 1}
+        iterable = rrule.rrule(dtstart=last_day_of_month, **rrule_params)
+        # list(iterable)
+
+        # One possible workaround:
+        # - Determine days in month(s)
+        # - if relevant_datetime.days > days in min(months(s)):
+        # - handle (probably by removing that month from the bymonth list)
 
     # Mis-matched groups shouldn't validate?
 

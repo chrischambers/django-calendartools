@@ -42,9 +42,9 @@ def event_detail(request, slug, template='calendar/event_detail.html',
                 event_form.save(event)
                 return http.HttpResponseRedirect(success_url)
         elif '_add' in request.POST and can_add_occurrences:
-            recurrence_form = recurrence_form_class(request.POST)
+            recurrence_form = recurrence_form_class(data=request.POST, event=event)
             if recurrence_form.is_valid():
-                recurrence_form.save(event)
+                recurrence_form.save()
                 return http.HttpResponseRedirect(success_url)
         else:
             return http.HttpResponseBadRequest('Bad Request')
@@ -53,6 +53,7 @@ def event_detail(request, slug, template='calendar/event_detail.html',
         event_form = event_form_class(instance=event)
     if not recurrence_form:
         recurrence_form = recurrence_form_class(
+            event=event,
             initial={'dtstart': datetime.now()}
         )
 
