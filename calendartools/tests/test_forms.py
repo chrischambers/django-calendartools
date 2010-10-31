@@ -1,9 +1,12 @@
 from datetime import date, timedelta
 from dateutil import rrule
+
 from django.contrib.auth.models import User
 from django.test import TestCase
+
 from nose.tools import *
-from calendartools import constants
+
+from calendartools import constants, defaults
 from calendartools.models import Event
 from calendartools.forms import MultipleOccurrenceForm
 
@@ -74,6 +77,7 @@ class TestMultipleOccurrenceForm(TestCase):
             'repeats':                'count',
             'count':                  7,
         }
+        self.maximum = defaults.MAX_OCCURRENCE_CREATION_COUNT
 
     def test_with_good_inputs(self):
         form = MultipleOccurrenceForm(self.full_data)
@@ -108,8 +112,8 @@ class TestMultipleOccurrenceForm(TestCase):
     def test_repeats_method_count_must_have_count_gt_1(self):
         """If repeats method == 'count', 'count' parameter
         must be provided, and its value must be gt 1."""
-        invalid_inputs = [None, -2, -1, 0, 1000]
-        valid_inputs   = [1, 10, 20, 50, 100, 500, 999]
+        invalid_inputs = [None, -2, -1, 0, self.maximum]
+        valid_inputs   = [1, 10, 20, 30, self.maximum - 1]
         self.data.update({
             'freq':                   rrule.DAILY,
             'interval':               1, # days
@@ -142,8 +146,8 @@ class TestMultipleOccurrenceForm(TestCase):
         self._test_formfield('until', invalid_inputs, valid_inputs)
 
     def test_daily_freq_requires_interval_gt_1(self):
-        invalid_inputs = [None, 0, -1, 1000]
-        valid_inputs   = [1,2,3,4,5,10,20,50,100,500,999]
+        invalid_inputs = [None, 0, -1, 1000, self.maximum]
+        valid_inputs   = [1,2,3,4,5,10,20,50, self.maximum - 1]
         self.data['freq'] = rrule.DAILY
         self._test_formfield('interval', invalid_inputs, valid_inputs)
 

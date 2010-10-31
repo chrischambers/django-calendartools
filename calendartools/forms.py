@@ -21,13 +21,14 @@ from calendartools.constants import (
 from calendartools.fields import MultipleIntegerField
 from calendartools.defaults import (
     MINUTES_INTERVAL, SECONDS_INTERVAL, default_timeslot_offset_options,
+    MAX_OCCURRENCE_CREATION_COUNT
 )
 
 log = logging.getLogger('calendartools.forms')
 
 # Form Validaton Helpers:
 greater_than_1 = MinValueValidator(1)
-less_than_1000 = MaxValueValidator(999)
+less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
 
 class EventForm(forms.ModelForm):
@@ -99,7 +100,7 @@ class MultipleOccurrenceForm(forms.Form):
         initial=1,
         required=False,
         widget=forms.TextInput(attrs=dict(size=2, max_length=2)),
-        validators=[greater_than_1, less_than_1000],
+        validators=[greater_than_1, less_than_max],
     )
 
     until = forms.DateField(
@@ -118,7 +119,7 @@ class MultipleOccurrenceForm(forms.Form):
         required=False,
         initial='1',
         widget=forms.TextInput(attrs=dict(size=3, max_length=3)),
-        validators=[greater_than_1, less_than_1000],
+        validators=[greater_than_1, less_than_max],
     )
 
     # weekly options
@@ -267,7 +268,7 @@ class MultipleOccurrenceForm(forms.Form):
     def check_until_later_than_finish_datetime(self):
         until = self.cleaned_data.get('until')
         if until and until <= self.cleaned_data['end_time'].date():
-            raise forms.ValidationError(_('Date must occur in the future.'))
+            raise forms.ValidationError(_("'Until' date must occur in the future."))
 
     def clean(self):
         self.check_for_required_fields()
