@@ -6,7 +6,7 @@ from django.template import RequestContext
 from django.views.generic import list_detail
 
 from calendartools.models import Event, Occurrence
-from calendartools import forms, defaults
+from calendartools import forms, defaults, decorators
 
 def event_list(request, *args, **kwargs):
     kwargs.update({
@@ -14,35 +14,6 @@ def event_list(request, *args, **kwargs):
         'template_name': 'calendar/event_list.html'
     })
     return list_detail.object_list(request, *args, **kwargs)
-
-def confirm_occurrences(request,
-                        FormClass=forms.ConfirmOccurrenceForm,
-                        next=None, *args, **kwargs):
-
-    recurrence_form = request.session.get('recurrence_form')
-    if not recurrence_form:
-        return http.HttpResponseRedirect(reverse('event-list'))
-    event = recurrence_form['event']
-    next = next or reverse('event-detail', args=[event.slug])
-
-    if request.method == 'POST':
-        form = FormClass(recurrence_form=recurrence_form, data=request.POST)
-        if form.is_valid():
-            form.save()
-            return http.HttpResponseRedirect(next)
-    else:
-        form = FormClass(recurrence_form=recurrence_form)
-
-    data = {
-        'form':                form,
-        'next':                next,
-        'event':               event,
-        'invalid_occurrences': recurrence_form['invalid'],
-        'valid_occurrences':   recurrence_form['valid'],
-    }
-
-    return render_to_response("calendar/confirm_occurrences.html", data,
-                            context_instance=RequestContext(request))
 
 def event_detail(request, slug, template='calendar/event_detail.html',
                  event_form_class=forms.EventForm,
@@ -78,11 +49,10 @@ def event_detail(request, slug, template='calendar/event_detail.html',
                 if recurrence_form.invalid_occurrences:
                     session_data = {
                         'event':   recurrence_form.event,
-                        'valid':   recurrence_form.valid_occurrences,
-                        'invalid': recurrence_form.invalid_occurrences,
+                        'valid_occurrences': recurrence_form.valid_occurrences,
+                        'invalid_occurrences': recurrence_form.invalid_occurrences,
                     }
-                    #request.session['recurrence_form'] = recurrence_form
-                    request.session['recurrence_form'] = session_data
+                    request.session['occurrence_info'] = session_data
                     return http.HttpResponseRedirect(reverse('confirm-occurrences'))
                 recurrence_form.save()
                 return http.HttpResponseRedirect(success_url)
@@ -120,5 +90,32 @@ def occurrence_detail(request, slug, pk, *args, **kwargs):
     )
     data = {'occurrence': occurrence, 'event': occurrence.event}
     return render_to_response("calendar/occurrence_detail.html", data,
+                            context_instance=RequestContext(request))
+
+@decorators.get_occurrence_data_from_session
+def confirm_occurrences(request, event, valid_occurrences, invalid_occurrences,
+                        FormClass=forms.ConfirmOccurrenceForm,
+                        next=None, *args, **kwargs):
+    next = next or reverse('event-detail', args=[event.slug])
+
+    if request.method == 'POST':
+        form = FormClass(event, valid_occurrences, invalid_occurrences,
+                         data=request.POST)
+        if form.is_valid():
+            form.save()
+            request.session.pop('occurrence_info', None)
+            return http.HttpResponseRedirect(next)
+    else:
+        form = FormClass(event, valid_occurrences, invalid_occurrences)
+
+    data = {
+        'form':                form,
+        'next':                next,
+        'event':               event,
+        'valid_occurrences':   valid_occurrences,
+        'invalid_occurrences': invalid_occurrences,
+    }
+
+    return render_to_response("calendar/confirm_occurrences.html", data,
                             context_instance=RequestContext(request))
 

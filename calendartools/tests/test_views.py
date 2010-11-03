@@ -429,10 +429,11 @@ class TestConfirmOccurrenceView(TestCase):
         self.invalid = [(invalid, 'Craziness went down.')]
 
         self.session_data = {
-            'event':   self.event,
-            'valid':   self.valid,
-            'invalid': self.invalid
+            'event':               self.event,
+            'valid_occurrences':   self.valid,
+            'invalid_occurrences': self.invalid
         }
+        self.occurrence_key = 'occurrence_info'
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Waiting for this to land... http://code.djangoproject.com/ticket/10899
         # What SHOULD be as simple as this:
@@ -445,13 +446,13 @@ class TestConfirmOccurrenceView(TestCase):
         store.save()  # we need to make load() work, or the cookie is worthless
         self.client.cookies[settings.SESSION_COOKIE_NAME] = store.session_key
         session = self.client.session
-        session['recurrence_form'] = self.session_data
+        session[self.occurrence_key] = self.session_data
         session.save()
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def test_no_session_data_redirects_to_event_list(self):
         session = self.client.session
-        del session['recurrence_form']
+        del session[self.occurrence_key]
         session.save()
         response = self.client.get(reverse('confirm-occurrences'), follow=True)
         self.assertRedirects(response, reverse('event-list'))
@@ -474,6 +475,7 @@ class TestConfirmOccurrenceView(TestCase):
         )
         assert_equal(Occurrence.objects.count(), 1)
         assert_equal(Occurrence.objects.get().start, self.valid[0].start)
+        assert not self.client.session.get(self.occurrence_key)
 
 
 class TestOccurrenceDetailRedirect(TestCase):

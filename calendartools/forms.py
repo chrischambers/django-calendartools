@@ -366,11 +366,10 @@ class MultipleOccurrenceForm(forms.Form):
 
 
 class ConfirmOccurrenceForm(forms.Form):
-    def __init__(self, recurrence_form, *args, **kws):
-        self.recurrence_form = recurrence_form
-        self.event = self.recurrence_form['event']
-        self.valid_occurrences = self.recurrence_form['valid']
-        self.invalid_occurrences = self.recurrence_form['invalid']
+    def __init__(self, event, valid_occurrences, invalid_occurrences, *args, **kws):
+        self.event = event
+        self.valid_occurrences = valid_occurrences
+        self.invalid_occurrences = invalid_occurrences
 
         super(ConfirmOccurrenceForm, self).__init__(*args, **kws)
 
