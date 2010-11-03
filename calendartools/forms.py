@@ -43,7 +43,33 @@ class EventForm(forms.ModelForm):
         fields = ('name', 'description',)
 
 
-class MultipleOccurrenceForm(forms.Form):
+class OccurrenceBaseForm(forms.Form):
+    def validate_occurrences(self):
+        if not self.is_valid():
+            raise ValueError
+
+        self.valid_occurrences   = []
+        self.invalid_occurrences = []
+        # if not hasattr(self, 'invalid_occurrences'):
+        #     self.invalid_occurrences = []
+
+        for oc in self.occurrences:
+            try:
+                oc.full_clean()
+                self.valid_occurrences.append(oc)
+            except forms.ValidationError, e:
+                errmsg = e.messages[0]
+                self.invalid_occurrences.append((oc, errmsg))
+
+        return (self.valid_occurrences, self.invalid_occurrences)
+
+    def save(self):
+        for occurrence in self.occurrences:
+            occurrence.save()
+        return self.occurrences
+
+
+class MultipleOccurrenceForm(OccurrenceBaseForm):
     """
     day
     start_time_delta
@@ -365,15 +391,17 @@ class MultipleOccurrenceForm(forms.Form):
         return params
 
 
-class ConfirmOccurrenceForm(forms.Form):
+class ConfirmOccurrenceForm(OccurrenceBaseForm):
     def __init__(self, event, valid_occurrences, invalid_occurrences, *args, **kws):
         self.event = event
-        self.valid_occurrences = valid_occurrences
+        self.occurrences = valid_occurrences
         self.invalid_occurrences = invalid_occurrences
 
         super(ConfirmOccurrenceForm, self).__init__(*args, **kws)
 
-    def save(self):
-        for occurrence in self.valid_occurrences:
-            occurrence.save()
-        return self.valid_occurrences
+    def _post_clean(self):
+        if self._errors:
+            return
+
+        self.validate_occurrences()
+        return self.occurrences

@@ -106,6 +106,14 @@ def confirm_occurrences(request, event, valid_occurrences, invalid_occurrences,
         form = FormClass(event, valid_occurrences, invalid_occurrences,
                          data=request.POST)
         if form.is_valid():
+            if form.invalid_occurrences:
+                session_data = {
+                    'event':   form.event,
+                    'valid_occurrences': form.valid_occurrences,
+                    'invalid_occurrences': form.invalid_occurrences,
+                }
+                request.session['occurrence_info'] = session_data
+                return http.HttpResponseRedirect(reverse('confirm-occurrences'))
             form.save()
             request.session.pop('occurrence_info', None)
             return http.HttpResponseRedirect(next)

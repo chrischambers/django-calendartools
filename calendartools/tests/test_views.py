@@ -1,13 +1,19 @@
 from datetime import datetime, timedelta
+
 from django.contrib.auth.models import User, Permission
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ValidationError
 from django.test import TestCase
+
 from calendartools.models import Event, Occurrence
+from calendartools import signals
 from calendartools.forms import (
     EventForm,
     MultipleOccurrenceForm,
     ConfirmOccurrenceForm
 )
+from calendartools.validators import BaseValidator
+
 from nose.tools import *
 
 
@@ -418,20 +424,24 @@ class TestConfirmOccurrenceView(TestCase):
             codename='add_occurrence'
         )
         self.user.user_permissions.add(self.add_occurrence_perm)
-
-        self.event = Event.objects.create(
-            name='Event', slug='event', creator=self.user
-        )
         self.assertTrue(self.client.login(
             username=self.user.username, password='password')
+        )
+
+        self.event  = Event.objects.create(
+            name='Event', slug='event', creator=self.user
+        )
+        self.event2 = Event.objects.create(
+            name='Event', slug='other-event', creator=self.user
         )
         now     = datetime.now() - timedelta.resolution
         start   = now + timedelta(minutes=30)
         finish  = start + timedelta(hours=1)
-        valid   = Occurrence(event=self.event, start=start, finish=finish)
-        invalid = Occurrence(event=self.event, start=now, finish=finish)
+        valid   = Occurrence(event=self.event,  start=start, finish=finish)
+        valid2  = Occurrence(event=self.event2, start=start, finish=finish)
+        invalid = Occurrence(event=self.event,  start=now,   finish=finish)
 
-        self.valid   = [valid]
+        self.valid   = [valid, valid2]
         self.invalid = [(invalid, 'Craziness went down.')]
 
         self.session_data = {
@@ -487,9 +497,51 @@ class TestConfirmOccurrenceView(TestCase):
         response = self.client.post(
             reverse('confirm-occurrences'), data={}, follow=True
         )
-        assert_equal(Occurrence.objects.count(), 1)
-        assert_equal(Occurrence.objects.get().start, self.valid[0].start)
+        self.assertRedirects(response, reverse('event-detail', args=[self.event.slug]))
+        assert_equal(Occurrence.objects.count(), 2)
         assert not self.client.session.get(self.occurrence_key)
+
+    def test_model_validation(self):
+        # This handles situations where a condition changes between the time
+        # that:
+        # i) the MultipleOccurrenceForm is submitted and,
+        # ii) the ConfirmOccurrenceForm is posted
+        # which would causes one of the models fail its validation checks.
+        assert_equal(Occurrence.objects.count(), 0)
+        response = self.client.get(
+            reverse('confirm-occurrences'), follow=True
+        )
+        try:
+            class Event2EventsNotAllowed(BaseValidator):
+                priority = 9000
+                error_message = "Event 'other-event' isn't allowed!"
+                def validate(self):
+                    if self.sender.event.slug == 'other-event':
+                        raise ValidationError(self.error_message)
+
+            self.validator = Event2EventsNotAllowed
+            signals.collect_occurrence_validators.connect(self.validator)
+
+            response = self.client.post(
+                reverse('confirm-occurrences'), data={}, follow=True
+            )
+            self.assertRedirects(response, reverse('confirm-occurrences'))
+            assert_equal(
+                set(response.context[-1].get('valid_occurrences')),
+                set([self.valid[0]])
+            )
+            assert_equal(
+                set(response.context[-1].get('invalid_occurrences')),
+                set([(self.valid[1], self.validator.error_message)]),
+            )
+            response = self.client.post(
+                reverse('confirm-occurrences'), data={}, follow=True
+            )
+            assert_equal(Occurrence.objects.count(), 1)
+            assert not self.client.session.get(self.occurrence_key)
+
+        finally:
+            signals.collect_occurrence_validators.disconnect(self.validator)
 
 
 class TestOccurrenceDetailRedirect(TestCase):
