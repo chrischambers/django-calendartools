@@ -1,0 +1,37 @@
+{% extends "calendar/event_detail.html" %}
+{% block title %}Confirm Occurrences for {{ event.name }} - {{ block.super }}{% endblock %}
+
+{% block primary %}
+  <h1>{{ event.name }}</h1>
+
+  {% if valid_occurrences %}
+  <h2>Valid Occurrences</h2>
+  <ul>
+    {% for occ in valid_occurrences %}
+     <li>{{ occ }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if invalid_occurrences %}
+  <h2>Invalid Occurrences</h2>
+  <ul>
+    {% for occ, reason in invalid_occurrences %}
+    <li>{{ occ }} - <span class="reason">{{ reason }}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <form method="post" action="{% url confirm-occurrences %}">{% csrf_token %}
+    <table>
+    {{ form.as_table }}
+    <tr>
+      <td><input type="submit" value="Confirm" /></td>
+      <td><a href="{{ next }}">Cancel</a></td>
+    </tr>
+    </table>
+  </form>
+{% endblock %}
+
+
+

@@ -3,8 +3,11 @@ from django.contrib.auth.models import User, Permission
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from calendartools.models import Event, Occurrence
-from calendartools.forms import EventForm, MultipleOccurrenceForm
-from calendartools import views
+from calendartools.forms import (
+    EventForm,
+    MultipleOccurrenceForm,
+    ConfirmOccurrenceForm
+)
 from nose.tools import *
 
 
@@ -401,6 +404,76 @@ class TestOccurrenceDetailView(TestCase):
         assert_equal(response.status_code, 200)
         self.assertContains(response, self.event.description)
         self.assertContains(response, self.event.name)
+
+
+class TestConfirmOccurrenceView(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            'TestyMcTesterson',
+            'Testy@test.com',
+            'password'
+        )
+        self.event = Event.objects.create(
+            name='Event', slug='event', creator=self.user
+        )
+        self.assertTrue(self.client.login(
+            username=self.user.username, password='password')
+        )
+        now     = datetime.now() - timedelta.resolution
+        start   = now + timedelta(minutes=30)
+        finish  = start + timedelta(hours=1)
+        valid   = Occurrence(event=self.event, start=start, finish=finish)
+        invalid = Occurrence(event=self.event, start=now, finish=finish)
+
+        self.valid   = [valid]
+        self.invalid = [(invalid, 'Craziness went down.')]
+
+        self.session_data = {
+            'event':   self.event,
+            'valid':   self.valid,
+            'invalid': self.invalid
+        }
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # Waiting for this to land... http://code.djangoproject.com/ticket/10899
+        # What SHOULD be as simple as this:
+        # >>> self.client.session['email'] = 'foo@bar.com'
+        # is currently this madness...
+        from django.conf import settings
+        from django.utils.importlib import import_module
+        engine = import_module(settings.SESSION_ENGINE)
+        store = engine.SessionStore()
+        store.save()  # we need to make load() work, or the cookie is worthless
+        self.client.cookies[settings.SESSION_COOKIE_NAME] = store.session_key
+        session = self.client.session
+        session['recurrence_form'] = self.session_data
+        session.save()
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    def test_no_session_data_redirects_to_event_list(self):
+        session = self.client.session
+        del session['recurrence_form']
+        session.save()
+        response = self.client.get(reverse('confirm-occurrences'), follow=True)
+        self.assertRedirects(response, reverse('event-list'))
+
+    def test_correct_session_data_shows_confirm_page(self):
+        response = self.client.get(reverse('confirm-occurrences'), follow=True)
+        assert_equal(response.status_code, 200)
+        self.assertContains(response, 'Craziness went down', count=1)
+
+    def test_correct_session_data_has_correct_context(self):
+        response = self.client.get(reverse('confirm-occurrences'), follow=True)
+        assert_equal(response.context[-1].get('valid_occurrences'), self.valid)
+        assert_equal(response.context[-1].get('invalid_occurrences'), self.invalid)
+        assert isinstance(response.context[-1].get('form'), ConfirmOccurrenceForm)
+
+    def test_post_with_correct_data_saves_correct_records(self):
+        assert_equal(Occurrence.objects.count(), 0)
+        response = self.client.post(
+            reverse('confirm-occurrences'), data={}, follow=True
+        )
+        assert_equal(Occurrence.objects.count(), 1)
+        assert_equal(Occurrence.objects.get().start, self.valid[0].start)
 
 
 class TestOccurrenceDetailRedirect(TestCase):

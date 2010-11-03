@@ -1,5 +1,6 @@
 from datetime import datetime
 from django import http
+from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic import list_detail
@@ -14,12 +15,42 @@ def event_list(request, *args, **kwargs):
     })
     return list_detail.object_list(request, *args, **kwargs)
 
+def confirm_occurrences(request,
+                        FormClass=forms.ConfirmOccurrenceForm,
+                        next=None, *args, **kwargs):
+
+    recurrence_form = request.session.get('recurrence_form')
+    if not recurrence_form:
+        return http.HttpResponseRedirect(reverse('event-list'))
+    event = recurrence_form['event']
+    next = next or reverse('event-detail', args=[event.slug])
+
+    if request.method == 'POST':
+        form = FormClass(recurrence_form=recurrence_form, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return http.HttpResponseRedirect(next)
+    else:
+        form = FormClass(recurrence_form=recurrence_form)
+
+    data = {
+        'form':                form,
+        'next':                next,
+        'event':               event,
+        'invalid_occurrences': recurrence_form['invalid'],
+        'valid_occurrences':   recurrence_form['valid'],
+    }
+
+    return render_to_response("calendar/confirm_occurrences.html", data,
+                            context_instance=RequestContext(request))
+
 def event_detail(request, slug, template='calendar/event_detail.html',
                  event_form_class=forms.EventForm,
                  recurrence_form_class=forms.MultipleOccurrenceForm,
                  check_edit_events=defaults.change_event_permission_check,
                  check_add_occurrences=defaults.add_occurrence_permission_check,
-                 list_occurrences=True, success_url=None, extra_context=None):
+                 list_occurrences=True, success_url=None, extra_context=None,
+                 *args, **kwargs):
 
     success_url = success_url or request.path
     extra_context = extra_context or {}
@@ -44,6 +75,15 @@ def event_detail(request, slug, template='calendar/event_detail.html',
         elif '_add' in request.POST and can_add_occurrences:
             recurrence_form = recurrence_form_class(data=request.POST, event=event)
             if recurrence_form.is_valid():
+                if recurrence_form.invalid_occurrences:
+                    session_data = {
+                        'event':   recurrence_form.event,
+                        'valid':   recurrence_form.valid_occurrences,
+                        'invalid': recurrence_form.invalid_occurrences,
+                    }
+                    #request.session['recurrence_form'] = recurrence_form
+                    request.session['recurrence_form'] = session_data
+                    return http.HttpResponseRedirect(reverse('confirm-occurrences'))
                 recurrence_form.save()
                 return http.HttpResponseRedirect(success_url)
         else:

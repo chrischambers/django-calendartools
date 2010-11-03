@@ -290,17 +290,36 @@ class MultipleOccurrenceForm(forms.Form):
             return
 
         if self.cleaned_data['repeats'] == 'no':
-            params = {}
+            self.rrules = {}
         else:
-            params = self._build_rrule_params()
+            self.rrules = self._build_rrule_params()
 
         self.occurrences = self.event.add_occurrences(
             self.cleaned_data['start_time'],
             self.cleaned_data['end_time'],
             commit=False,
-            **params
+            **self.rrules
         )
+
+        self.validate_occurrences()
         return self.occurrences
+
+    def validate_occurrences(self):
+        if not self.is_valid():
+            raise ValueError
+
+        self.valid_occurrences   = []
+        self.invalid_occurrences = []
+
+        for oc in self.occurrences:
+            try:
+                oc.full_clean()
+                self.valid_occurrences.append(oc)
+            except forms.ValidationError, e:
+                errmsg = e.messages[0]
+                self.invalid_occurrences.append((oc, errmsg))
+
+        return (self.valid_occurrences, self.invalid_occurrences)
 
     def save(self):
         for occurrence in self.occurrences:
@@ -345,3 +364,17 @@ class MultipleOccurrenceForm(forms.Form):
 
         return params
 
+
+class ConfirmOccurrenceForm(forms.Form):
+    def __init__(self, recurrence_form, *args, **kws):
+        self.recurrence_form = recurrence_form
+        self.event = self.recurrence_form['event']
+        self.valid_occurrences = self.recurrence_form['valid']
+        self.invalid_occurrences = self.recurrence_form['invalid']
+
+        super(ConfirmOccurrenceForm, self).__init__(*args, **kws)
+
+    def save(self):
+        for occurrence in self.valid_occurrences:
+            occurrence.save()
+        return self.valid_occurrences

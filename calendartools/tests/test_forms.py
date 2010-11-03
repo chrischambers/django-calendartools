@@ -1,17 +1,20 @@
 from datetime import date, timedelta
 from dateutil import rrule
 
-from django.contrib.auth.models import User
+from django import forms
+from django.contrib.auth.models import User, Permission
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from nose.tools import *
 
-from calendartools import constants, defaults
+from calendartools import constants, defaults, signals
 from calendartools.models import Event
 from calendartools.forms import MultipleOccurrenceForm
+from calendartools.validators import BaseValidator
 
 
-class TestMultipleOccurrenceForm(TestCase):
+class TestMultipleOccurrenceFormValidation(TestCase):
     def setUp(self):
         # For readable tests:
         self.weekday_long = {}
@@ -310,6 +313,68 @@ class TestMultipleOccurrenceForm(TestCase):
         # - Determine days in month(s)
         # - if relevant_datetime.days > days in min(months(s)):
         # - handle (probably by removing that month from the bymonth list)
+
+
+class TestMultipleOccurrenceFormModelValidation(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            'TestyMcTesterson',
+            'Testy@test.com',
+            'password'
+        )
+        self.add_occurrence_perm = Permission.objects.get(
+            content_type__app_label='calendartools',
+            codename='add_occurrence'
+        )
+        self.user.user_permissions.add(self.add_occurrence_perm)
+        self.event = Event.objects.create(
+            name='Event', slug='event', creator=self.user
+        )
+        self.today = date.today()
+        self.tomorrow = self.today + timedelta(1)
+
+
+        class TomorrowEventsNotAllowed(BaseValidator):
+            error_message = "Events can't start tomorrow!"
+            def validate(self):
+                tomorrow = date.today() + timedelta(1)
+                if self.sender.start.date() == tomorrow:
+                    raise forms.ValidationError(self.error_message)
+
+        self.validator = TomorrowEventsNotAllowed
+        signals.collect_occurrence_validators.connect(self.validator)
+        self.data = {
+            '_add':                   True,
+            'day':                    self.tomorrow,
+            'start_time_delta':       '28800',
+            'end_time_delta':         '29700',
+            'repeats':                'count',
+            'count':                  2,
+            'interval':               1, # days
+            'freq':                   rrule.DAILY,
+        }
+        self.assertTrue(self.client.login(
+            username=self.user.username, password='password')
+        )
+
+    def tearDown(self):
+        signals.collect_occurrence_validators.disconnect(self.validator)
+
+    def test_model_form_validation_occurs(self):
+        form = MultipleOccurrenceForm(event=self.event, data=self.data)
+        assert form.is_valid(), form.errors.as_text()
+        assert_equal(len(form.valid_occurrences), 1)
+        assert_equal(len(form.invalid_occurrences), 1)
+        assert_equal(len(form.occurrences), 2)
+        assert_equal(form.invalid_occurrences[0][1], self.validator.error_message)
+
+    def test_redirect_to_confirm_occurrences_if_invalid_occurrences(self):
+        response = self.client.post(
+            reverse('event-detail', args=[self.event.slug]),
+            data=self.data, follow=True
+        )
+        self.assertRedirects(response, reverse('confirm-occurrences'))
+
 
     # Mis-matched groups shouldn't validate?
 
