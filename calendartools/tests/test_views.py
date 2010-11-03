@@ -413,6 +413,12 @@ class TestConfirmOccurrenceView(TestCase):
             'Testy@test.com',
             'password'
         )
+        self.add_occurrence_perm = Permission.objects.get(
+            content_type__app_label='calendartools',
+            codename='add_occurrence'
+        )
+        self.user.user_permissions.add(self.add_occurrence_perm)
+
         self.event = Event.objects.create(
             name='Event', slug='event', creator=self.user
         )
@@ -449,6 +455,14 @@ class TestConfirmOccurrenceView(TestCase):
         session[self.occurrence_key] = self.session_data
         session.save()
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        self.assertTrue(self.client.login(
+            username=self.user.username, password='password')
+        )
+
+    def test_no_permission_redirects_to_event_list(self):
+        self.user.user_permissions.remove(self.add_occurrence_perm)
+        response = self.client.get(reverse('confirm-occurrences'), follow=True)
+        self.assertRedirects(response, reverse('event-detail', args=[self.event.slug]))
 
     def test_no_session_data_redirects_to_event_list(self):
         session = self.client.session

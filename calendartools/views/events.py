@@ -95,8 +95,12 @@ def occurrence_detail(request, slug, pk, *args, **kwargs):
 @decorators.get_occurrence_data_from_session
 def confirm_occurrences(request, event, valid_occurrences, invalid_occurrences,
                         FormClass=forms.ConfirmOccurrenceForm,
+                        check_add_occurrences=defaults.add_occurrence_permission_check,
                         next=None, *args, **kwargs):
+
     next = next or reverse('event-detail', args=[event.slug])
+    if not check_add_occurrences(request):
+        return http.HttpResponseRedirect(next)
 
     if request.method == 'POST':
         form = FormClass(event, valid_occurrences, invalid_occurrences,
