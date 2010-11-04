@@ -569,3 +569,20 @@ class TestOccurrenceDetailRedirect(TestCase):
             args=(self.event.slug, self.occurrence.pk)),
             status_code=301
         )
+
+from calendartools.views.calendar import Calendar
+class TestCalendar(TestCase):
+    def setUp(self):
+        self.start  = datetime(2009, 1, 1)
+        self.finish = datetime(2010, 12, 1)
+        self.cal = Calendar(self.start, self.finish)
+
+    def test_init(self):
+        assert_equal(self.cal.start, self.start)
+        assert_equal(self.cal.finish, self.finish)
+
+    def test_iteration(self):
+        res = []
+        for year in self.cal:
+            res.append(year)
+        assert_equal(res, [datetime(2009, 1, 1), datetime(2010, 1, 1)])
