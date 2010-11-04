@@ -11,6 +11,10 @@ class Calendar(object):
         super(Calendar, self).__init__(*args, **kwargs)
 
     def __iter__(self):
+        return self.years
+
+    @property
+    def years(self):
         current = datetime(self.start.year, 1, 1)
         yield current
         while True:
