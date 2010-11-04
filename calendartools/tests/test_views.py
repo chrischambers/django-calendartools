@@ -581,8 +581,21 @@ class TestCalendar(TestCase):
         assert_equal(self.cal.start, self.start)
         assert_equal(self.cal.finish, self.finish)
 
-    def test_iteration(self):
-        res = []
-        for year in self.cal:
-            res.append(year)
-        assert_equal(res, [datetime(2009, 1, 1), datetime(2010, 1, 1)])
+    def test_iterating_over_calendar_yields_years(self):
+        mapping = (
+            ({ 'start':  datetime(2009, 12, 1),
+               'finish': datetime(2010, 1, 1) },
+             [datetime(2009, 1, 1,), datetime(2010, 1, 1)]),
+            ({ 'start':  datetime(2009, 1, 1),
+               'finish': datetime(2009, 12, 31) },
+             [datetime(2009, 1, 1,)]),
+            ({ 'start':  datetime(2008, 1, 1),
+               'finish': datetime(2009, 7, 1) },
+             [datetime(2008, 1, 1,), datetime(2009, 1, 1)]),
+        )
+        for inputs, expected in mapping:
+            cal = Calendar(**inputs)
+            res = []
+            for year in cal:
+                res.append(year)
+            assert_equal(res, expected)

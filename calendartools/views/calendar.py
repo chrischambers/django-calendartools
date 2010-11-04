@@ -1,7 +1,7 @@
 from django.views.generic import simple
 from django.core.urlresolvers import reverse
 
-from datetime import timedelta
+from datetime import datetime
 class Calendar(object):
 
     def __init__(self, start, finish, *args, **kwargs):
@@ -10,10 +10,13 @@ class Calendar(object):
         super(Calendar, self).__init__(*args, **kwargs)
 
     def __iter__(self):
-        current = self.start
-        while current < self.finish:
+        current = datetime(self.start.year, 1, 1)
+        yield current
+        while True:
+            current = current.replace(year=current.year + 1)
+            if current > self.finish:
+                raise StopIteration
             yield current
-            current += timedelta(days=365)
 
 
 def year_view(request, *args, **kwargs):
