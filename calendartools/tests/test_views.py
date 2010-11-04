@@ -16,7 +16,7 @@ from calendartools.validators import BaseValidator
 
 from nose.tools import *
 
-from dateutil.rrule import rrule, DAILY
+from dateutil.rrule import rrule, DAILY, MONTHLY, YEARLY
 
 class TestEventListView(TestCase):
     def setUp(self):
@@ -577,97 +577,39 @@ class TestCalendar(TestCase):
         self.start  = datetime(2009, 1, 1)
         self.finish = datetime(2010, 12, 1)
         self.cal = Calendar(self.start, self.finish)
+        self.inputs = (
+            {  'start':  datetime(2009, 12, 1),
+               'finish': datetime(2010, 1, 1)   },
+            {  'start':  datetime(2009, 1, 1),
+               'finish': datetime(2009, 12, 31) },
+            {  'start':  datetime(2008, 1, 15),
+               'finish': datetime(2009, 7, 30)  },
+        )
 
     def test_init(self):
         assert_equal(self.cal.start, self.start)
         assert_equal(self.cal.finish, self.finish)
 
-    def test_years_property(self):
-        mapping = (
-            ({ 'start':  datetime(2009, 12, 1),
-               'finish': datetime(2010, 1, 1) },
-             [datetime(2009, 1, 1,), datetime(2010, 1, 1)]),
-            ({ 'start':  datetime(2009, 1, 1),
-               'finish': datetime(2009, 12, 31) },
-             [datetime(2009, 1, 1,)]),
-            ({ 'start':  datetime(2008, 1, 1),
-               'finish': datetime(2009, 7, 1) },
-             [datetime(2008, 1, 1,), datetime(2009, 1, 1)]),
-        )
-        for inputs, expected in mapping:
+    def _test_date_properties(self, prop, rrule_type, preprocess_start=None):
+        for inputs in self.inputs:
             cal = Calendar(**inputs)
             res = []
-            for year in cal.years:
-                res.append(year)
-            assert_equal(res, expected)
-
-    def test_months_property(self):
-        mapping = (
-            ({ 'start':  datetime(2009, 12, 1),
-               'finish': datetime(2010, 1, 1) },
-             [datetime(2009, 12, 1,), datetime(2010, 1, 1)]),
-            ({ 'start':  datetime(2009, 1, 1),
-               'finish': datetime(2009, 12, 31) },
-             [datetime(2009, 1 , 1,),
-              datetime(2009, 2 , 1,),
-              datetime(2009, 3 , 1,),
-              datetime(2009, 4 , 1,),
-              datetime(2009, 5 , 1,),
-              datetime(2009, 6 , 1,),
-              datetime(2009, 7 , 1,),
-              datetime(2009, 8 , 1,),
-              datetime(2009, 9 , 1,),
-              datetime(2009, 10, 1,),
-              datetime(2009, 11, 1,),
-              datetime(2009, 12, 1,)]),
-            ({ 'start':  datetime(2008, 1, 1),
-               'finish': datetime(2009, 7, 1) },
-             [datetime(2008, 1 , 1,),
-              datetime(2008, 2 , 1,),
-              datetime(2008, 3 , 1,),
-              datetime(2008, 4 , 1,),
-              datetime(2008, 5 , 1,),
-              datetime(2008, 6 , 1,),
-              datetime(2008, 7 , 1,),
-              datetime(2008, 8 , 1,),
-              datetime(2008, 9 , 1,),
-              datetime(2008, 10, 1,),
-              datetime(2008, 11, 1,),
-              datetime(2008, 12, 1,),
-              datetime(2009, 1, 1,),
-              datetime(2009, 2, 1,),
-              datetime(2009, 3, 1,),
-              datetime(2009, 4, 1,),
-              datetime(2009, 5, 1,),
-              datetime(2009, 6, 1,),
-              datetime(2009, 7, 1,),
-             ]),
-        )
-
-        for inputs, expected in mapping:
-            cal = Calendar(**inputs)
-            res = []
-            for month in cal.months:
-                res.append(month)
-            assert_equal(res, expected)
-
-    def test_days(self):
-        inputs = (
-            {  'start':  datetime(2009, 12, 1),
-               'finish': datetime(2010, 1, 1)   },
-            {  'start':  datetime(2009, 1, 1),
-               'finish': datetime(2009, 12, 31) },
-            {  'start':  datetime(2008, 1, 1),
-               'finish': datetime(2009, 7, 1)   },
-        )
-
-        for input in inputs:
-            cal = Calendar(**input)
-            res = []
-            expected = list(rrule(DAILY, dtstart=input['start'], until=input['finish']))
-            for day in cal.days:
+            start = preprocess_start and preprocess_start(cal.start) or cal.start
+            expected = list(rrule(rrule_type, dtstart=start, until=cal.finish))
+            for day in getattr(cal, prop):
                 res.append(day)
             assert_equal(res, expected)
+
+    def test_days_property(self):
+        self._test_date_properties('days', DAILY)
+
+    def test_months_property(self):
+        preprocess_start = lambda d: datetime(d.year, d.month, 1)
+        self._test_date_properties('months', MONTHLY, preprocess_start=preprocess_start)
+
+    def test_years(self):
+        preprocess_start = lambda d: datetime(d.year, 1, 1)
+        self._test_date_properties('years', YEARLY, preprocess_start=preprocess_start)
 
     def test_iterating_over_calendar_yields_years(self):
         mapping = (
