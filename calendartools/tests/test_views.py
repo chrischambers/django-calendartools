@@ -684,3 +684,9 @@ class TestCalendar(TestCase):
         for inputs, expected in mapping:
             cal = Calendar(**inputs)
             assert_equal(list(cal.years), list(iter(cal)))
+
+    def test_cache_triggered_for_date_properties(self):
+        cached_data = 'Hey Thar!'
+        for prop in ['years', 'months', 'days']:
+            setattr(self.cal, '_%s' % prop, cached_data)
+            assert_equal(getattr(self.cal, prop), cached_data)

@@ -1,8 +1,9 @@
 from django.views.generic import simple
 from django.core.urlresolvers import reverse
 
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
+from datetime import datetime
+from dateutil.rrule import rrule, YEARLY, MONTHLY, DAILY
+
 class Calendar(object):
 
     def __init__(self, start, finish, *args, **kwargs):
@@ -15,35 +16,24 @@ class Calendar(object):
 
     @property
     def years(self):
-        current = datetime(self.start.year, 1, 1)
-        yield current
-        while True:
-            current = current.replace(year=current.year + 1)
-            if current > self.finish:
-                raise StopIteration
-            yield current
+        start = datetime(self.start.year, 1, 1)
+        if not hasattr(self, '_years'):
+            self._years = rrule(YEARLY, dtstart=start, until=self.finish, cache=True)
+        return self._years
 
     @property
     def months(self):
-        current = datetime(self.start.year, self.start.month, 1)
-        month = relativedelta(months=+1)
-        yield current
-        while True:
-            current = current + month
-            if current > self.finish:
-                raise StopIteration
-            yield current
+        start = datetime(self.start.year, self.start.month, 1)
+        if not hasattr(self, '_months'):
+            self._months = rrule(MONTHLY, dtstart=start, until=self.finish, cache=True)
+        return self._months
 
     @property
     def days(self):
-        current = datetime(self.start.year, self.start.month, self.start.day)
-        day = timedelta(1)
-        yield current
-        while True:
-            current = current + day
-            if current > self.finish:
-                raise StopIteration
-            yield current
+        start = datetime(self.start.year, self.start.month, self.start.day)
+        if not hasattr(self, '_days'):
+            self._days = rrule(DAILY, dtstart=start, until=self.finish, cache=True)
+        return self._days
 
 def year_view(request, *args, **kwargs):
     pass
