@@ -2,6 +2,7 @@ from django.views.generic import simple
 from django.core.urlresolvers import reverse
 
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 class Calendar(object):
 
     def __init__(self, start, finish, *args, **kwargs):
@@ -18,6 +19,16 @@ class Calendar(object):
                 raise StopIteration
             yield current
 
+    @property
+    def months(self):
+        current = datetime(self.start.year, self.start.month, 1)
+        month = relativedelta(months=+1)
+        yield current
+        while True:
+            current = current + month
+            if current > self.finish:
+                raise StopIteration
+            yield current
 
 def year_view(request, *args, **kwargs):
     pass

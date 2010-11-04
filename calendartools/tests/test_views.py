@@ -599,3 +599,53 @@ class TestCalendar(TestCase):
             for year in cal:
                 res.append(year)
             assert_equal(res, expected)
+
+    def test_months_property(self):
+        mapping = (
+            ({ 'start':  datetime(2009, 12, 1),
+               'finish': datetime(2010, 1, 1) },
+             [datetime(2009, 12, 1,), datetime(2010, 1, 1)]),
+            ({ 'start':  datetime(2009, 1, 1),
+               'finish': datetime(2009, 12, 31) },
+             [datetime(2009, 1 , 1,),
+              datetime(2009, 2 , 1,),
+              datetime(2009, 3 , 1,),
+              datetime(2009, 4 , 1,),
+              datetime(2009, 5 , 1,),
+              datetime(2009, 6 , 1,),
+              datetime(2009, 7 , 1,),
+              datetime(2009, 8 , 1,),
+              datetime(2009, 9 , 1,),
+              datetime(2009, 10, 1,),
+              datetime(2009, 11, 1,),
+              datetime(2009, 12, 1,)]),
+            ({ 'start':  datetime(2008, 1, 1),
+               'finish': datetime(2009, 7, 1) },
+             [datetime(2008, 1 , 1,),
+              datetime(2008, 2 , 1,),
+              datetime(2008, 3 , 1,),
+              datetime(2008, 4 , 1,),
+              datetime(2008, 5 , 1,),
+              datetime(2008, 6 , 1,),
+              datetime(2008, 7 , 1,),
+              datetime(2008, 8 , 1,),
+              datetime(2008, 9 , 1,),
+              datetime(2008, 10, 1,),
+              datetime(2008, 11, 1,),
+              datetime(2008, 12, 1,),
+              datetime(2009, 1, 1,),
+              datetime(2009, 2, 1,),
+              datetime(2009, 3, 1,),
+              datetime(2009, 4, 1,),
+              datetime(2009, 5, 1,),
+              datetime(2009, 6, 1,),
+              datetime(2009, 7, 1,),
+             ]),
+        )
+
+        for inputs, expected in mapping:
+            cal = Calendar(**inputs)
+            res = []
+            for month in cal.months:
+                res.append(month)
+            assert_equal(res, expected)
