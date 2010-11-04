@@ -16,6 +16,7 @@ from calendartools.validators import BaseValidator
 
 from nose.tools import *
 
+from dateutil.rrule import rrule, DAILY
 
 class TestEventListView(TestCase):
     def setUp(self):
@@ -648,4 +649,22 @@ class TestCalendar(TestCase):
             res = []
             for month in cal.months:
                 res.append(month)
+            assert_equal(res, expected)
+
+    def test_days(self):
+        inputs = (
+            { 'start':  datetime(2009, 12, 1),
+              'finish': datetime(2010, 1, 1)},
+            { 'start':  datetime(2009, 1, 1),
+              'finish': datetime(2009, 12, 31)},
+            { 'start':  datetime(2008, 1, 1),
+              'finish': datetime(2009, 7, 1)},
+        )
+
+        for input in inputs:
+            cal = Calendar(**input)
+            res = []
+            expected = list(rrule(DAILY, dtstart=input['start'], until=input['finish']))
+            for day in cal.days:
+                res.append(day)
             assert_equal(res, expected)
