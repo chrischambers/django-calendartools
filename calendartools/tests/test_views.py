@@ -16,7 +16,7 @@ from calendartools.validators import BaseValidator
 
 from nose.tools import *
 
-from dateutil.rrule import rrule, DAILY, MONTHLY, YEARLY
+from dateutil.rrule import rrule, HOURLY, DAILY, MONTHLY, YEARLY
 
 class TestEventListView(TestCase):
     def setUp(self):
@@ -571,7 +571,7 @@ class TestOccurrenceDetailRedirect(TestCase):
             status_code=301
         )
 
-from calendartools.views.calendar import Calendar
+from calendartools.views import Calendar, SimpleProxy
 class TestCalendar(TestCase):
     def setUp(self):
         self.start  = datetime(2009, 1, 1)
@@ -632,3 +632,61 @@ class TestCalendar(TestCase):
         for prop in ['years', 'months', 'days']:
             setattr(self.cal, '_%s' % prop, cached_data)
             assert_equal(getattr(self.cal, prop), cached_data)
+
+class TestSimpleProxy(TestCase):
+    def setUp(self):
+        self.datetime = datetime.now()
+        self.proxy = SimpleProxy(self.datetime)
+
+    def test_getattr(self):
+        for prop in ('day', 'month', 'year'):
+            assert_equal(getattr(self.proxy, prop), getattr(self.datetime, prop))
+        proxy_strftime = getattr(self.proxy, 'strftime')
+        real_strftime  = getattr(self.datetime, 'strftime')
+        arg = '%Y/%m/%d'
+        assert_equal(proxy_strftime(arg), real_strftime(arg))
+
+        self.proxy.foo = 'foo'
+        assert_equal(self.proxy.foo, 'foo')
+
+from calendartools.views import Year, Month, Day
+class TestDateTimeProxies(TestCase):
+    def setUp(self):
+        self.datetime = datetime(1982, 8, 17)
+        self.year     = Year(self.datetime)
+        self.month    = Month(self.datetime)
+        self.day      = Day(self.datetime)
+
+    def test_next(self):
+        assert_equal(self.day.next(), datetime(1982, 8, 18))
+        assert_equal(self.month.next(), datetime(1982, 9, 17))
+        assert_equal(self.year.next(), datetime(1983, 8, 17))
+
+    def test_previous(self):
+        assert_equal(self.day.previous(), datetime(1982, 8, 16))
+        assert_equal(self.month.previous(), datetime(1982, 7, 17))
+        assert_equal(self.year.previous(), datetime(1981, 8, 17))
+
+    def test_day_iteration(self):
+        expected = list(rrule(HOURLY,
+            dtstart=datetime(1982, 8, 17),
+            until=datetime(1982, 8, 17, 23, 59, 59)
+        ))
+        actual = list(i for i in self.day)
+        assert_equal(expected, actual)
+
+    def test_month_iteration(self):
+        expected = list(rrule(DAILY,
+            dtstart=datetime(1982, 8, 1),
+            until=datetime(1982, 8, 31)
+        ))
+        actual = list(i for i in self.month)
+        assert_equal(expected, actual)
+
+    def test_year_iteration(self):
+        expected = list(rrule(MONTHLY,
+            dtstart=datetime(1982, 1, 1),
+            until=datetime(1982, 12, 31)
+        ))
+        actual = list(i for i in self.year)
+        assert_equal(expected, actual)
