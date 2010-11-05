@@ -724,7 +724,12 @@ class TestDateTimeProxies(TestCase):
         actual = list(i for i in self.year)
         assert_equal(expected, actual)
 
-    def test_names(self):
+    def test_names_property(self):
         dayname = calendar.day_name[self.datetime.weekday()]
         assert_equal(dayname, self.day.name)
         assert_equal('August', self.month.name)
+
+    def test_abbr_property(self):
+        abbr = calendar.day_abbr[self.datetime.weekday()]
+        assert_equal(abbr, self.day.abbr)
+        assert_equal('aug', self.month.abbr)

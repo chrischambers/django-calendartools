@@ -63,6 +63,10 @@ class Day(DateTimeProxy):
     def name(self):
         return self.weekday_names[self.weekday()]
 
+    @property
+    def abbr(self):
+        return self.weekday_names_abbr[self.weekday()]
+
 class Month(DateTimeProxy):
     interval = relativedelta(months=+1)
 
@@ -76,6 +80,10 @@ class Month(DateTimeProxy):
     @property
     def name(self):
         return self.month_names[self.month]
+
+    @property
+    def abbr(self):
+        return self.month_names_abbr[self.month]
 
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
