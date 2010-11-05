@@ -596,8 +596,8 @@ class TestCalendar(TestCase):
             res = []
             start = preprocess_start and preprocess_start(cal.start) or cal.start
             expected = list(rrule(rrule_type, dtstart=start, until=cal.finish))
-            for day in getattr(cal, prop):
-                res.append(day)
+            for dt in getattr(cal, prop):
+                res.append(dt)
             assert_equal(res, expected)
 
     def test_days_property(self):
@@ -627,12 +627,6 @@ class TestCalendar(TestCase):
             cal = Calendar(**inputs)
             assert_equal(list(cal.years), list(iter(cal)))
 
-    def test_cache_triggered_for_date_properties(self):
-        cached_data = 'Hey Thar!'
-        for prop in ['years', 'months', 'days']:
-            setattr(self.cal, '_%s' % prop, cached_data)
-            assert_equal(getattr(self.cal, prop), cached_data)
-
 class TestSimpleProxy(TestCase):
     def setUp(self):
         self.datetime = datetime.now()
@@ -648,6 +642,18 @@ class TestSimpleProxy(TestCase):
 
         self.proxy.foo = 'foo'
         assert_equal(self.proxy.foo, 'foo')
+
+    def test_comparisons(self):
+        other_proxy = SimpleProxy(self.datetime)
+        assert_equal(self.proxy, other_proxy)
+        assert other_proxy >= self.proxy
+        assert self.proxy <= other_proxy
+        other_proxy = other_proxy + timedelta(1)
+        assert other_proxy > self.proxy
+        assert self.proxy < other_proxy
+        other_proxy = other_proxy - timedelta(2)
+        assert other_proxy < self.proxy
+        assert self.proxy > other_proxy
 
 from calendartools.views import Year, Month, Day
 class TestDateTimeProxies(TestCase):

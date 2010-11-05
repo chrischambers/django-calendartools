@@ -11,6 +11,15 @@ class SimpleProxy(object):
         self._obj = obj
         super(SimpleProxy, self).__init__(*args, **kwargs)
 
+    def __cmp__(self, other):
+        return cmp(self._obj, other)
+
+    def __add__(self, other):
+        return self._obj + other
+
+    def __sub__(self, other):
+        return self._obj - other
+
     def __unicode__(self):
         return unicode(self._obj)
 
@@ -79,14 +88,14 @@ class Calendar(object):
         start = datetime(self.start.year, 1, 1)
         if not hasattr(self, '_years'):
             self._years = rrule(YEARLY, dtstart=start, until=self.finish, cache=True)
-        return self._years
+        return (Year(dt) for dt in self._years)
 
     @property
     def months(self):
         start = datetime(self.start.year, self.start.month, 1)
         if not hasattr(self, '_months'):
             self._months = rrule(MONTHLY, dtstart=start, until=self.finish, cache=True)
-        return self._months
+        return (Month(dt) for dt in self._months)
 
     @property
     def days(self):
@@ -94,6 +103,7 @@ class Calendar(object):
         if not hasattr(self, '_days'):
             self._days = rrule(DAILY, dtstart=start, until=self.finish, cache=True)
         return self._days
+        return (Day(dt) for dt in self._days)
 
 def year_view(request, *args, **kwargs):
     pass
