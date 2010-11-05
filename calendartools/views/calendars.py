@@ -1,5 +1,6 @@
 from django.views.generic import simple
 from django.core.urlresolvers import reverse
+from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
 import calendar
 from datetime import datetime, timedelta
@@ -38,6 +39,11 @@ class SimpleProxy(object):
 
 
 class DateTimeProxy(SimpleProxy):
+    weekday_names = WEEKDAYS
+    weekday_names_abbr = WEEKDAYS_ABBR
+    month_names = MONTHS
+    month_names_abbr = MONTHS_3
+
     def previous(self):
         return self._obj - self.interval
 
@@ -73,6 +79,11 @@ class Year(DateTimeProxy):
         ))
 
 class Calendar(object):
+    weekday_names = WEEKDAYS
+    weekday_names_abbr = WEEKDAYS_ABBR
+    month_names = MONTHS
+    month_names_abbr = MONTHS_3
+
 
     def __init__(self, start, finish, occurrences=None, *args, **kwargs):
         self.start  = start

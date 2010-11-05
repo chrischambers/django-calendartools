@@ -17,6 +17,7 @@ from calendartools.validators import BaseValidator
 from nose.tools import *
 
 from dateutil.rrule import rrule, HOURLY, DAILY, MONTHLY, YEARLY
+from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
 class TestEventListView(TestCase):
     def setUp(self):
@@ -571,7 +572,7 @@ class TestOccurrenceDetailRedirect(TestCase):
             status_code=301
         )
 
-from calendartools.views import Calendar, SimpleProxy
+from calendartools.views import Calendar, SimpleProxy, DateTimeProxy
 class TestCalendar(TestCase):
     def setUp(self):
         self.start  = datetime(2009, 1, 1)
@@ -626,6 +627,31 @@ class TestCalendar(TestCase):
         for inputs, expected in mapping:
             cal = Calendar(**inputs)
             assert_equal(list(cal.years), list(iter(cal)))
+
+class TestDateAwarePropreties(TestCase):
+    def test_weekday_names_property(self):
+        for obj in [DateTimeProxy, Calendar]:
+            assert_equal(obj.weekday_names, WEEKDAYS)
+            assert_equal(obj.weekday_names[0], 'Monday')
+            assert_equal(obj.weekday_names[6], 'Sunday')
+
+    def test_weekday_names_abbr_property(self):
+        for obj in [DateTimeProxy, Calendar]:
+            assert_equal(obj.weekday_names_abbr, WEEKDAYS_ABBR)
+            assert_equal(obj.weekday_names_abbr[0], 'Mon')
+            assert_equal(obj.weekday_names_abbr[6], 'Sun')
+
+    def test_month_names_property(self):
+        for obj in [DateTimeProxy, Calendar]:
+            assert_equal(obj.month_names, MONTHS)
+            assert_equal(obj.month_names[1], 'January')
+            assert_equal(obj.month_names[12], 'December')
+
+    def test_month_names_abbr_property(self):
+        for obj in [DateTimeProxy, Calendar]:
+            assert_equal(Calendar.month_names_abbr, MONTHS_3)
+            assert_equal(Calendar.month_names_abbr[1], 'jan')
+            assert_equal(Calendar.month_names_abbr[12], 'dec')
 
 class TestSimpleProxy(TestCase):
     def setUp(self):
