@@ -1,4 +1,4 @@
-from calendartools.urls.calendar import urlpatterns
+from calendartools.urls.calendars import urlpatterns
 from django.conf.urls.defaults import *
 
 urlpatterns += patterns('',
