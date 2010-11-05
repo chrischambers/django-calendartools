@@ -682,6 +682,7 @@ class TestSimpleProxy(TestCase):
         assert self.proxy > other_proxy
 
 from calendartools.views import Year, Month, Day
+import calendar
 class TestDateTimeProxies(TestCase):
     def setUp(self):
         self.datetime = datetime(1982, 8, 17)
@@ -722,3 +723,8 @@ class TestDateTimeProxies(TestCase):
         ))
         actual = list(i for i in self.year)
         assert_equal(expected, actual)
+
+    def test_names(self):
+        dayname = calendar.day_name[self.datetime.weekday()]
+        assert_equal(dayname, self.day.name)
+        assert_equal('August', self.month.name)

@@ -59,6 +59,10 @@ class Day(DateTimeProxy):
         finish = start + timedelta(1) - timedelta.resolution
         return (dt for dt in rrule(HOURLY, dtstart=start, until=finish))
 
+    @property
+    def name(self):
+        return self.weekday_names[self.weekday()]
+
 class Month(DateTimeProxy):
     interval = relativedelta(months=+1)
 
@@ -68,6 +72,10 @@ class Month(DateTimeProxy):
             dtstart=self.replace(day=1),
             until=self.replace(day=last_day)
         ))
+
+    @property
+    def name(self):
+        return self.month_names[self.month]
 
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
