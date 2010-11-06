@@ -717,10 +717,10 @@ class TestDateTimeProxies(TestCase):
             assert_equal(self.hour, dt)
             assert self.hour >= dt
             assert self.hour <= dt
+            assert dt in self.hour
         for dt in not_equal:
             assert_not_equal(self.hour, dt)
-            assert not self.hour >= dt
-            assert not self.hour <= dt
+            assert_false(dt in self.hour)
 
     def test_day_equality(self):
         equal = (
@@ -741,10 +741,10 @@ class TestDateTimeProxies(TestCase):
             assert_equal(self.day, dt)
             assert self.day >= dt
             assert self.day <= dt
+            assert dt in self.day
         for dt in not_equal:
             assert_not_equal(self.day, dt)
-            assert not self.day >= dt
-            assert not self.day <= dt
+            assert_false(dt in self.day)
 
     def test_week_equality(self):
         equal = (
@@ -763,10 +763,10 @@ class TestDateTimeProxies(TestCase):
             assert_equal(self.week, dt)
             assert self.week >= dt
             assert self.week <= dt
+            assert dt in self.week
         for dt in not_equal:
             assert_not_equal(self.week, dt)
-            assert not self.week >= dt
-            assert not self.week <= dt
+            assert_false(dt in self.week)
 
     def test_month_equality(self):
         equal = (
@@ -787,10 +787,10 @@ class TestDateTimeProxies(TestCase):
             assert_equal(self.month, dt)
             assert self.month >= dt
             assert self.month <= dt
+            assert dt in self.month
         for dt in not_equal:
             assert_not_equal(self.month, dt)
-            assert not self.month >= dt
-            assert not self.month <= dt
+            assert_false(dt in self.month)
 
     def test_year_equality(self):
         equal = (
@@ -809,10 +809,22 @@ class TestDateTimeProxies(TestCase):
             assert_equal(self.year, dt)
             assert self.year >= dt
             assert self.year <= dt
+            assert dt in self.year
         for dt in not_equal:
             assert_not_equal(self.year, dt)
-            assert not self.year >= dt
-            assert not self.year <= dt
+            assert_false(dt in self.year)
+
+    def test_membership(self):
+        for i in (self.hour, self.day, self.week, self.month, self.year):
+            assert i in self.year
+        for i in (self.hour, self.day, self.week, self.month):
+            assert i in self.month
+        for i in (self.hour, self.day, self.week):
+            assert i in self.week
+        for i in (self.hour, self.day,):
+            assert i in self.day
+        for i in (self.hour,):
+            assert i in self.hour
 
     def test_next(self):
         assert_equal(self.hour.next(),  datetime(1982, 8, 17, 7, 30, 5))

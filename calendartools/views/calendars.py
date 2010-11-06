@@ -72,6 +72,9 @@ class DateTimeProxy(SimpleProxy):
         except (AttributeError, ValueError, TypeError):
             return
 
+    def __contains__(self, item):
+        return self == item
+
     def __cmp__(self, other):
         other = self._coerce_to_datetime(other)
         if not other:
