@@ -629,29 +629,29 @@ class TestCalendar(TestCase):
             assert_equal(list(cal.years), list(iter(cal)))
 
 class TestDateAwarePropreties(TestCase):
-    def test_weekday_names_property(self):
+    def test_day_names_property(self):
         for obj in [DateTimeProxy, Calendar]:
-            assert_equal(obj.weekday_names, WEEKDAYS)
-            assert_equal(obj.weekday_names[0], 'Monday')
-            assert_equal(obj.weekday_names[6], 'Sunday')
+            assert_equal(obj.day_names, WEEKDAYS.values())
+            assert_equal(obj.day_names[0], 'Monday')
+            assert_equal(obj.day_names[6], 'Sunday')
 
-    def test_weekday_names_abbr_property(self):
+    def test_day_names_abbr_property(self):
         for obj in [DateTimeProxy, Calendar]:
-            assert_equal(obj.weekday_names_abbr, WEEKDAYS_ABBR)
-            assert_equal(obj.weekday_names_abbr[0], 'Mon')
-            assert_equal(obj.weekday_names_abbr[6], 'Sun')
+            assert_equal(obj.day_names_abbr, WEEKDAYS_ABBR.values())
+            assert_equal(obj.day_names_abbr[0], 'Mon')
+            assert_equal(obj.day_names_abbr[6], 'Sun')
 
     def test_month_names_property(self):
         for obj in [DateTimeProxy, Calendar]:
-            assert_equal(obj.month_names, MONTHS)
-            assert_equal(obj.month_names[1], 'January')
-            assert_equal(obj.month_names[12], 'December')
+            assert_equal(obj.month_names, MONTHS.values())
+            assert_equal(obj.month_names[0], 'January')
+            assert_equal(obj.month_names[11], 'December')
 
     def test_month_names_abbr_property(self):
         for obj in [DateTimeProxy, Calendar]:
-            assert_equal(Calendar.month_names_abbr, MONTHS_3)
-            assert_equal(Calendar.month_names_abbr[1], 'jan')
-            assert_equal(Calendar.month_names_abbr[12], 'dec')
+            assert_equal(Calendar.month_names_abbr, MONTHS_3.values())
+            assert_equal(Calendar.month_names_abbr[0], 'jan')
+            assert_equal(Calendar.month_names_abbr[11], 'dec')
 
 class TestSimpleProxy(TestCase):
     def setUp(self):

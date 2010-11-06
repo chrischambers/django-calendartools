@@ -45,10 +45,10 @@ class SimpleProxy(object):
 
 
 class DateTimeProxy(SimpleProxy):
-    weekday_names = WEEKDAYS
-    weekday_names_abbr = WEEKDAYS_ABBR
-    month_names = MONTHS
-    month_names_abbr = MONTHS_3
+    day_names = WEEKDAYS.values()
+    day_names_abbr = WEEKDAYS_ABBR.values()
+    month_names = MONTHS.values()
+    month_names_abbr = MONTHS_3.values()
 
     def previous(self):
         return self.__class__(self._obj - self.interval)
@@ -84,11 +84,11 @@ class Day(DateTimeProxy):
 
     @property
     def name(self):
-        return self.weekday_names[self.weekday()]
+        return WEEKDAYS[self.weekday()]
 
     @property
     def abbr(self):
-        return self.weekday_names_abbr[self.weekday()]
+        return WEEKDAYS_ABBR[self.weekday()]
 
     @property
     def start(self):
@@ -125,11 +125,11 @@ class Month(DateTimeProxy):
 
     @property
     def name(self):
-        return self.month_names[self.month]
+        return MONTHS[self.month]
 
     @property
     def abbr(self):
-        return self.month_names_abbr[self.month]
+        return MONTHS_3[self.month]
 
     @property
     def start(self):
@@ -175,10 +175,10 @@ class Year(DateTimeProxy):
 
 
 class Calendar(object):
-    weekday_names = WEEKDAYS
-    weekday_names_abbr = WEEKDAYS_ABBR
-    month_names = MONTHS
-    month_names_abbr = MONTHS_3
+    day_names = WEEKDAYS.values()
+    day_names_abbr = WEEKDAYS_ABBR.values()
+    month_names = MONTHS.values()
+    month_names_abbr = MONTHS_3.values()
 
 
     def __init__(self, start, finish, occurrences=None, *args, **kwargs):
