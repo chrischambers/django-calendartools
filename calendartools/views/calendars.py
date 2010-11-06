@@ -75,7 +75,7 @@ class Week(DateTimeProxy):
     def __iter__(self):
         start = self + relativedelta(weekday=calendar.MONDAY, days=-6)
         finish = start + self.interval
-        return (dt for dt in rrule(DAILY,
+        return (Day(dt) for dt in rrule(DAILY,
             dtstart=start, until=finish
         ))
 
@@ -84,7 +84,7 @@ class Month(DateTimeProxy):
 
     def __iter__(self):
         last_day = calendar.monthrange(self.year, self.month)[-1]
-        return (dt for dt in rrule(WEEKLY,
+        return (Week(dt) for dt in rrule(WEEKLY,
             dtstart=self.replace(day=1),
             until=self.replace(day=last_day)
         ))
@@ -101,7 +101,7 @@ class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
 
     def __iter__(self):
-        return (dt for dt in rrule(MONTHLY,
+        return (Month(dt) for dt in rrule(MONTHLY,
             dtstart=self.replace(day=1, month=1),
             until=self.replace(day=31, month=12)
         ))

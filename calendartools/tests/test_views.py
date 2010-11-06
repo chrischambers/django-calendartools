@@ -723,6 +723,7 @@ class TestDateTimeProxies(TestCase):
         ))
         actual = list(i for i in self.day)
         assert_equal(expected, actual)
+        assert all(isinstance(i, Hour) for i in actual)
 
     def test_week_iteration(self):
         start = datetime(1982, 8, 16) # monday
@@ -732,6 +733,7 @@ class TestDateTimeProxies(TestCase):
         ))
         actual = list(i for i in self.week)
         assert_equal(expected, actual)
+        assert all(isinstance(i, Day) for i in actual)
 
     def test_month_iteration(self):
         expected = list(rrule(WEEKLY,
@@ -740,6 +742,7 @@ class TestDateTimeProxies(TestCase):
         ))
         actual = list(i for i in self.month)
         assert_equal(expected, actual)
+        assert all(isinstance(i, Week) for i in actual)
 
     def test_year_iteration(self):
         expected = list(rrule(MONTHLY,
@@ -748,6 +751,7 @@ class TestDateTimeProxies(TestCase):
         ))
         actual = list(i for i in self.year)
         assert_equal(expected, actual)
+        assert all(isinstance(i, Month) for i in actual)
 
     def test_names_property(self):
         dayname = calendar.day_name[self.datetime.weekday()]
