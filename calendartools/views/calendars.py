@@ -35,7 +35,13 @@ class SimpleProxy(object):
         try:
             return getattr(self.__class__, attr)
         except AttributeError:
-            return getattr(self._obj, attr)
+            try:
+                return getattr(self._obj, attr)
+            except AttributeError, e:
+                e = "%r and its Proxy(%r) have no '%s' attributes." % (
+                    self._obj, self, attr
+                )
+                raise AttributeError, e
 
 
 class DateTimeProxy(SimpleProxy):
