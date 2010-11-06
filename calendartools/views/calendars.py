@@ -56,7 +56,7 @@ class DateTimeProxy(SimpleProxy):
         super(DateTimeProxy, self).__init__(obj, *args, **kwargs)
 
     def convert(self, dt):
-        """Returns datetime representation of everything except
+        """Returns naive datetime representation of date/datetime, with no
         microseconds."""
         for attr in ('hour', 'minute', 'second'):
             if not hasattr(dt, attr):
