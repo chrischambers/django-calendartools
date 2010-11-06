@@ -954,3 +954,48 @@ class TestDateTimeProxies(TestCase):
         actual = self.month.calendar_display
         actual = [[i.day if i else 0 for i in lst] for lst in actual]
         assert_equal(expected, actual)
+
+class TestDateTimeProxiesWithOccurrences(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            'TestyMcTesterson',
+            'Testy@test.com',
+            'password'
+        )
+        self.event = Event.objects.create(
+            name='The Test Event',
+            slug='event-version-1',
+            description="This is the description.",
+            creator=self.user
+        )
+        self.start = datetime.utcnow() + timedelta(hours=2)
+        Occurrence.objects.create(
+            event=self.event,
+            start=self.start,
+            finish=self.start + timedelta(hours=2)
+        )
+        Occurrence.objects.create(
+            event=self.event,
+            start=self.start,
+            status=Occurrence.CANCELLED,
+            finish=self.start + timedelta(hours=2)
+        )
+
+        self.year = Year(self.start, occurrences=Occurrence.objects.all())
+
+    def test_occurrences_populated(self):
+        for month in self.year.months:
+            if month != self.start:
+                assert not month.occurrences
+            else:
+                assert_equal(len(month.occurrences), 2)
+                for day in month.days:
+                    if day != self.start:
+                        assert not day.occurrences
+                    else:
+                        assert_equal(len(day.occurrences), 2)
+                        for hour in day.hours:
+                            if hour != self.start:
+                                assert not hour.occurrences
+                            else:
+                                assert_equal(len(hour.occurrences), 2)

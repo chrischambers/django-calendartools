@@ -53,7 +53,22 @@ class DateTimeProxy(SimpleProxy):
     def __init__(self, obj, *args, **kwargs):
         self._real_obj = obj
         obj = self.convert(obj)
+        self.occurrences = kwargs.pop('occurrences', {})
         super(DateTimeProxy, self).__init__(obj, *args, **kwargs)
+        self.process_occurrences()
+
+    def process_occurrences(self):
+        from django.db.models.query import QuerySet
+        if not self.occurrences:
+            return {}
+        if isinstance(self.occurrences, QuerySet):
+            data = {}
+            for occ in self.occurrences:
+                data[occ.start] = occ
+            self.occurrences = data
+            return
+        self.occurrences = dict([(k, v) for (k, v) in self.occurrences.items() if k in self])
+        return self.occurrences
 
     def convert(self, dt):
         """Returns naive datetime representation of date/datetime, with no
@@ -128,7 +143,7 @@ class Day(DateTimeProxy):
 
     @property
     def hours(self):
-        return (Hour(dt) for dt in
+        return (Hour(dt, occurrences=self.occurrences) for dt in
                 rrule(HOURLY, dtstart=self.start, until=self.finish))
 
 
@@ -146,7 +161,7 @@ class Week(DateTimeProxy):
 
     @property
     def days(self):
-        return (Day(dt) for dt in rrule(DAILY,
+        return (Day(dt, occurrences=self.occurrences) for dt in rrule(DAILY,
             dtstart=self.start, until=self.finish
         ))
 
@@ -172,20 +187,20 @@ class Month(DateTimeProxy):
 
     @property
     def weeks(self):
-        return (Week(dt) for dt in rrule(WEEKLY,
+        return (Week(dt, occurrences=self.occurrences) for dt in rrule(WEEKLY,
             dtstart=self.start, until=self.finish
         ))
 
     @property
     def days(self):
-        return (Day(dt) for dt in rrule(DAILY,
+        return (Day(dt, occurrences=self.occurrences) for dt in rrule(DAILY,
             dtstart=self.start, until=self.finish
         ))
 
     @property
     def calendar_display(self):
         cal = calendar.monthcalendar(self.year, self.month)
-        return ((Day(datetime(self.year, self.month, num)) if num else 0
+        return ((Day(datetime(self.year, self.month, num), occurrences=self.occurrences) if num else 0
                      for num in lst) for lst in cal)
 
 
@@ -202,7 +217,7 @@ class Year(DateTimeProxy):
 
     @property
     def months(self):
-        return (Month(dt) for dt in rrule(MONTHLY,
+        return (Month(dt, occurrences=self.occurrences) for dt in rrule(MONTHLY,
             dtstart=self.start, until=self.finish
         ))
 
@@ -210,7 +225,7 @@ class Year(DateTimeProxy):
     def days(self):
         for month in self.months:
             for dt in rrule(DAILY, dtstart=month.start, until=month.finish):
-                yield Day(dt)
+                yield Day(dt, occurrences=self.occurrences)
         # return ((Day(dt)
         #          for dt in rrule(DAILY, dtstart=month, utnil=month.finish))
         #          for month in self.months)
