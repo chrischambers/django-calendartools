@@ -189,3 +189,19 @@ class TestOccurrence(TestCase):
         self.event.save()
         occurrence = Occurrence.objects.get(pk=occurrence.pk)
         assert occurrence.is_cancelled
+
+    def test_name_property(self):
+        occurrence = Occurrence.objects.create(
+            event=self.event,
+            start=self.start,
+            finish=self.start + timedelta(microseconds=1)
+        )
+        assert_equal(occurrence.name, self.event.name)
+
+    def test_description_property(self):
+        occurrence = Occurrence.objects.create(
+            event=self.event,
+            start=self.start,
+            finish=self.start + timedelta(microseconds=1)
+        )
+        assert_equal(occurrence.description, self.event.description)

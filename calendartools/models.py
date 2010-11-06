@@ -172,4 +172,14 @@ class Occurrence(EventBase):
         return (self.status == self.CANCELLED or
                 self.event.status == self.event.CANCELLED)
 
+    # Veneers:
+    #---------
+    @property
+    def name(self):
+        return self.event.name
+
+    @property
+    def description(self):
+        return self.event.description
+
 activate_default_validators()
