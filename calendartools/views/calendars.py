@@ -68,6 +68,16 @@ class DateTimeProxy(SimpleProxy):
 class Hour(DateTimeProxy):
     interval = relativedelta(hours=+1)
 
+    def __eq__(self, other):
+        try:
+            other = datetime(other.year, other.month, other.day, other.hour)
+        except AttributeError:
+            return False
+        return self.start == other
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __iter__(self):
         return (dt for dt in rrule(MINUTELY, dtstart=self.start, until=self.finish))
 
@@ -79,8 +89,19 @@ class Hour(DateTimeProxy):
     def number(self):
         return self.hour
 
+
 class Day(DateTimeProxy):
     interval = relativedelta(days=+1)
+
+    def __eq__(self, other):
+        try:
+            other = datetime(other.year, other.month, other.day)
+        except AttributeError:
+            return False
+        return self.start == other
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __iter__(self):
         return self.hours
@@ -110,6 +131,17 @@ class Day(DateTimeProxy):
 class Week(DateTimeProxy):
     interval = relativedelta(weeks=+1)
 
+    def __eq__(self, other):
+        try:
+            other = (datetime(other.year, other.month, other.day) +
+                     relativedelta(weekday=calendar.MONDAY, days=-6))
+        except AttributeError:
+            return False
+        return self.start == other
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __iter__(self):
         return self.days
 
@@ -133,6 +165,16 @@ class Month(DateTimeProxy):
 
     def __iter__(self):
         return self.weeks
+
+    def __eq__(self, other):
+        try:
+            other = datetime(other.year, other.month, 1)
+        except AttributeError:
+            return False
+        return self.start == other
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     @property
     def name(self):
@@ -171,6 +213,16 @@ class Month(DateTimeProxy):
 
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
+
+    def __eq__(self, other):
+        try:
+            other = datetime(other.year, 1, 1)
+        except AttributeError:
+            return False
+        return self.start == other
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __iter__(self):
         return self.months

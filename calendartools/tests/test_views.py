@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, time
+from datetime import datetime, date, time, timedelta
 
 from django.contrib.auth.models import User, Permission
 from django.core.urlresolvers import reverse
@@ -691,6 +691,98 @@ class TestDateTimeProxies(TestCase):
         self.week     = Week(self.datetime)
         self.day      = Day(self.datetime)
         self.hour     = Hour(datetime.combine(self.datetime.date(), time(6, 30, 5)))
+
+    def test_hour_equality(self):
+        equal = (
+            datetime(1982, 8, 17, 6, 30, 5),
+            datetime(1982, 8, 17, 6, 0, 0),
+            datetime(1982, 8, 17, 7, 0, 0) - timedelta.resolution,
+        )
+        not_equal = (
+            date(1982, 8, 17),
+            datetime(1982, 8, 17, 6, 0, 0) - timedelta.resolution,
+            datetime(1982, 8, 17, 7, 0, 0),
+        )
+        for dt in equal:
+            assert_equal(self.hour, dt)
+        for dt in not_equal:
+            assert_not_equal(self.hour, dt)
+
+    def test_day_equality(self):
+        equal = (
+            date(1982, 8, 17),
+            datetime(1982, 8, 17),
+            datetime(1982, 8, 17, 0, 0, 1),
+            datetime(1982, 8, 17, 12, 30, 33),
+            datetime(1982, 8, 18) - timedelta.resolution,
+        )
+        not_equal = (
+            date(1982, 8, 16),
+            date(1982, 8, 18),
+            datetime(1982, 8, 16),
+            datetime(1982, 8, 17) - timedelta.resolution,
+            datetime(1982, 8, 18),
+        )
+        for dt in equal:
+            assert_equal(self.day, dt)
+        for dt in not_equal:
+            assert_not_equal(self.day, dt)
+
+    def test_week_equality(self):
+        equal = (
+            date(1982, 8, 16),
+            date(1982, 8, 22),
+            datetime(1982, 8, 16),
+            datetime(1982, 8, 23) - timedelta.resolution,
+        )
+        not_equal = (
+            date(1982, 8, 15),
+            date(1982, 8, 23),
+            datetime(1982, 8, 16) - timedelta.resolution,
+            datetime(1982, 8, 23),
+        )
+        for dt in equal:
+            assert_equal(self.week, dt)
+        for dt in not_equal:
+            assert_not_equal(self.week, dt)
+
+    def test_month_equality(self):
+        equal = (
+            self.datetime.date(),
+            date(1982, 8, 1),
+            date(1982, 9, 1) - timedelta(1),
+            self.datetime,
+            datetime(1982, 8, 1),
+            datetime(1982, 9, 1) - timedelta.resolution,
+        )
+        not_equal = (
+            date(1982, 8, 1) - timedelta(1),
+            date(1982, 9, 1),
+            datetime(1982, 8, 1) - timedelta.resolution,
+            datetime(1982, 9, 1),
+        )
+        for dt in equal:
+            assert_equal(self.month, dt)
+        for dt in not_equal:
+            assert_not_equal(self.month, dt)
+
+    def test_year_equality(self):
+        equal = (
+            date(1982, 1, 1),
+            date(1982, 12, 31),
+            datetime(1982, 1, 1),
+            datetime(1983, 1, 1) - timedelta.resolution,
+        )
+        not_equal = (
+            date(1982, 1, 1) - timedelta(1),
+            date(1982, 12, 31) + timedelta(1),
+            datetime(1982, 1, 1) - timedelta.resolution,
+            datetime(1983, 1, 1),
+        )
+        for dt in equal:
+            assert_equal(self.year, dt)
+        for dt in not_equal:
+            assert_not_equal(self.year, dt)
 
     def test_next(self):
         assert_equal(self.hour.next(),  datetime(1982, 8, 17, 7, 30, 5))
