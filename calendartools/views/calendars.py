@@ -72,6 +72,12 @@ class DateTimeProxy(SimpleProxy):
         except (AttributeError, ValueError, TypeError):
             return
 
+    def __cmp__(self, other):
+        other = self._coerce_to_datetime(other)
+        if not other:
+            return -1
+        return cmp(self.start, other)
+
     def previous(self):
         return self.__class__(self._obj - self.interval)
 
@@ -80,7 +86,7 @@ class DateTimeProxy(SimpleProxy):
 
     @property
     def start(self):
-        raise NotImplementedError
+        return self._obj
 
     @property
     def finish(self):
@@ -90,22 +96,8 @@ class Hour(DateTimeProxy):
     interval = relativedelta(hours=+1)
     convert = lambda self, dt: datetime(dt.year, dt.month, dt.day, dt.hour)
 
-    def __eq__(self, other):
-        try:
-            other = datetime(other.year, other.month, other.day, other.hour)
-        except AttributeError:
-            return False
-        return self.start == other
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     def __iter__(self):
         return (dt for dt in rrule(MINUTELY, dtstart=self.start, until=self.finish))
-
-    @property
-    def start(self):
-        return datetime(self.year, self.month, self.day, self.hour)
 
     @property
     def number(self):
@@ -115,16 +107,6 @@ class Hour(DateTimeProxy):
 class Day(DateTimeProxy):
     interval = relativedelta(days=+1)
     convert = lambda self, dt: datetime(dt.year, dt.month, dt.day)
-
-    def __eq__(self, other):
-        try:
-            other = datetime(other.year, other.month, other.day)
-        except AttributeError:
-            return False
-        return self.start == other
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
 
     def __iter__(self):
         return self.hours
@@ -136,10 +118,6 @@ class Day(DateTimeProxy):
     @property
     def abbr(self):
         return WEEKDAYS_ABBR[self.weekday()]
-
-    @property
-    def start(self):
-        return datetime(self.year, self.month, self.day)
 
     @property
     def number(self):
@@ -156,23 +134,8 @@ class Week(DateTimeProxy):
     convert = lambda self, dt: (datetime(dt.year, dt.month, dt.day) +
                           relativedelta(weekday=calendar.MONDAY, days=-6))
 
-    def __eq__(self, other):
-        try:
-            other = (datetime(other.year, other.month, other.day) +
-                     relativedelta(weekday=calendar.MONDAY, days=-6))
-        except AttributeError:
-            return False
-        return self.start == other
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     def __iter__(self):
         return self.days
-
-    @property
-    def start(self):
-        return self + relativedelta(weekday=calendar.MONDAY, days=-6)
 
     @property
     def number(self):
@@ -192,16 +155,6 @@ class Month(DateTimeProxy):
     def __iter__(self):
         return self.weeks
 
-    def __eq__(self, other):
-        try:
-            other = datetime(other.year, other.month, 1)
-        except AttributeError:
-            return False
-        return self.start == other
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     @property
     def name(self):
         return MONTHS[self.month]
@@ -209,10 +162,6 @@ class Month(DateTimeProxy):
     @property
     def abbr(self):
         return MONTHS_3[self.month]
-
-    @property
-    def start(self):
-        return self.replace(day=1)
 
     @property
     def number(self):
@@ -241,22 +190,8 @@ class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
     convert = lambda self, dt: datetime(dt.year, 1, 1)
 
-    def __eq__(self, other):
-        try:
-            other = datetime(other.year, 1, 1)
-        except AttributeError:
-            return False
-        return self.start == other
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     def __iter__(self):
         return self.months
-
-    @property
-    def start(self):
-        return self.replace(day=1, month=1)
 
     @property
     def number(self):
