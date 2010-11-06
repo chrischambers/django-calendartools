@@ -729,7 +729,7 @@ class TestDateTimeProxies(TestCase):
         start = datetime(1982, 8, 16) # monday
         expected = list(rrule(DAILY,
             dtstart=start,
-            until=start + timedelta(7)
+            until=(start + timedelta(7)) - timedelta.resolution
         ))
         actual = list(i for i in self.week)
         assert_equal(expected, actual)
@@ -762,3 +762,18 @@ class TestDateTimeProxies(TestCase):
         abbr = calendar.day_abbr[self.datetime.weekday()]
         assert_equal(abbr, self.day.abbr)
         assert_equal('aug', self.month.abbr)
+
+    def test_start_property(self):
+        assert_equal(self.hour.start,  datetime(1982, 8, 17, 6))
+        assert_equal(self.day.start,   datetime(1982, 8, 17))
+        assert_equal(self.week.start,  datetime(1982, 8, 16))
+        assert_equal(self.month.start, datetime(1982, 8, 1))
+        assert_equal(self.year.start,  datetime(1982, 1, 1))
+
+    def test_finish_property(self):
+        smidge = timedelta.resolution
+        assert_equal(self.hour.finish,  datetime(1982, 8, 17, 7) - smidge)
+        assert_equal(self.day.finish,   datetime(1982, 8, 18) - smidge)
+        assert_equal(self.week.finish,  datetime(1982, 8, 23) - smidge)
+        assert_equal(self.month.finish, datetime(1982, 9, 1) - smidge)
+        assert_equal(self.year.finish,  datetime(1983, 1, 1) - smidge)

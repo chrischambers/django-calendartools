@@ -5,7 +5,7 @@ from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 import calendar
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY
+from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY
 
 class SimpleProxy(object):
     def __init__(self, obj, *args, **kwargs):
@@ -53,14 +53,24 @@ class DateTimeProxy(SimpleProxy):
 class Hour(DateTimeProxy):
     interval = relativedelta(hours=+1)
 
+    def __iter__(self):
+        return (dt for dt in rrule(MINUTELY, dtstart=self.start, until=self.finish))
+
+    @property
+    def start(self):
+        return datetime(self.year, self.month, self.day, self.hour)
+
+    @property
+    def finish(self):
+        return (self.start + self.interval) - timedelta.resolution
+
+
 class Day(DateTimeProxy):
     interval = relativedelta(days=+1)
 
     def __iter__(self):
-        start = datetime(self.year, self.month, self.day)
-        finish = start + timedelta(1) - timedelta.resolution
-        return (Hour(dt) for dt in rrule(HOURLY, dtstart=start, until=finish))
-
+        return (Hour(dt) for dt in
+                rrule(HOURLY, dtstart=self.start, until=self.finish))
     @property
     def name(self):
         return self.weekday_names[self.weekday()]
@@ -69,15 +79,31 @@ class Day(DateTimeProxy):
     def abbr(self):
         return self.weekday_names_abbr[self.weekday()]
 
+    @property
+    def start(self):
+        return datetime(self.year, self.month, self.day)
+
+    @property
+    def finish(self):
+        return (self.start + self.interval) - timedelta.resolution
+
+
 class Week(DateTimeProxy):
     interval = relativedelta(weeks=+1)
 
     def __iter__(self):
-        start = self + relativedelta(weekday=calendar.MONDAY, days=-6)
-        finish = start + self.interval
         return (Day(dt) for dt in rrule(DAILY,
-            dtstart=start, until=finish
+            dtstart=self.start, until=self.finish
         ))
+
+    @property
+    def start(self):
+        return self + relativedelta(weekday=calendar.MONDAY, days=-6)
+
+    @property
+    def finish(self):
+        return (self.start + self.interval) - timedelta.resolution
+
 
 class Month(DateTimeProxy):
     interval = relativedelta(months=+1)
@@ -85,8 +111,7 @@ class Month(DateTimeProxy):
     def __iter__(self):
         last_day = calendar.monthrange(self.year, self.month)[-1]
         return (Week(dt) for dt in rrule(WEEKLY,
-            dtstart=self.replace(day=1),
-            until=self.replace(day=last_day)
+            dtstart=self.start, until=self.finish
         ))
 
     @property
@@ -97,14 +122,32 @@ class Month(DateTimeProxy):
     def abbr(self):
         return self.month_names_abbr[self.month]
 
+    @property
+    def start(self):
+        return self.replace(day=1)
+
+    @property
+    def finish(self):
+        return (self.start + self.interval) - timedelta.resolution
+        # last_day = calendar.monthrange(self.year, self.month)[-1]
+        # return self.replace(day=last_day)
+
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
 
     def __iter__(self):
         return (Month(dt) for dt in rrule(MONTHLY,
-            dtstart=self.replace(day=1, month=1),
-            until=self.replace(day=31, month=12)
+            dtstart=self.start, until=self.finish
         ))
+
+    @property
+    def start(self):
+        return self.replace(day=1, month=1)
+
+    @property
+    def finish(self):
+        return (self.start + self.interval) - timedelta.resolution
+
 
 class Calendar(object):
     weekday_names = WEEKDAYS
