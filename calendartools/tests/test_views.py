@@ -694,11 +694,17 @@ class TestDateTimeProxies(TestCase):
         assert_equal(self.day.next(), datetime(1982, 8, 18))
         assert_equal(self.month.next(), datetime(1982, 9, 17))
         assert_equal(self.year.next(), datetime(1983, 8, 17))
+        assert isinstance(self.day.next(),   Day)
+        assert isinstance(self.month.next(), Month)
+        assert isinstance(self.year.next(),  Year)
 
     def test_previous(self):
         assert_equal(self.day.previous(), datetime(1982, 8, 16))
         assert_equal(self.month.previous(), datetime(1982, 7, 17))
         assert_equal(self.year.previous(), datetime(1981, 8, 17))
+        assert isinstance(self.day.previous(),   Day)
+        assert isinstance(self.month.previous(), Month)
+        assert isinstance(self.year.previous(),  Year)
 
     def test_day_iteration(self):
         expected = list(rrule(HOURLY,

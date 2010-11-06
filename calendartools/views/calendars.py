@@ -45,10 +45,10 @@ class DateTimeProxy(SimpleProxy):
     month_names_abbr = MONTHS_3
 
     def previous(self):
-        return self._obj - self.interval
+        return self.__class__(self._obj - self.interval)
 
     def next(self):
-        return self._obj + self.interval
+        return self.__class__(self._obj + self.interval)
 
 
 class Day(DateTimeProxy):
