@@ -64,6 +64,7 @@ class DateTimeProxy(SimpleProxy):
     def finish(self):
         return (self.start + self.interval) - timedelta.resolution
 
+
 class Hour(DateTimeProxy):
     interval = relativedelta(hours=+1)
 
@@ -115,6 +116,7 @@ class Week(DateTimeProxy):
             dtstart=self.start, until=self.finish
         ))
 
+
 class Month(DateTimeProxy):
     interval = relativedelta(months=+1)
 
@@ -138,6 +140,13 @@ class Month(DateTimeProxy):
         return (Week(dt) for dt in rrule(WEEKLY,
             dtstart=self.start, until=self.finish
         ))
+
+    @property
+    def days(self):
+        return (Day(dt) for dt in rrule(DAILY,
+            dtstart=self.start, until=self.finish
+        ))
+
 
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
@@ -163,6 +172,7 @@ class Year(DateTimeProxy):
         # return ((Day(dt)
         #          for dt in rrule(DAILY, dtstart=month, utnil=month.finish))
         #          for month in self.months)
+
 
 class Calendar(object):
     weekday_names = WEEKDAYS

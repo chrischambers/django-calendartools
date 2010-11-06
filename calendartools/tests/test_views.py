@@ -744,6 +744,15 @@ class TestDateTimeProxies(TestCase):
         assert_equal(expected, actual)
         assert all(isinstance(i, Week) for i in actual)
 
+    def test_month_days_iterator(self):
+        expected = list(rrule(DAILY,
+            dtstart=datetime(1982, 8, 1),
+            until=datetime(1982, 8, 31)
+        ))
+        actual = list(i for i in self.month.days)
+        assert_equal(expected, actual)
+        assert all(isinstance(i, Day) for i in actual)
+
     def test_year_months_iterator(self):
         expected = list(rrule(MONTHLY,
             dtstart=datetime(1982, 1, 1),
