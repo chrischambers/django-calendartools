@@ -50,6 +50,14 @@ class DateTimeProxy(SimpleProxy):
     def next(self):
         return self.__class__(self._obj + self.interval)
 
+    @property
+    def start(self):
+        raise NotImplementedError
+
+    @property
+    def finish(self):
+        return (self.start + self.interval) - timedelta.resolution
+
 class Hour(DateTimeProxy):
     interval = relativedelta(hours=+1)
 
@@ -59,10 +67,6 @@ class Hour(DateTimeProxy):
     @property
     def start(self):
         return datetime(self.year, self.month, self.day, self.hour)
-
-    @property
-    def finish(self):
-        return (self.start + self.interval) - timedelta.resolution
 
 
 class Day(DateTimeProxy):
@@ -83,10 +87,6 @@ class Day(DateTimeProxy):
     def start(self):
         return datetime(self.year, self.month, self.day)
 
-    @property
-    def finish(self):
-        return (self.start + self.interval) - timedelta.resolution
-
 
 class Week(DateTimeProxy):
     interval = relativedelta(weeks=+1)
@@ -99,10 +99,6 @@ class Week(DateTimeProxy):
     @property
     def start(self):
         return self + relativedelta(weekday=calendar.MONDAY, days=-6)
-
-    @property
-    def finish(self):
-        return (self.start + self.interval) - timedelta.resolution
 
 
 class Month(DateTimeProxy):
@@ -126,11 +122,6 @@ class Month(DateTimeProxy):
     def start(self):
         return self.replace(day=1)
 
-    @property
-    def finish(self):
-        return (self.start + self.interval) - timedelta.resolution
-        # last_day = calendar.monthrange(self.year, self.month)[-1]
-        # return self.replace(day=last_day)
 
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
@@ -143,10 +134,6 @@ class Year(DateTimeProxy):
     @property
     def start(self):
         return self.replace(day=1, month=1)
-
-    @property
-    def finish(self):
-        return (self.start + self.interval) - timedelta.resolution
 
 
 class Calendar(object):
