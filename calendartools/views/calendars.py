@@ -75,6 +75,9 @@ class Hour(DateTimeProxy):
     def start(self):
         return datetime(self.year, self.month, self.day, self.hour)
 
+    @property
+    def number(self):
+        return self.hour
 
 class Day(DateTimeProxy):
     interval = relativedelta(days=+1)
@@ -95,6 +98,10 @@ class Day(DateTimeProxy):
         return datetime(self.year, self.month, self.day)
 
     @property
+    def number(self):
+        return self.day
+
+    @property
     def hours(self):
         return (Hour(dt) for dt in
                 rrule(HOURLY, dtstart=self.start, until=self.finish))
@@ -109,6 +116,10 @@ class Week(DateTimeProxy):
     @property
     def start(self):
         return self + relativedelta(weekday=calendar.MONDAY, days=-6)
+
+    @property
+    def number(self):
+        return ((self - datetime(self.year, 1, 1)).days / 7) + 1
 
     @property
     def days(self):
@@ -134,6 +145,10 @@ class Month(DateTimeProxy):
     @property
     def start(self):
         return self.replace(day=1)
+
+    @property
+    def number(self):
+        return self.month
 
     @property
     def weeks(self):
@@ -163,6 +178,10 @@ class Year(DateTimeProxy):
     @property
     def start(self):
         return self.replace(day=1, month=1)
+
+    @property
+    def number(self):
+        return self.year
 
     @property
     def months(self):
