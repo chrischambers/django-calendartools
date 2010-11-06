@@ -5,7 +5,7 @@ from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 import calendar
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from dateutil.rrule import rrule, YEARLY, MONTHLY, DAILY, HOURLY
+from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY
 
 class SimpleProxy(object):
     def __init__(self, obj, *args, **kwargs):
@@ -50,6 +50,8 @@ class DateTimeProxy(SimpleProxy):
     def next(self):
         return self.__class__(self._obj + self.interval)
 
+class Hour(DateTimeProxy):
+    interval = relativedelta(hours=+1)
 
 class Day(DateTimeProxy):
     interval = relativedelta(days=+1)
@@ -57,7 +59,7 @@ class Day(DateTimeProxy):
     def __iter__(self):
         start = datetime(self.year, self.month, self.day)
         finish = start + timedelta(1) - timedelta.resolution
-        return (dt for dt in rrule(HOURLY, dtstart=start, until=finish))
+        return (Hour(dt) for dt in rrule(HOURLY, dtstart=start, until=finish))
 
     @property
     def name(self):
@@ -67,12 +69,22 @@ class Day(DateTimeProxy):
     def abbr(self):
         return self.weekday_names_abbr[self.weekday()]
 
+class Week(DateTimeProxy):
+    interval = relativedelta(weeks=+1)
+
+    def __iter__(self):
+        start = self + relativedelta(weekday=calendar.MONDAY, days=-6)
+        finish = start + self.interval
+        return (dt for dt in rrule(DAILY,
+            dtstart=start, until=finish
+        ))
+
 class Month(DateTimeProxy):
     interval = relativedelta(months=+1)
 
     def __iter__(self):
         last_day = calendar.monthrange(self.year, self.month)[-1]
-        return (dt for dt in rrule(DAILY,
+        return (dt for dt in rrule(WEEKLY,
             dtstart=self.replace(day=1),
             until=self.replace(day=last_day)
         ))

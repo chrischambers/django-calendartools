@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 from django.contrib.auth.models import User, Permission
 from django.core.urlresolvers import reverse
@@ -16,7 +16,7 @@ from calendartools.validators import BaseValidator
 
 from nose.tools import *
 
-from dateutil.rrule import rrule, HOURLY, DAILY, MONTHLY, YEARLY
+from dateutil.rrule import rrule, HOURLY, DAILY, WEEKLY, MONTHLY, YEARLY
 from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
 class TestEventListView(TestCase):
@@ -681,28 +681,38 @@ class TestSimpleProxy(TestCase):
         assert other_proxy < self.proxy
         assert self.proxy > other_proxy
 
-from calendartools.views import Year, Month, Day
+from calendartools.views import Year, Month, Week, Day, Hour
 import calendar
 class TestDateTimeProxies(TestCase):
     def setUp(self):
         self.datetime = datetime(1982, 8, 17)
         self.year     = Year(self.datetime)
         self.month    = Month(self.datetime)
+        self.week     = Week(self.datetime)
         self.day      = Day(self.datetime)
+        self.hour     = Hour(datetime.combine(self.datetime.date(), time(6, 30, 5)))
 
     def test_next(self):
-        assert_equal(self.day.next(), datetime(1982, 8, 18))
+        assert_equal(self.hour.next(),  datetime(1982, 8, 17, 7, 30, 5))
+        assert_equal(self.day.next(),   datetime(1982, 8, 18))
+        assert_equal(self.week.next(),  datetime(1982, 8, 24))
         assert_equal(self.month.next(), datetime(1982, 9, 17))
-        assert_equal(self.year.next(), datetime(1983, 8, 17))
+        assert_equal(self.year.next(),  datetime(1983, 8, 17))
+        assert isinstance(self.hour.next(),  Hour)
         assert isinstance(self.day.next(),   Day)
+        assert isinstance(self.week.next(),  Week)
         assert isinstance(self.month.next(), Month)
         assert isinstance(self.year.next(),  Year)
 
     def test_previous(self):
-        assert_equal(self.day.previous(), datetime(1982, 8, 16))
+        assert_equal(self.hour.previous(),  datetime(1982, 8, 17, 5, 30, 5))
+        assert_equal(self.day.previous(),   datetime(1982, 8, 16))
+        assert_equal(self.week.previous(),  datetime(1982, 8, 10))
         assert_equal(self.month.previous(), datetime(1982, 7, 17))
-        assert_equal(self.year.previous(), datetime(1981, 8, 17))
+        assert_equal(self.year.previous(),  datetime(1981, 8, 17))
+        assert isinstance(self.hour.previous(),  Hour)
         assert isinstance(self.day.previous(),   Day)
+        assert isinstance(self.week.previous(),  Week)
         assert isinstance(self.month.previous(), Month)
         assert isinstance(self.year.previous(),  Year)
 
@@ -714,8 +724,17 @@ class TestDateTimeProxies(TestCase):
         actual = list(i for i in self.day)
         assert_equal(expected, actual)
 
-    def test_month_iteration(self):
+    def test_week_iteration(self):
+        start = datetime(1982, 8, 16) # monday
         expected = list(rrule(DAILY,
+            dtstart=start,
+            until=start + timedelta(7)
+        ))
+        actual = list(i for i in self.week)
+        assert_equal(expected, actual)
+
+    def test_month_iteration(self):
+        expected = list(rrule(WEEKLY,
             dtstart=datetime(1982, 8, 1),
             until=datetime(1982, 8, 31)
         ))
