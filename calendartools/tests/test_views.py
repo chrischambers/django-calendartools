@@ -716,42 +716,63 @@ class TestDateTimeProxies(TestCase):
         assert isinstance(self.month.previous(), Month)
         assert isinstance(self.year.previous(),  Year)
 
-    def test_day_iteration(self):
+    def test_day_hours_iteration(self):
         expected = list(rrule(HOURLY,
             dtstart=datetime(1982, 8, 17),
             until=datetime(1982, 8, 17, 23, 59, 59)
         ))
-        actual = list(i for i in self.day)
+        actual = list(i for i in self.day.hours)
         assert_equal(expected, actual)
         assert all(isinstance(i, Hour) for i in actual)
 
-    def test_week_iteration(self):
+    def test_week_days_iterator(self):
         start = datetime(1982, 8, 16) # monday
         expected = list(rrule(DAILY,
             dtstart=start,
             until=(start + timedelta(7)) - timedelta.resolution
         ))
-        actual = list(i for i in self.week)
+        actual = list(i for i in self.week.days)
         assert_equal(expected, actual)
         assert all(isinstance(i, Day) for i in actual)
 
-    def test_month_iteration(self):
+    def test_month_weeks_iterator(self):
         expected = list(rrule(WEEKLY,
             dtstart=datetime(1982, 8, 1),
             until=datetime(1982, 8, 31)
         ))
-        actual = list(i for i in self.month)
+        actual = list(i for i in self.month.weeks)
         assert_equal(expected, actual)
         assert all(isinstance(i, Week) for i in actual)
 
-    def test_year_iteration(self):
+    def test_year_months_iterator(self):
         expected = list(rrule(MONTHLY,
             dtstart=datetime(1982, 1, 1),
             until=datetime(1982, 12, 31)
         ))
-        actual = list(i for i in self.year)
+        actual = list(self.year.months)
         assert_equal(expected, actual)
         assert all(isinstance(i, Month) for i in actual)
+
+    def test_year_days_iterator(self):
+        expected = list(rrule(DAILY,
+            dtstart=datetime(1982, 1, 1),
+            until=datetime(1982, 12, 31)
+        ))
+        actual = list(self.year.days)
+        assert_equal(expected, actual)
+        assert all(isinstance(i, Day) for i in actual)
+
+    def test_day_iteration_returns_hours(self):
+        assert_equal(list(self.day), list(self.day.hours))
+
+    def test_week_iteration_returns_days(self):
+        assert_equal(list(self.week), list(self.week.days))
+
+    def test_month_iteration_returns_weeks(self):
+        assert_equal(list(self.month), list(self.month.weeks))
+
+    def test_year_iteration_returns_months(self):
+        assert_equal(list(self.year), list(self.year.months))
 
     def test_names_property(self):
         dayname = calendar.day_name[self.datetime.weekday()]

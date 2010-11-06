@@ -79,8 +79,8 @@ class Day(DateTimeProxy):
     interval = relativedelta(days=+1)
 
     def __iter__(self):
-        return (Hour(dt) for dt in
-                rrule(HOURLY, dtstart=self.start, until=self.finish))
+        return self.hours
+
     @property
     def name(self):
         return self.weekday_names[self.weekday()]
@@ -93,28 +93,33 @@ class Day(DateTimeProxy):
     def start(self):
         return datetime(self.year, self.month, self.day)
 
+    @property
+    def hours(self):
+        return (Hour(dt) for dt in
+                rrule(HOURLY, dtstart=self.start, until=self.finish))
+
 
 class Week(DateTimeProxy):
     interval = relativedelta(weeks=+1)
 
     def __iter__(self):
-        return (Day(dt) for dt in rrule(DAILY,
-            dtstart=self.start, until=self.finish
-        ))
+        return self.days
 
     @property
     def start(self):
         return self + relativedelta(weekday=calendar.MONDAY, days=-6)
 
+    @property
+    def days(self):
+        return (Day(dt) for dt in rrule(DAILY,
+            dtstart=self.start, until=self.finish
+        ))
 
 class Month(DateTimeProxy):
     interval = relativedelta(months=+1)
 
     def __iter__(self):
-        last_day = calendar.monthrange(self.year, self.month)[-1]
-        return (Week(dt) for dt in rrule(WEEKLY,
-            dtstart=self.start, until=self.finish
-        ))
+        return self.weeks
 
     @property
     def name(self):
@@ -128,19 +133,36 @@ class Month(DateTimeProxy):
     def start(self):
         return self.replace(day=1)
 
+    @property
+    def weeks(self):
+        return (Week(dt) for dt in rrule(WEEKLY,
+            dtstart=self.start, until=self.finish
+        ))
 
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
 
     def __iter__(self):
-        return (Month(dt) for dt in rrule(MONTHLY,
-            dtstart=self.start, until=self.finish
-        ))
+        return self.months
 
     @property
     def start(self):
         return self.replace(day=1, month=1)
 
+    @property
+    def months(self):
+        return (Month(dt) for dt in rrule(MONTHLY,
+            dtstart=self.start, until=self.finish
+        ))
+
+    @property
+    def days(self):
+        for month in self.months:
+            for dt in rrule(DAILY, dtstart=month.start, until=month.finish):
+                yield Day(dt)
+        # return ((Day(dt)
+        #          for dt in rrule(DAILY, dtstart=month, utnil=month.finish))
+        #          for month in self.months)
 
 class Calendar(object):
     weekday_names = WEEKDAYS
