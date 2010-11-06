@@ -34,6 +34,12 @@ ROOT_URLCONF = 'basic.urls'
 TEMPLATE_DIRS = (
     os.path.join(PROJECT_ROOT, 'templates'),
 )
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.media',
+    'calendartools.context_processors.current_datetime',
+)
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')

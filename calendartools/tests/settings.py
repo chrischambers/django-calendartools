@@ -38,5 +38,11 @@ TEMPLATE_LOADERS = (
 
 TEMPLATE_DIRS = [os.path.join(APPLICATION_DIR, 'templates'),
                  os.path.join(CURRENT_DIR, 'templates')]
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.media',
+    'calendartools.context_processors.current_datetime',
+)
 
 ROOT_URLCONF = 'calendartools.urls'

@@ -1,3 +1,4 @@
+from test_context_processors import *
 from test_defaults import *
 from test_fields import *
 from test_forms import *
