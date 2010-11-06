@@ -50,6 +50,28 @@ class DateTimeProxy(SimpleProxy):
     month_names = MONTHS.values()
     month_names_abbr = MONTHS_3.values()
 
+    def __init__(self, obj, *args, **kwargs):
+        self._real_obj = obj
+        obj = self.convert(obj)
+        super(DateTimeProxy, self).__init__(obj, *args, **kwargs)
+
+    def convert(self, dt):
+        """Returns datetime representation of everything except
+        microseconds."""
+        for attr in ('hour', 'minute', 'second'):
+            if not hasattr(dt, attr):
+                return datetime(dt.year, dt.month, dt.day)
+        return datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+
+    def interval(self):
+        raise NotImplementedError
+
+    def _coerce_to_datetime(self, dt):
+        try:
+            return self.convert(dt)
+        except (AttributeError, ValueError, TypeError):
+            return
+
     def previous(self):
         return self.__class__(self._obj - self.interval)
 
@@ -64,9 +86,9 @@ class DateTimeProxy(SimpleProxy):
     def finish(self):
         return (self.start + self.interval) - timedelta.resolution
 
-
 class Hour(DateTimeProxy):
     interval = relativedelta(hours=+1)
+    convert = lambda self, dt: datetime(dt.year, dt.month, dt.day, dt.hour)
 
     def __eq__(self, other):
         try:
@@ -92,6 +114,7 @@ class Hour(DateTimeProxy):
 
 class Day(DateTimeProxy):
     interval = relativedelta(days=+1)
+    convert = lambda self, dt: datetime(dt.year, dt.month, dt.day)
 
     def __eq__(self, other):
         try:
@@ -130,6 +153,8 @@ class Day(DateTimeProxy):
 
 class Week(DateTimeProxy):
     interval = relativedelta(weeks=+1)
+    convert = lambda self, dt: (datetime(dt.year, dt.month, dt.day) +
+                          relativedelta(weekday=calendar.MONDAY, days=-6))
 
     def __eq__(self, other):
         try:
@@ -162,6 +187,7 @@ class Week(DateTimeProxy):
 
 class Month(DateTimeProxy):
     interval = relativedelta(months=+1)
+    convert = lambda self, dt: datetime(dt.year, dt.month, 1)
 
     def __iter__(self):
         return self.weeks
@@ -213,6 +239,7 @@ class Month(DateTimeProxy):
 
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
+    convert = lambda self, dt: datetime(dt.year, 1, 1)
 
     def __eq__(self, other):
         try:
