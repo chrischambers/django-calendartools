@@ -807,3 +807,9 @@ class TestDateTimeProxies(TestCase):
         assert_equal(self.week.finish,  datetime(1982, 8, 23) - smidge)
         assert_equal(self.month.finish, datetime(1982, 9, 1) - smidge)
         assert_equal(self.year.finish,  datetime(1983, 1, 1) - smidge)
+
+    def test_month_calendar_display_property(self):
+        expected = calendar.monthcalendar(self.datetime.year, self.datetime.month)
+        actual = self.month.calendar_display
+        actual = [[i.day if i else 0 for i in lst] for lst in actual]
+        assert_equal(expected, actual)

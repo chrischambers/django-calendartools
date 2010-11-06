@@ -147,6 +147,12 @@ class Month(DateTimeProxy):
             dtstart=self.start, until=self.finish
         ))
 
+    @property
+    def calendar_display(self):
+        cal = calendar.monthcalendar(self.year, self.month)
+        return ((Day(datetime(self.year, self.month, num)) if num else 0
+                     for num in lst) for lst in cal)
+
 
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
