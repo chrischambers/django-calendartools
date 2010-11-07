@@ -316,11 +316,48 @@ class Calendar(object):
 def year_view(request, *args, **kwargs):
     pass
 
-def month_view(request, *args, **kwargs):
-    pass
+from calendartools.models import Occurrence
+from django.http import Http404
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from datetime import date
+import time
+def month_view(request, year, month, month_format='%b', *args, **kwargs):
+    year = int(year)
+    try:
+        tt = time.strptime("%s-%s" % (year, month), '%s-%s' % ('%Y', month_format))
+        d = date(*tt[:3])
+    except ValueError:
+        raise Http404
+    occurrences = Occurrence.objects.visible().select_related('event').filter(
+        start__year=d.year, start__month=d.month,
+    ).order_by('start')
+    data = {
+        'calendar': Calendar(d, d.replace(day=calendar.monthrange(d.year, d.month)[-1])),
+        'occurrences': occurrences,
+        'month': Month(d, occurrences=occurrences)
+    }
+    return render_to_response("calendar/month_view.html", data,
+                            context_instance=RequestContext(request))
 
-def day_view(request, *args, **kwargs):
-    pass
+
+def day_view(request, year, month, day, month_format='%b', *args, **kwargs):
+    year, day = int(year), int(day)
+    try:
+        tt = time.strptime("%s-%s-%s" % (year, month, day), '%s-%s-%s' % ('%Y', month_format, '%d'))
+        d = date(*tt[:3])
+    except ValueError:
+        raise Http404
+    occurrences = Occurrence.objects.visible().select_related('event').filter(
+        start__year=d.year, start__month=d.month, start__day=d.day
+    ).order_by('start')
+    data = {
+        'calendar': Calendar(d, d.replace(day=calendar.monthrange(d.year, d.month)[-1])),
+        'occurrences': occurrences,
+        'day': Day(d, occurrences=occurrences)
+    }
+    return render_to_response("calendar/day_view.html", data,
+                            context_instance=RequestContext(request))
 
 def today_view(request, *args, **kwargs):
     pass

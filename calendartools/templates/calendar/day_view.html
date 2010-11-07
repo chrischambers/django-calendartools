@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Day View{% endblock %}
+{% block primary %}
+<h3>Day View</h3>
+<h4>
+  <a href="{% url day-calendar day.previous.year day.previous.get_month.abbr day.previous.number %}"
+    title="Previous Day">&larr;</a>
+  {{ month|date:"F" }}
+  <a title="View {{ month.year}}" href="{% url year-calendar day.year %}">
+    {{ month|date:"Y" }}</a>
+  <a href="{% url day-calendar day.next.year day.next.get_month.abbr day.next.number %}"
+    title="Next Day">&rarr;</a>
+</h4>
+
+<table class="day-view">
+  <tbody>
+    {% for cell in day.intervals %}
+      <tr>
+        <td>{{ cell.start|time:"h:i:s" }}</td>
+        <td>
+          {% if cell.occurrences %}
+          <ul>
+            {% for occurrence in cell.occurrences %}
+            <li>
+              <a class="{% if occurrence.is_cancelled %}cancelled{% endif %}"
+                 href="{{ occurrence.get_absolute_url }}">
+                 {{ occurrence.event.name }}
+               </a>
+            <span class="event_times">{{ occurrence.start|time }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+
+

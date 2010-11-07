@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Monthly View{% endblock %}
+{% block primary %}
+<h3>Monthly View</h3>
+<h4>
+  <a href="{% url month-calendar month.previous.year month.previous.abbr %}"
+    title="Previous Month">&larr;</a>
+  {{ month|date:"F" }}
+  <a title="View {{ month.year}}" href="{% url year-calendar month.year %}">
+    {{ month|date:"Y" }}</a>
+  <a href="{% url month-calendar month.next.year month.next.abbr %}"
+    title="Next Month">&rarr;</a>
+</h4>
+
+<table class="month-view">
+  <thead>
+    <tr>
+      {% for dayname in month.day_names %}
+      <th>{{ dayname }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in month.calendar_display %}
+      <tr>
+        {% for day in row  %}
+        <td{% if day == today %} class="today"{% endif %}>
+          {% if day %}
+          <div class="day-ordinal">
+            <a href="{% url day-calendar day.year month.abbr day.number %}">{{ day.number }}</a>
+          </div>
+          {% if day.occurrences %}
+          <ul>
+            {% for occurrence in day.occurrences %}
+            <li>
+              <a class="{% if occurrence.is_cancelled %}cancelled{% endif %}"
+                 href="{{ occurrence.get_absolute_url }}">
+                 {{ occurrence.event.name }}
+               </a>
+            <span class="event_times">{{ occurrence.start|time }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+
+    {% comment %}
+    {% for year in calendar %}
+      {% for month in year %}
+      <tr>
+        {% for day in month  %}
+        <td{% if day == today.day %} class="today"{% endif %}>
+          {% if day %}
+          <div class="day-ordinal">
+            <a href="{% url day-calendar day.year month.abbr day.day %}">{{ day.day }}</a>
+          </div>
+          {% if occurrences %}
+          <ul>
+            {% for occurrence in occurrences %}
+            {% ifequal occurrence.start day %}
+            <li>
+            <a href="{{ item.get_absolute_url }}">
+              {{ occurrence.title }}</a>
+            <span class="event_times">{{ item.start_time|time }}</span>
+            </li>
+            {% endifequal %}
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    {% endfor %}
+    {% endcomment %}
+  </tbody>
+</table>
+{% endblock %}
+
