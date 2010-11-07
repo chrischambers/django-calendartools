@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY
 
+from calendartools import defaults
+
 class SimpleProxy(object):
     def __init__(self, obj, *args, **kwargs):
         self._obj = obj
@@ -159,6 +161,14 @@ class Day(DateTimeProxy):
 
     def get_year(self):
         return Year(self, occurrences=self.occurrences)
+
+    @property
+    def intervals(self):
+        start = datetime.combine(self.start.date(), defaults.TIMESLOT_START_TIME)
+        finish = start + defaults.TIMESLOT_END_TIME_DURATION
+        while start <= finish:
+            yield start
+            start += defaults.TIMESLOT_INTERVAL
 
 
 class Week(DateTimeProxy):

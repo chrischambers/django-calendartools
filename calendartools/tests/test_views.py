@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from calendartools.models import Event, Occurrence
-from calendartools import signals
+from calendartools import signals, defaults
 from calendartools.forms import (
     EventForm,
     MultipleOccurrenceForm,
@@ -985,6 +985,22 @@ class TestDateTimeProxies(TestCase):
         actual = self.month.calendar_display
         actual = [[i.day if i else 0 for i in lst] for lst in actual]
         assert_equal(expected, actual)
+
+    def test_intervals(self):
+        intervals = list(self.day.intervals)
+        expected_start = datetime.combine(
+            self.datetime.date(), defaults.TIMESLOT_START_TIME
+        )
+        expected_end = expected_start + defaults.TIMESLOT_END_TIME_DURATION
+        assert_equal(intervals[0],  expected_start)
+        assert_equal(intervals[-1], expected_end)
+
+        expected_interval_count = 0
+        while expected_start <= expected_end:
+            expected_start += defaults.TIMESLOT_INTERVAL
+            expected_interval_count += 1
+        assert_equal(len(intervals), expected_interval_count)
+
 
 class TestDateTimeProxiesWithOccurrences(TestCase):
     def setUp(self):
