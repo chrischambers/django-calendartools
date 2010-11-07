@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Day View{% endblock %}
 {% block primary %}
+{% load math %}
 <h3>Day View</h3>
 <h4>
   <a href="{% url day-calendar day.previous.year day.previous.get_month.abbr day.previous.number %}"
@@ -12,9 +13,15 @@
     title="Next Day">&rarr;</a>
 </h4>
 
-<table class="day-view">
+<table class="day-view" style="float: left">
+  {% with day.intervals as intervals %}
+  {% with intervals|length as len %}
+  {% with len|divide_by:2|to_integer as half_length %}
+
+  <h1>{{ half_length|range }}</h1>
+  {% for i in half_length|range %}
+  {% with intervals|get_index:i as cell %}
   <tbody>
-    {% for cell in day.intervals %}
       <tr>
         <td>{{ cell.start|time:"h:i:s" }}</td>
         <td>
@@ -33,8 +40,40 @@
           {% endif %}
         </td>
       </tr>
-    {% endfor %}
   </tbody>
+  {% endwith %}
+  {% endfor %}
+</table>
+
+<table class="day-view">
+  {% for i in half_length|range:len %}
+  {% with intervals|get_index:i as cell %}
+  <tbody>
+      <tr>
+        <td>{{ cell.start|time:"h:i:s" }}</td>
+        <td>
+          {% if cell.occurrences %}
+          <ul>
+            {% for occurrence in cell.occurrences %}
+            <li>
+              <a class="{% if occurrence.is_cancelled %}cancelled{% endif %}"
+                 href="{{ occurrence.get_absolute_url }}">
+                 {{ occurrence.event.name }}
+               </a>
+            <span class="event_times">{{ occurrence.start|time }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </td>
+      </tr>
+  </tbody>
+  {% endwith %}
+  {% endfor %}
+
+  {% endwith %}
+  {% endwith %}
+  {% endwith %}
 </table>
 {% endblock %}
 
