@@ -53,22 +53,14 @@ class DateTimeProxy(SimpleProxy):
     def __init__(self, obj, *args, **kwargs):
         self._real_obj = obj
         obj = self.convert(obj)
-        self.occurrences = kwargs.pop('occurrences', {})
+        self.occurrences = kwargs.pop('occurrences', [])
         super(DateTimeProxy, self).__init__(obj, *args, **kwargs)
         self.process_occurrences()
 
-    def process_occurrences(self):
-        from django.db.models.query import QuerySet
-        if not self.occurrences:
-            return {}
-        if isinstance(self.occurrences, QuerySet):
-            data = {}
-            for occ in self.occurrences:
-                data[occ.start] = occ
-            self.occurrences = data
-            return
-        self.occurrences = dict([(k, v) for (k, v) in self.occurrences.items() if k in self])
-        return self.occurrences
+    def process_occurrences(self, key=None):
+        if not key:
+            key = lambda o: o.start
+        self.occurrences = [i for i in self.occurrences if key(i) in self]
 
     def convert(self, dt):
         """Returns naive datetime representation of date/datetime, with no
