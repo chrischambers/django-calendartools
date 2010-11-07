@@ -170,14 +170,17 @@ class Day(DateTimeProxy):
 
     @property
     def intervals(self):
+
         class DayInterval(DateTimeProxy):
             interval = defaults.TIMESLOT_INTERVAL
 
+        intervals = []
         start = datetime.combine(self.start.date(), defaults.TIMESLOT_START_TIME)
         finish = start + defaults.TIMESLOT_END_TIME_DURATION
         while start <= finish:
-            yield DayInterval(start, occurrences=self.occurrences)
+            intervals.append(DayInterval(start, occurrences=self.occurrences))
             start += defaults.TIMESLOT_INTERVAL
+        return intervals
 
 
 class Week(DateTimeProxy):

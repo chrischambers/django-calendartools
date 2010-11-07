@@ -1009,7 +1009,7 @@ class TestDateTimeProxies(TestCase):
         assert_equal(expected, actual)
 
     def test_intervals(self):
-        intervals = list(self.day.intervals)
+        intervals = self.day.intervals
         expected_start = datetime.combine(
             self.datetime.date(), defaults.TIMESLOT_START_TIME
         )
