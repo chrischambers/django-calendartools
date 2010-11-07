@@ -32,6 +32,8 @@ class SimpleProxy(object):
         return (u'<%s: %s>' % (self.__class__.__name__, u)).encode('utf8')
 
     def __getattr__(self, attr):
+        """Issue: Test Methods like assert_raises and self.assertRaises won't
+        catch the AttributeError raised here."""
         try:
             return getattr(self.__class__, attr)
         except AttributeError:
@@ -113,6 +115,17 @@ class Hour(DateTimeProxy):
     def number(self):
         return self.hour
 
+    def get_day(self):
+        return Day(self, occurrences=self.occurrences)
+
+    def get_week(self):
+        return Week(self, occurrences=self.occurrences)
+
+    def get_month(self):
+        return Month(self, occurrences=self.occurrences)
+
+    def get_year(self):
+        return Year(self, occurrences=self.occurrences)
 
 class Day(DateTimeProxy):
     interval = relativedelta(days=+1)
@@ -138,6 +151,15 @@ class Day(DateTimeProxy):
         return (Hour(dt, occurrences=self.occurrences) for dt in
                 rrule(HOURLY, dtstart=self.start, until=self.finish))
 
+    def get_week(self):
+        return Week(self, occurrences=self.occurrences)
+
+    def get_month(self):
+        return Month(self, occurrences=self.occurrences)
+
+    def get_year(self):
+        return Year(self, occurrences=self.occurrences)
+
 
 class Week(DateTimeProxy):
     interval = relativedelta(weeks=+1)
@@ -157,6 +179,11 @@ class Week(DateTimeProxy):
             dtstart=self.start, until=self.finish
         ))
 
+    def get_month(self):
+        return Month(self, occurrences=self.occurrences)
+
+    def get_year(self):
+        return Year(self, occurrences=self.occurrences)
 
 class Month(DateTimeProxy):
     interval = relativedelta(months=+1)
@@ -194,6 +221,9 @@ class Month(DateTimeProxy):
         cal = calendar.monthcalendar(self.year, self.month)
         return ((Day(datetime(self.year, self.month, num), occurrences=self.occurrences) if num else 0
                      for num in lst) for lst in cal)
+
+    def get_year(self):
+        return Year(self, occurrences=self.occurrences)
 
 
 class Year(DateTimeProxy):

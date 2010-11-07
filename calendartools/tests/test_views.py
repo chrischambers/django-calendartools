@@ -949,6 +949,37 @@ class TestDateTimeProxies(TestCase):
         assert_equal(self.month.number, 8)
         assert_equal(self.year.number,  1982)
 
+    def test_get_methods_for_more_general_periods(self):
+        assert not hasattr(self.hour, 'get_hour')
+        assert_equal(self.hour.get_day(), self.day)
+        assert_equal(self.hour.get_week(), self.week)
+        assert_equal(self.hour.get_month(), self.month)
+        assert_equal(self.hour.get_year(), self.year)
+
+        assert not hasattr(self.day, 'get_hour')
+        assert not hasattr(self.day, 'get_day')
+        assert_equal(self.day.get_week(), self.week)
+        assert_equal(self.day.get_month(), self.month)
+        assert_equal(self.day.get_year(), self.year)
+
+        assert not hasattr(self.week, 'get_hour')
+        assert not hasattr(self.week, 'get_day')
+        assert not hasattr(self.week, 'get_week')
+        assert_equal(self.week.get_month(), self.month)
+        assert_equal(self.week.get_year(), self.year)
+
+        assert not hasattr(self.month, 'get_hour')
+        assert not hasattr(self.month, 'get_day')
+        assert not hasattr(self.month, 'get_week')
+        assert not hasattr(self.month, 'get_month')
+        assert_equal(self.month.get_year(), self.year)
+
+        assert not hasattr(self.year, 'get_hour')
+        assert not hasattr(self.year, 'get_day')
+        assert not hasattr(self.year, 'get_week')
+        assert not hasattr(self.year, 'get_month')
+        assert not hasattr(self.year, 'get_year')
+
     def test_month_calendar_display_property(self):
         expected = calendar.monthcalendar(self.datetime.year, self.datetime.month)
         actual = self.month.calendar_display
