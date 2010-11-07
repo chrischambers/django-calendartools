@@ -53,14 +53,14 @@ class DateTimeProxy(SimpleProxy):
     def __init__(self, obj, *args, **kwargs):
         self._real_obj = obj
         obj = self.convert(obj)
-        self.occurrences = kwargs.pop('occurrences', [])
+        occurrences = kwargs.pop('occurrences', [])
         super(DateTimeProxy, self).__init__(obj, *args, **kwargs)
-        self.process_occurrences()
+        self.occurrences = self.process_occurrences(occurrences)
 
-    def process_occurrences(self, key=None):
+    def process_occurrences(self, occurrences, key=None):
         if not key:
             key = lambda o: o.start
-        self.occurrences = [i for i in self.occurrences if key(i) in self]
+        return [i for i in occurrences if key(i) in self]
 
     def convert(self, dt):
         """Returns naive datetime representation of date/datetime, with no
