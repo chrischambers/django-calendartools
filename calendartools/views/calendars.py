@@ -313,15 +313,23 @@ class Calendar(object):
         return self._days
         return (Day(dt) for dt in self._days)
 
-def year_view(request, *args, **kwargs):
-    pass
-
 from calendartools.models import Occurrence
 from django.http import Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from datetime import date
 import time
+def year_view(request, year, *args, **kwargs):
+    year = int(year)
+    occurrences = Occurrence.objects.visible().select_related('event').filter(
+        start__year=year).order_by('start')
+    data = {
+        'occurrences': occurrences,
+        'year': Year(date(year, 1, 1), occurrences=occurrences)
+    }
+    return render_to_response("calendar/year_view.html", data,
+                            context_instance=RequestContext(request))
+
 def month_view(request, year, month, month_format='%b', *args, **kwargs):
     year = int(year)
     try:
