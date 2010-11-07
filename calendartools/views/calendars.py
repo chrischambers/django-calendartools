@@ -84,7 +84,13 @@ class DateTimeProxy(SimpleProxy):
             return
 
     def __contains__(self, item):
-        return self == item
+        """Note that when comparing datetime.date objects with this class, they
+        will automatically be coerced to datetime objects with a default start
+        time of 12:00:00 am, which might mean they are included as members."""
+        item = self._coerce_to_datetime(item)
+        if not item:
+            return False
+        return self.start <= item <= self.finish
 
     def __cmp__(self, other):
         other = self._coerce_to_datetime(other)

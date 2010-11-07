@@ -826,6 +826,28 @@ class TestDateTimeProxies(TestCase):
         for i in (self.hour,):
             assert i in self.hour
 
+        class TenMinuteInterval(DateTimeProxy):
+            interval = timedelta(minutes=10)
+            def convert(self, dt):
+                dt = super(TenMinuteInterval, self).convert(dt)
+                return dt.replace(second=0)
+
+        ten_min_period = TenMinuteInterval(datetime(1982, 8, 17, 6, 30, 5))
+        good_inputs = (
+            datetime(1982, 8, 17, 6, 30),
+            datetime(1982, 8, 17, 6, 35),
+            datetime(1982, 8, 17, 6, 40) - timedelta.resolution,
+        )
+        bad_inputs = (
+            date(1982, 8, 17),
+            datetime(1982, 8, 17, 6, 30) - timedelta.resolution,
+            datetime(1982, 8, 17, 6, 40),
+        )
+        for inp in good_inputs:
+            assert_in(inp, ten_min_period)
+        for inp in bad_inputs:
+            assert_not_in(inp, ten_min_period)
+
     def test_next(self):
         assert_equal(self.hour.next(),  datetime(1982, 8, 17, 7, 30, 5))
         assert_equal(self.day.next(),   datetime(1982, 8, 18))
