@@ -368,7 +368,8 @@ def day_view(request, year, month, day, month_format='%b', *args, **kwargs):
                             context_instance=RequestContext(request))
 
 def today_view(request, *args, **kwargs):
-    pass
+    today = date.today()
+    return day_view(request, today.year, today.strftime('%b'), today.day, *args, **kwargs)
 
 def occurrence_detail_redirect(request, year, month, day, slug, pk):
     return simple.redirect_to(
