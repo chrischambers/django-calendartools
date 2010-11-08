@@ -5,18 +5,18 @@
 {% block primary %}
 <h3>Day Agenda</h3>
 <h4>
-  <a href="{% url day-calendar day.previous.year day.previous.get_month.abbr day.previous.number %}"
+  <a href="{% url day-agenda day.previous.year day.previous.get_month.abbr day.previous.number %}"
     title="Previous Day">&larr;</a>
-  {{ day|date:"l jS" }}
-  <a title="View {{ day.get_month.name}}" href="{% url month-calendar day.year day.get_month.abbr %}">
+  <a title="View {{ day|date:"l, jS F, Y"}}" href="{% url day-agenda day.year day.get_month.abbr day.number %}">
+  {{ day|date:"l jS" }}</a>
+  <a title="View {{ day|date:"F, Y"}}" href="{% url month-agenda day.year day.get_month.abbr %}">
     {{ day|date:"F" }}</a>
-  <a title="View {{ day.year}}" href="{% url year-calendar day.year %}">
+  <a title="View {{ day.year}}" href="{% url year-agenda day.year %}">
     {{ day|date:"Y" }}</a>
-  <a href="{% url day-calendar day.next.year day.next.get_month.abbr day.next.number %}"
+  <a href="{% url day-agenda day.next.year day.next.get_month.abbr day.next.number %}"
     title="Next Day">&rarr;</a>
 </h4>
 
-{% with day.intervals as intervals %}
 <table class="day-agenda">
   <thead>
     <tr>
@@ -28,7 +28,8 @@
   <tbody>
     {% for o in day.occurrences %}
       <tr class="hour-divider">
-        <td><a href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
+        <td><a class="{% if o.is_cancelled %}cancelled{% endif %}"
+               href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
         <td>{{ o.start|date:"P" }}</td>
         <td>{{ o.finish|date:"P" }}</td>
       </tr>
@@ -38,6 +39,4 @@
     {% endfor %}
   </tbody>
 </table>
-{% endwith %}
 {% endblock %}
-

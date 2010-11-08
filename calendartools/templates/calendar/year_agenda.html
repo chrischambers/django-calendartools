@@ -3,11 +3,11 @@
 {% block primary %}
 <h3>Yearly Agenda</h3>
 <h4>
-  <a href="{% url year-calendar year.previous.number %}"
+  <a href="{% url year-agenda year.previous.number %}"
     title="Last Year">&larr;</a>
-  <a title="View {{ year}}" href="{% url year-calendar year.number %}">
+  <a title="View {{ year}}" href="{% url year-agenda year.number %}">
     {{ year|date:"Y" }}</a>
-  <a href="{% url year-calendar year.next.number %}"
+  <a href="{% url year-agenda year.next.number %}"
     title="Next Year">&rarr;</a>
 </h4>
 
@@ -29,7 +29,7 @@
       {% if month.occurrences %}
         <tr class="month-divider">
           <th rowspan="{{ month.occurrences|length }}">
-            <a href="{% url month-calendar month.year month.abbr %}">
+            <a href="{% url month-agenda month.year month.abbr %}">
               {{ month.name }}
             </a>
           </th>
@@ -49,4 +49,3 @@
 </table>
 {% endif %}
 {% endblock %}
-

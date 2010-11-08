@@ -3,12 +3,13 @@
 {% block primary %}
 <h3>Monthly Agenda</h3>
 <h4>
-  <a href="{% url month-calendar month.previous.year month.previous.abbr %}"
+  <a href="{% url month-agenda month.previous.year month.previous.abbr %}"
     title="Previous Month">&larr;</a>
-  {{ month|date:"F" }}
-  <a title="View {{ month.year}}" href="{% url year-calendar month.year %}">
+  <a title="View {{ month.name}}" href="{% url month-agenda month.year month.abbr %}">
+    {{ month|date:"F" }}</a>
+  <a title="View {{ month.year}}" href="{% url year-agenda month.year %}">
     {{ month|date:"Y" }}</a>
-  <a href="{% url month-calendar month.next.year month.next.abbr %}"
+  <a href="{% url month-agenda month.next.year month.next.abbr %}"
     title="Next Month">&rarr;</a>
 </h4>
 
@@ -26,7 +27,7 @@
       {% if day.occurrences %}
         <tr class="day-divider">
           <th rowspan="{{ day.occurrences|length }}">
-            <a href="{% url day-calendar day.year day.get_month.abbr day.number %}">
+            <a href="{% url day-agenda day.year day.get_month.abbr day.number %}">
               {{ day|date:"jS" }} {{ day.get_month.name }}
             </a>
           </th>
