@@ -20,6 +20,9 @@
     title="Next Month">&rarr;</a>
 </h4>
 
+{% if not month.occurrences %}
+  <p>No events occurring in {{ month }}</p>
+{% else %}
 <table class="month-agenda">
   <thead>
     <tr>
@@ -51,4 +54,5 @@
     {% endfor %}
   </tbody>
 </table>
+{% endif %}
 {% endblock %}

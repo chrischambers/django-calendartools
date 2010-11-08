@@ -24,6 +24,9 @@
     title="Next Day">&rarr;</a>
 </h4>
 
+{% if not day.occurrences %}
+  <p>No events occurring in {{ day }}</p>
+{% else %}
 <table class="day-agenda">
   <thead>
     <tr>
@@ -46,4 +49,5 @@
     {% endfor %}
   </tbody>
 </table>
+{% endif %}
 {% endblock %}
