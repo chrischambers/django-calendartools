@@ -3,37 +3,30 @@
 {% block primary %}
 <h3>Monthly View</h3>
 
+{% comment %}
 <p>Switch to
   <a href="{% url month-agenda month.year month.abbr %}">
     agenda view
   </a>.
 </p>
+{% endcomment %}
 
-{% if not small %}
 <h4>
-  <a href="{% url month-calendar month.previous.year month.previous.abbr %}"
-    title="Previous Month">&larr;</a>
-  <a title="View {{ month.name}}" href="{% url month-calendar month.year month.abbr %}">
-    {{ month|date:"F" }}</a>
-  <a title="View {{ month.year}}" href="{% url year-calendar month.year %}">
-    {{ month|date:"Y" }}</a>
-  <a href="{% url month-calendar month.next.year month.next.abbr %}"
-    title="Next Month">&rarr;</a>
+  <a href="{% url tri-month-calendar tri_month.previous_month.year tri_month.previous_month.abbr %}"
+    title="Previous 3 Months">&larr;</a>
+  <a title="View {{ tri_month.current_month.name}}" href="{% url tri-month-calendar tri_month.current_month.year tri_month.current_month.abbr %}">
+    {{ tri_month.current_month|date:"F" }}</a>
+  <a title="View {{ tri_month.current_month.year}}" href="{% url year-calendar tri_month.year %}">
+    {{ tri_month.current_month|date:"Y" }}</a>
+  <a href="{% url tri-month-calendar tri_month.next_month.year tri_month.next_month.abbr %}"
+    title="Next 3 Months">&rarr;</a>
 </h4>
-{% else %}
-<h4>
-  <a href="{% url small-month-calendar month.previous.year month.previous.abbr %}"
-    title="Previous Month">&larr;</a>
-  <a title="View {{ month.name}}" href="{% url small-month-calendar month.year month.abbr %}">
-    {{ month|date:"F" }}</a>
-  <a title="View {{ month.year}}" href="{% url year-calendar month.year %}">
-    {{ month|date:"Y" }}</a>
-  <a href="{% url small-month-calendar month.next.year month.next.abbr %}"
-    title="Next Month">&rarr;</a>
-</h4>
+
+{% for month in tri_month %}
+{% if forloop.counter == 2 %}
+<h2>{{ month|date:"F, Y" }}</h2>
 {% endif %}
-
-<table class="month-view{% if small %} small{% endif %}">
+<table class="tri-month-view">
   <thead>
     <tr>
       {% for dayname in month.day_names %}
@@ -70,4 +63,7 @@
     {% endfor %}
   </tbody>
 </table>
+{% endfor %}
 {% endblock %}
+
+

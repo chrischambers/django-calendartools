@@ -248,6 +248,31 @@ class Month(DateTimeProxy):
         return Year(self, occurrences=self.occurrences)
 
 
+class TripleMonth(Month):
+    interval = relativedelta(months=+3)
+
+    def __iter__(self):
+        return self.months
+
+    @property
+    def current_month(self):
+        return Month(self.start + relativedelta(months=+1), occurrences=self.occurrences)
+
+    @property
+    def previous_month(self):
+        return Month(self.current_month - relativedelta(months=+1), occurrences=self.occurrences)
+
+    @property
+    def next_month(self):
+        return Month(self.current_month + relativedelta(months=+1), occurrences=self.occurrences)
+
+    @property
+    def months(self):
+        return (Month(dt, occurrences=self.occurrences) for dt in rrule(MONTHLY,
+            dtstart=self.start, until=self.finish
+        ))
+
+
 class Year(DateTimeProxy):
     interval = relativedelta(years=+1)
     convert = lambda self, dt: datetime(dt.year, 1, 1)
@@ -345,7 +370,28 @@ def month_view(request, year, month, month_format='%b', *args, **kwargs):
         'occurrences': occurrences,
         'month': Month(d, occurrences=occurrences)
     }
+    small = kwargs.get('small')
+    if small:
+        data['small'] = True
     return render_to_response("calendar/month_view.html", data,
+                            context_instance=RequestContext(request))
+
+def tri_month_view(request, year, month, month_format='%b', *args, **kwargs):
+    year = int(year)
+    try:
+        tt = time.strptime("%s-%s" % (year, month), '%s-%s' % ('%Y', month_format))
+        d = date(*tt[:3])
+    except ValueError:
+        raise Http404
+    occurrences = Occurrence.objects.visible().select_related('event').filter(
+        start__range=(d - relativedelta(months=1), d + relativedelta(months=2))
+    ).order_by('start')
+    data = {
+        'calendar': Calendar(d, d.replace(day=calendar.monthrange(d.year, d.month)[-1])),
+        'occurrences': occurrences,
+        'tri_month': TripleMonth(d - relativedelta(months=1), occurrences=occurrences)
+    }
+    return render_to_response("calendar/tri_month_view.html", data,
                             context_instance=RequestContext(request))
 
 
