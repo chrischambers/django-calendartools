@@ -12,13 +12,13 @@
 {% endcomment %}
 
 <h4>
-  <a href="{% url tri-month-calendar tri_month.previous_month.year tri_month.previous_month.abbr %}"
+  <a href="{% url tri-month-calendar tri_month.first_month.year tri_month.first_month.abbr %}"
     title="Previous 3 Months">&larr;</a>
-  <a title="View {{ tri_month.current_month.name}}" href="{% url tri-month-calendar tri_month.current_month.year tri_month.current_month.abbr %}">
-    {{ tri_month.current_month|date:"F" }}</a>
-  <a title="View {{ tri_month.current_month.year}}" href="{% url year-calendar tri_month.year %}">
-    {{ tri_month.current_month|date:"Y" }}</a>
-  <a href="{% url tri-month-calendar tri_month.next_month.year tri_month.next_month.abbr %}"
+  <a title="View {{ tri_month.second_month.name}}" href="{% url tri-month-calendar tri_month.second_month.year tri_month.second_month.abbr %}">
+    {{ tri_month.second_month|date:"F" }}</a>
+  <a title="View {{ tri_month.second_month.year}}" href="{% url year-calendar tri_month.year %}">
+    {{ tri_month.second_month|date:"Y" }}</a>
+  <a href="{% url tri-month-calendar tri_month.third_month.year tri_month.third_month.abbr %}"
     title="Next 3 Months">&rarr;</a>
 </h4>
 

@@ -681,7 +681,7 @@ class TestSimpleProxy(TestCase):
         assert other_proxy < self.proxy
         assert self.proxy > other_proxy
 
-from calendartools.views import Year, Month, Week, Day, Hour
+from calendartools.views import Year, Month, Week, Day, Hour, TripleMonth
 import calendar
 class TestDateTimeProxies(TestCase):
     def setUp(self):
@@ -1022,6 +1022,31 @@ class TestDateTimeProxies(TestCase):
             expected_start += defaults.TIMESLOT_INTERVAL
             expected_interval_count += 1
         assert_equal(len(intervals), expected_interval_count)
+
+class TestTripleMonth(TestCase):
+    def setUp(self):
+        self.datetime = datetime(1982, 8, 17)
+        self.trimonth = TripleMonth(self.datetime)
+        self.expected = [
+            datetime(1982, 8, 1), datetime(1982, 9, 1), datetime(1982, 10, 1)
+        ]
+
+    def test_start_and_finish(self):
+        assert_equal(self.trimonth.start, self.expected[0])
+        assert_equal(self.trimonth.finish, datetime(1982, 11, 1) - timedelta.resolution)
+
+    def test_iterates_over_months(self):
+        actual = [i for i in self.trimonth]
+        assert_equal(self.expected, actual)
+
+    def test_first_month_property(self):
+        assert_equal(self.trimonth.first_month, self.expected[0])
+
+    def test_second_month_property(self):
+        assert_equal(self.trimonth.second_month, self.expected[1])
+
+    def test_third_month_property(self):
+        assert_equal(self.trimonth.third_month, self.expected[2])
 
 
 class TestDateTimeProxiesWithOccurrences(TestCase):

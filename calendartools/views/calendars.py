@@ -255,16 +255,16 @@ class TripleMonth(Month):
         return self.months
 
     @property
-    def current_month(self):
+    def first_month(self):
+        return Month(self.start, occurrences=self.occurrences)
+
+    @property
+    def second_month(self):
         return Month(self.start + relativedelta(months=+1), occurrences=self.occurrences)
 
     @property
-    def previous_month(self):
-        return Month(self.current_month - relativedelta(months=+1), occurrences=self.occurrences)
-
-    @property
-    def next_month(self):
-        return Month(self.current_month + relativedelta(months=+1), occurrences=self.occurrences)
+    def third_month(self):
+        return Month(self.start + relativedelta(months=+2), occurrences=self.occurrences)
 
     @property
     def months(self):
