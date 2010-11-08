@@ -4,6 +4,13 @@
 {% block title %}Day Agenda{% endblock %}
 {% block primary %}
 <h3>Day Agenda</h3>
+
+<p>Switch to
+  <a href="{% url day-calendar day.year day.get_month.abbr day.number %}">
+    calendar view
+  </a>.
+</p>
+
 <h4>
   <a href="{% url day-agenda day.previous.year day.previous.get_month.abbr day.previous.number %}"
     title="Previous Day">&larr;</a>

@@ -2,6 +2,13 @@
 {% block title %}Monthly Agenda{% endblock %}
 {% block primary %}
 <h3>Monthly Agenda</h3>
+
+<p>Switch to
+  <a href="{% url month-calendar month.year month.abbr %}">
+    calendar view
+  </a>.
+</p>
+
 <h4>
   <a href="{% url month-agenda month.previous.year month.previous.abbr %}"
     title="Previous Month">&larr;</a>

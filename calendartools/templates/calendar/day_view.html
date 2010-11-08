@@ -7,8 +7,16 @@
     .day-view-1 {float: left;}
   </style>
 {% endblock %}
+
 {% block primary %}
 <h3>Day View</h3>
+
+<p>Switch to
+  <a href="{% url day-agenda day.year day.get_month.abbr day.number %}">
+    agenda view
+  </a>.
+</p>
+
 <h4>
   <a href="{% url day-calendar day.previous.year day.previous.get_month.abbr day.previous.number %}"
     title="Previous Day">&larr;</a>
