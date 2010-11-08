@@ -1,15 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Monthly View{% endblock %}
+{% block title %}Tri Monthly View{% endblock %}
 {% block primary %}
-<h3>Monthly View</h3>
+<h3>Tri Monthly View</h3>
 
-{% comment %}
 <p>Switch to
-  <a href="{% url month-agenda month.year month.abbr %}">
+  <a href="{% url month-agenda tri_month.second_month.year tri_month.second_month.abbr %}">
     agenda view
   </a>.
 </p>
-{% endcomment %}
 
 <h4>
   <a href="{% url tri-month-calendar tri_month.first_month.year tri_month.first_month.abbr %}"
