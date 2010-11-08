@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load math %}
+
+{% block title %}Day Agenda{% endblock %}
+{% block primary %}
+<h3>Day Agenda</h3>
+<h4>
+  <a href="{% url day-calendar day.previous.year day.previous.get_month.abbr day.previous.number %}"
+    title="Previous Day">&larr;</a>
+  {{ day|date:"l jS" }}
+  <a title="View {{ day.get_month.name}}" href="{% url month-calendar day.year day.get_month.abbr %}">
+    {{ day|date:"F" }}</a>
+  <a title="View {{ day.year}}" href="{% url year-calendar day.year %}">
+    {{ day|date:"Y" }}</a>
+  <a href="{% url day-calendar day.next.year day.next.get_month.abbr day.next.number %}"
+    title="Next Day">&rarr;</a>
+</h4>
+
+{% with day.intervals as intervals %}
+<table class="day-agenda">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Start</th>
+      <th>End</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in day.occurrences %}
+      <tr class="hour-divider">
+        <td><a href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
+        <td>{{ o.start|date:"P" }}</td>
+        <td>{{ o.finish|date:"P" }}</td>
+      </tr>
+        {% if not forloop.last %}
+      <tr>
+          {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
+{% endwith %}
+{% endblock %}
+

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Monthly Agenda{% endblock %}
+{% block primary %}
+<h3>Monthly Agenda</h3>
+<h4>
+  <a href="{% url month-calendar month.previous.year month.previous.abbr %}"
+    title="Previous Month">&larr;</a>
+  {{ month|date:"F" }}
+  <a title="View {{ month.year}}" href="{% url year-calendar month.year %}">
+    {{ month|date:"Y" }}</a>
+  <a href="{% url month-calendar month.next.year month.next.abbr %}"
+    title="Next Month">&rarr;</a>
+</h4>
+
+<table class="month-agenda">
+  <thead>
+    <tr>
+      <th>Day</th>
+      <th>Title</th>
+      <th>Start</th>
+      <th>End</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for day in month.days %}
+      {% if day.occurrences %}
+        <tr class="day-divider">
+          <th rowspan="{{ day.occurrences|length }}">
+            <a href="{% url day-calendar day.year day.get_month.abbr day.number %}">
+              {{ day|date:"jS" }} {{ day.get_month.name }}
+            </a>
+          </th>
+        {% for o in day.occurrences %}
+          <td><a href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
+          <td>{{ o.start|date:"P" }}</td>
+          <td>{{ o.finish|date:"P" }}</td>
+        </tr>
+          {% if not forloop.last %}
+        <tr>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
