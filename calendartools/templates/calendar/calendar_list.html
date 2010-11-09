@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Calendars - {{ block.super }}{% endblock %}
+
+{% block primary %}
+  <h1>Calendars</h1>
+
+  <ul class="calendar-list">
+  {% for calendar in object_list %}
+    <li>
+      <ul>
+        <li><strong><a href="{{ calendar.get_absolute_url }}">{{ calendar.name }}</a></strong></li>
+        <li>{{ calendar.description }}</li>
+      </ul>
+    </li>
+  {% endfor %}
+  </ul>
+{% endblock primary %}

@@ -4,17 +4,17 @@
 <h3>Yearly Agenda</h3>
 
 <p>Switch to
-  <a href="{% url year-calendar year.number %}">
+  <a href="{% url year-calendar calendar.slug year.number %}">
     calendar view
   </a>.
 </p>
 
 <h4>
-  <a href="{% url year-agenda year.previous.number %}"
+  <a href="{% url year-agenda calendar.slug year.previous.number %}"
     title="Last Year">&larr;</a>
   <a title="View {{ year}}" href="{% url year-agenda year.number %}">
     {{ year|date:"Y" }}</a>
-  <a href="{% url year-agenda year.next.number %}"
+  <a href="{% url year-agenda calendar.slug year.next.number %}"
     title="Next Year">&rarr;</a>
 </h4>
 
@@ -36,7 +36,7 @@
       {% if month.occurrences %}
         <tr class="month-divider">
           <th rowspan="{{ month.occurrences|length }}">
-            <a href="{% url month-agenda month.year month.abbr %}">
+            <a href="{% url month-agenda calendar.slug month.year month.abbr %}">
               {{ month.name }}
             </a>
           </th>

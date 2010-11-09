@@ -4,31 +4,31 @@
 <h3>Monthly View</h3>
 
 <p>Switch to
-  <a href="{% url month-agenda month.year month.abbr %}">
+  <a href="{% url month-agenda calendar.slug month.year month.abbr %}">
     agenda view
   </a>.
 </p>
 
 {% if not small %}
 <h4>
-  <a href="{% url month-calendar month.previous.year month.previous.abbr %}"
+  <a href="{% url month-calendar calendar.slug month.previous.year month.previous.abbr %}"
     title="Previous Month">&larr;</a>
-  <a title="View {{ month.name}}" href="{% url month-calendar month.year month.abbr %}">
+  <a title="View {{ month.name}}" href="{% url month-calendar calendar.slug month.year month.abbr %}">
     {{ month|date:"F" }}</a>
-  <a title="View {{ month.year}}" href="{% url year-calendar month.year %}">
+  <a title="View {{ month.year}}" href="{% url year-calendar calendar.slug month.year %}">
     {{ month|date:"Y" }}</a>
-  <a href="{% url month-calendar month.next.year month.next.abbr %}"
+  <a href="{% url month-calendar calendar.slug month.next.year month.next.abbr %}"
     title="Next Month">&rarr;</a>
 </h4>
 {% else %}
 <h4>
-  <a href="{% url small-month-calendar month.previous.year month.previous.abbr %}"
+  <a href="{% url small-month-calendar calendar.slug month.previous.year month.previous.abbr %}"
     title="Previous Month">&larr;</a>
-  <a title="View {{ month.name}}" href="{% url small-month-calendar month.year month.abbr %}">
+  <a title="View {{ month.name}}" href="{% url small-month-calendar calendar.slug month.year month.abbr %}">
     {{ month|date:"F" }}</a>
-  <a title="View {{ month.year}}" href="{% url year-calendar month.year %}">
+  <a title="View {{ month.year}}" href="{% url year-calendar calendar.slug month.year %}">
     {{ month|date:"Y" }}</a>
-  <a href="{% url small-month-calendar month.next.year month.next.abbr %}"
+  <a href="{% url small-month-calendar calendar.slug month.next.year month.next.abbr %}"
     title="Next Month">&rarr;</a>
 </h4>
 {% endif %}
@@ -48,7 +48,7 @@
         <td{% if day == today %} class="today"{% endif %}>
           {% if day %}
           <div class="day-ordinal">
-            <a href="{% url day-calendar day.year month.abbr day.number %}">{{ day.number }}</a>
+            <a href="{% url day-calendar calendar.slug day.year month.abbr day.number %}">{{ day.number }}</a>
           </div>
           {% if day.occurrences %}
           <ul>

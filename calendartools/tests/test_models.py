@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from calendartools.models import Event, Occurrence
+from calendartools.models import Calendar, Event, Occurrence
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools import defaults
 from calendartools.signals import collect_occurrence_validators
@@ -85,6 +85,13 @@ class TestEvent(TestCase):
         assert not self.event.is_cancelled
         self.event.status = self.event.CANCELLED
         self.event.save()
+        self.event = Event.objects.get(pk=self.event.pk)
+        assert self.event.is_cancelled
+        self.event.status = self.event.PUBLISHED
+        self.event.save()
+        calendar = Calendar.objects.get(slug='')
+        calendar.status = calendar.CANCELLED
+        calendar.save()
         self.event = Event.objects.get(pk=self.event.pk)
         assert self.event.is_cancelled
 
@@ -187,6 +194,13 @@ class TestOccurrence(TestCase):
         assert not occurrence.is_cancelled
         self.event.status = self.event.CANCELLED
         self.event.save()
+        occurrence = Occurrence.objects.get(pk=occurrence.pk)
+        assert occurrence.is_cancelled
+        self.event.status = self.event.PUBLISHED
+        self.event.save()
+        calendar = Calendar.objects.get(slug='')
+        calendar.status = calendar.CANCELLED
+        calendar.save()
         occurrence = Occurrence.objects.get(pk=occurrence.pk)
         assert occurrence.is_cancelled
 

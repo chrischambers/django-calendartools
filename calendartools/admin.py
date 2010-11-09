@@ -1,8 +1,12 @@
 from django.contrib import admin
-from calendartools.models import Event, Occurrence
+from calendartools.models import Calendar, Event, Occurrence
+from calendartools import forms
 
+class CalendarAdmin(admin.ModelAdmin):
+    pass
 
 class EventAdmin(admin.ModelAdmin):
+    form = forms.AdminAddEventForm
     raw_id_fields = ['creator', 'editor']
     prepopulated_fields = {"slug": ("name",)}
     readonly_fields = ('creator', 'editor', 'datetime_created', 'datetime_modified')
@@ -20,5 +24,6 @@ class OccurrenceAdmin(admin.ModelAdmin):
     date_hierarchy = "datetime_created"
     search_fields = ('event__name',)
 
+admin.site.register(Calendar, CalendarAdmin)
 admin.site.register(Event, EventAdmin)
 admin.site.register(Occurrence, OccurrenceAdmin)

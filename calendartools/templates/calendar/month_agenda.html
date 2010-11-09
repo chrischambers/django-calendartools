@@ -4,19 +4,19 @@
 <h3>Monthly Agenda</h3>
 
 <p>Switch to
-  <a href="{% url month-calendar month.year month.abbr %}">
+  <a href="{% url month-calendar calendar.slug month.year month.abbr %}">
     calendar view
   </a>.
 </p>
 
 <h4>
-  <a href="{% url month-agenda month.previous.year month.previous.abbr %}"
+  <a href="{% url month-agenda calendar.slug month.previous.year month.previous.abbr %}"
     title="Previous Month">&larr;</a>
-  <a title="View {{ month.name}}" href="{% url month-agenda month.year month.abbr %}">
+  <a title="View {{ month.name}}" href="{% url month-agenda calendar.slug month.year month.abbr %}">
     {{ month|date:"F" }}</a>
-  <a title="View {{ month.year}}" href="{% url year-agenda month.year %}">
+  <a title="View {{ month.year}}" href="{% url year-agenda calendar.slug month.year %}">
     {{ month|date:"Y" }}</a>
-  <a href="{% url month-agenda month.next.year month.next.abbr %}"
+  <a href="{% url month-agenda calendar.slug month.next.year month.next.abbr %}"
     title="Next Month">&rarr;</a>
 </h4>
 
@@ -37,7 +37,7 @@
       {% if day.occurrences %}
         <tr class="day-divider">
           <th rowspan="{{ day.occurrences|length }}">
-            <a href="{% url day-agenda day.year day.get_month.abbr day.number %}">
+            <a href="{% url day-agenda calendar.slug day.year day.get_month.abbr day.number %}">
               {{ day|date:"jS" }} {{ day.get_month.name }}
             </a>
           </th>

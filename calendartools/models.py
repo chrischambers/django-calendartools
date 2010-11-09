@@ -29,7 +29,7 @@ class AuditedModel(models.Model):
 
 
 class EventBase(AuditedModel):
-    """Encapsulates common elements for Occurrence/Event models."""
+    """Encapsulates common elements for Calendar/Occurrence/Event models."""
     INACTIVE, HIDDEN, CANCELLED, PUBLISHED = 1, 2, 3, 4
     STATUS_CHOICES = (
         (INACTIVE,  _('Inactive')),
@@ -43,7 +43,40 @@ class EventBase(AuditedModel):
         abstract = True
 
 
+class Calendar(EventBase):
+    name = models.CharField(_('name'), max_length=255)
+    slug = models.SlugField(_('slug'), unique=True)
+    description = models.TextField(_('description'), blank=True)
+    status = models.SmallIntegerField(_('status'),
+        choices=EventBase.STATUS_CHOICES,
+        default=EventBase.PUBLISHED,
+        help_text=_(
+            "Toggle calendars inactive rather than deleting them. "
+            "Changing a Calendar from 'published' to "
+            "inactive/hidden/cancelled will deactivate/hide/cancel "
+            "all its events and their occurrences. "
+            "Toggling it back to 'published' will restore all of the "
+            "Events/Occurrences to their former states."
+        )
+    )
+
+    class Meta(object):
+        verbose_name = _('Calendar')
+        verbose_name_plural = _('Calendars')
+        get_latest_by = 'datetime_created'
+
+    def __unicode__(self):
+        return u"%s" % (self.name,)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('calendar', [], {'slug': self.slug})
+
+
 class Event(EventBase):
+    calendars = models.ManyToManyField(Calendar, verbose_name=_('calendars'),
+        blank=True, related_name='events'
+    )
     name = models.CharField(_('name'), max_length=255)
     slug = models.SlugField(_('slug'), unique=True)
     description = models.TextField(_('description'), blank=True)
@@ -72,6 +105,12 @@ class Event(EventBase):
     @models.permalink
     def get_absolute_url(self):
         return ('event-detail', [], {'slug': self.slug})
+
+    def save(self, *args, **kwargs):
+        super(Event, self).save(*args, **kwargs)
+        if not self.calendars.exists():
+            default_calendar = Calendar.objects.get(slug='')
+            self.calendars.add(default_calendar)
 
     def add_occurrences(self, start, finish, commit=True, **rrule_params):
         '''

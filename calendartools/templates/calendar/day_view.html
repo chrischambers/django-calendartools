@@ -12,21 +12,21 @@
 <h3>Day View</h3>
 
 <p>Switch to
-  <a href="{% url day-agenda day.year day.get_month.abbr day.number %}">
+  <a href="{% url day-agenda calendar.slug day.year day.get_month.abbr day.number %}">
     agenda view
   </a>.
 </p>
 
 <h4>
-  <a href="{% url day-calendar day.previous.year day.previous.get_month.abbr day.previous.number %}"
+  <a href="{% url day-calendar calendar.slug day.previous.year day.previous.get_month.abbr day.previous.number %}"
     title="Previous Day">&larr;</a>
-  <a title="View {{ day|date:"l, jS F, Y"}}" href="{% url day-calendar day.year day.get_month.abbr day.number %}">
+  <a title="View {{ day|date:"l, jS F, Y"}}" href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
   {{ day|date:"l jS" }}</a>
-  <a title="View {{ day|date:"F, Y"}}" href="{% url month-calendar day.year day.get_month.abbr %}">
+  <a title="View {{ day|date:"F, Y"}}" href="{% url month-calendar calendar.slug day.year day.get_month.abbr %}">
     {{ day|date:"F" }}</a>
-  <a title="View {{ day.year}}" href="{% url year-calendar day.year %}">
+  <a title="View {{ day.year}}" href="{% url year-calendar calendar.slug day.year %}">
     {{ day|date:"Y" }}</a>
-  <a href="{% url day-calendar day.next.year day.next.get_month.abbr day.next.number %}"
+  <a href="{% url day-calendar calendar.slug day.next.year day.next.get_month.abbr day.next.number %}"
     title="Next Day">&rarr;</a>
 </h4>
 
