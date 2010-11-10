@@ -87,13 +87,6 @@ class TestEvent(TestCase):
         self.event.save()
         self.event = Event.objects.get(pk=self.event.pk)
         assert self.event.is_cancelled
-        self.event.status = self.event.PUBLISHED
-        self.event.save()
-        calendar = Calendar.objects.get(slug='')
-        calendar.status = calendar.CANCELLED
-        calendar.save()
-        self.event = Event.objects.get(pk=self.event.pk)
-        assert self.event.is_cancelled
 
 
 class TestOccurrence(TestCase):

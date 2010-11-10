@@ -74,9 +74,6 @@ class Calendar(EventBase):
 
 
 class Event(EventBase):
-    calendars = models.ManyToManyField(Calendar, verbose_name=_('calendars'),
-        blank=True, related_name='events'
-    )
     name = models.CharField(_('name'), max_length=255)
     slug = models.SlugField(_('slug'), unique=True)
     description = models.TextField(_('description'), blank=True)
@@ -105,12 +102,6 @@ class Event(EventBase):
     @models.permalink
     def get_absolute_url(self):
         return ('event-detail', [], {'slug': self.slug})
-
-    def save(self, *args, **kwargs):
-        super(Event, self).save(*args, **kwargs)
-        if not self.calendars.exists():
-            default_calendar = Calendar.objects.get(slug='')
-            self.calendars.add(default_calendar)
 
     def add_occurrences(self, start, finish, commit=True, **rrule_params):
         '''
@@ -158,6 +149,9 @@ class Event(EventBase):
 
 
 class Occurrence(EventBase):
+    calendar = models.ForeignKey(Calendar, verbose_name=_('calendar'),
+        related_name='occurrences'
+    )
     event = models.ForeignKey(Event, verbose_name=_('event'),
         related_name='occurrences'
     )
@@ -203,12 +197,18 @@ class Occurrence(EventBase):
         self.collect_and_run_validators()
 
     def save(self, *args, **kwargs):
+        try:
+            self.calendar
+        except Calendar.DoesNotExist, e:
+            default_calendar = Calendar.objects.get(slug='')
+            self.calendar = default_calendar
         self.full_clean()
         return super(Occurrence, self).save(*args, **kwargs)
 
     @property
     def is_cancelled(self):
         return (self.status == self.CANCELLED or
+                self.calendar.status == self.calendar.CANCELLED or
                 self.event.status == self.event.CANCELLED)
 
     # Veneers:

@@ -4,19 +4,19 @@
 <h3>Tri Monthly View</h3>
 
 <p>Switch to
-  <a href="{% url month-agenda tri_month.second_month.year tri_month.second_month.abbr %}">
+  <a href="{% url month-agenda calendar.slug tri_month.second_month.year tri_month.second_month.abbr %}">
     agenda view
   </a>.
 </p>
 
 <h4>
-  <a href="{% url tri-month-calendar tri_month.first_month.year tri_month.first_month.abbr %}"
+  <a href="{% url tri-month-calendar calendar.slug tri_month.first_month.year tri_month.first_month.abbr %}"
     title="Previous 3 Months">&larr;</a>
-  <a title="View {{ tri_month.second_month.name}}" href="{% url tri-month-calendar tri_month.second_month.year tri_month.second_month.abbr %}">
+  <a title="View {{ tri_month.second_month.name}}" href="{% url tri-month-calendar calendar.slug tri_month.second_month.year tri_month.second_month.abbr %}">
     {{ tri_month.second_month|date:"F" }}</a>
-  <a title="View {{ tri_month.second_month.year}}" href="{% url year-calendar tri_month.year %}">
+  <a title="View {{ tri_month.second_month.year}}" href="{% url year-calendar calendar.slug tri_month.year %}">
     {{ tri_month.second_month|date:"Y" }}</a>
-  <a href="{% url tri-month-calendar tri_month.third_month.year tri_month.third_month.abbr %}"
+  <a href="{% url tri-month-calendar calendar.slug tri_month.third_month.year tri_month.third_month.abbr %}"
     title="Next 3 Months">&rarr;</a>
 </h4>
 
@@ -39,7 +39,7 @@
         <td{% if day == today %} class="today"{% endif %}>
           {% if day %}
           <div class="day-ordinal">
-            <a href="{% url day-calendar day.year month.abbr day.number %}">{{ day.number }}</a>
+            <a href="{% url day-calendar calendar.slug day.year month.abbr day.number %}">{{ day.number }}</a>
           </div>
           {% if day.occurrences %}
           <ul>

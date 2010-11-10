@@ -12,7 +12,7 @@
 <h4>
   <a href="{% url year-agenda calendar.slug year.previous.number %}"
     title="Last Year">&larr;</a>
-  <a title="View {{ year}}" href="{% url year-agenda year.number %}">
+  <a title="View {{ year}}" href="{% url year-agenda calendar.slug year.number %}">
     {{ year|date:"Y" }}</a>
   <a href="{% url year-agenda calendar.slug year.next.number %}"
     title="Next Year">&rarr;</a>

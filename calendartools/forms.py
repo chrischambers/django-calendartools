@@ -31,8 +31,8 @@ greater_than_1 = MinValueValidator(1)
 less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
 
-class AdminAddEventForm(forms.ModelForm):
-    calendars = forms.ModelMultipleChoiceField(
+class AdminAddOccurrenceForm(forms.ModelForm):
+    calendar = forms.ModelChoiceField(
         Calendar.objects.all(), initial=[1]#Calendar.objects.get(slug='')]
     )
 

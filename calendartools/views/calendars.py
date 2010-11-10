@@ -345,11 +345,10 @@ from django.template import RequestContext
 from datetime import date
 import time
 def year_view(request, slug, year, *args, **kwargs):
-    slug = slug or ''
     calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
     year = int(year)
-    occurrences = Occurrence.objects.visible().select_related('event__calendars').filter(
-        event__calendars=calendar,
+    occurrences = Occurrence.objects.visible().select_related('event', 'calendar').filter(
+        calendar=calendar,
         start__year=year).order_by('start')
     data = {
         'calendar': calendar,
@@ -360,7 +359,6 @@ def year_view(request, slug, year, *args, **kwargs):
                             context_instance=RequestContext(request))
 
 def month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
-    slug = slug or ''
     calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
     year = int(year)
     try:
@@ -368,8 +366,8 @@ def month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
         d = date(*tt[:3])
     except ValueError:
         raise Http404
-    occurrences = Occurrence.objects.visible().select_related('event__calendar').filter(
-        event__calendars=calendar,
+    occurrences = Occurrence.objects.visible().select_related('event', 'calendar').filter(
+        calendar=calendar,
         start__year=d.year, start__month=d.month,
     ).order_by('start')
     data = {
@@ -384,7 +382,6 @@ def month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
                             context_instance=RequestContext(request))
 
 def tri_month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
-    slug = slug or ''
     calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
     year = int(year)
     try:
@@ -392,8 +389,8 @@ def tri_month_view(request, slug, year, month, month_format='%b', *args, **kwarg
         d = date(*tt[:3])
     except ValueError:
         raise Http404
-    occurrences = Occurrence.objects.visible().select_related('event__calendar').filter(
-        event__calendars=calendar,
+    occurrences = Occurrence.objects.visible().select_related('event', 'calendar').filter(
+        calendar=calendar,
         start__range=(d - relativedelta(months=1), d + relativedelta(months=2))
     ).order_by('start')
     data = {
@@ -406,7 +403,6 @@ def tri_month_view(request, slug, year, month, month_format='%b', *args, **kwarg
 
 
 def day_view(request, slug, year, month, day, month_format='%b', *args, **kwargs):
-    slug = slug or ''
     calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
     year, day = int(year), int(day)
     try:
@@ -414,8 +410,8 @@ def day_view(request, slug, year, month, day, month_format='%b', *args, **kwargs
         d = date(*tt[:3])
     except ValueError:
         raise Http404
-    occurrences = Occurrence.objects.visible().select_related('event__calendar').filter(
-        event__calendars=calendar,
+    occurrences = Occurrence.objects.visible().select_related('event', 'calendar').filter(
+        calendar=calendar,
         start__year=d.year, start__month=d.month, start__day=d.day
     ).order_by('start')
     data = {
@@ -427,7 +423,6 @@ def day_view(request, slug, year, month, day, month_format='%b', *args, **kwargs
                             context_instance=RequestContext(request))
 
 def today_view(request, slug, *args, **kwargs):
-    slug = slug or ''
     today = date.today()
     return day_view(request, slug, today.year, today.strftime('%b'), today.day, *args, **kwargs)
 
@@ -445,7 +440,6 @@ def calendar_list(request, *args, **kwargs):
     return list_detail.object_list(request, *args, **kwargs)
 
 def calendar_detail(request, slug, *args, **kwargs):
-    slug = slug or ''
     calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
     data = {'calendar': calendar}
     return render_to_response('calendar/calendar_detail.html', data,

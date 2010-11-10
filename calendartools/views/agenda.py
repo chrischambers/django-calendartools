@@ -11,7 +11,7 @@ def year_agenda(request, slug, year, *args, **kwargs):
     calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
     year = int(year)
     occurrences = Occurrence.objects.visible().select_related('event').filter(
-        event__calendars=calendar,
+        calendar=calendar,
         start__year=year).order_by('start')
     data = {
         'calendar': calendar,
@@ -31,7 +31,7 @@ def month_agenda(request, slug, year, month, month_format='%b', *args, **kwargs)
     except ValueError:
         raise Http404
     occurrences = Occurrence.objects.visible().select_related('event').filter(
-        event__calendars=calendar,
+        calendar=calendar,
         start__year=d.year, start__month=d.month,
     ).order_by('start')
     data = {
@@ -53,7 +53,7 @@ def day_agenda(request, slug, year, month, day, month_format='%b', *args, **kwar
     except ValueError:
         raise Http404
     occurrences = Occurrence.objects.visible().select_related('event').filter(
-        event__calendars=calendar,
+        calendar=calendar,
         start__year=d.year, start__month=d.month, start__day=d.day
     ).order_by('start')
     data = {
