@@ -2,32 +2,33 @@ from datetime import datetime, timedelta
 from django.test import TestCase
 from django.contrib.auth.models import User
 from nose.tools import *
-from calendartools.models import Event, Occurrence
+from calendartools.models import Calendar, Event, Occurrence
 
 
 class TestCommonManager(TestCase):
     def setUp(self):
-        self.creator = User.objects.create(username='TestyMcTesterson')
+        self.user = User.objects.create(username='TestyMcTesterson')
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
 
         self.events = []
         for status, label in Event.STATUS_CHOICES:
             self.events.append(Event.objects.create(
                 name='Event',
                 slug='%s-event' % label.lower(),
-                creator=self.creator,
+                creator=self.user,
                 status=status
             ))
 
         self.start = datetime.now() + timedelta(minutes=30)
         self.finish = self.start + timedelta(hours=2)
 
-        self.occurrence = []
+        self.occurrences = []
         for status, label in Occurrence.STATUS_CHOICES:
-            self.occurrence.append(Occurrence.objects.create(
-                event=self.events[0], start=self.start, finish=self.finish,
-                status=status
+            self.occurrences.append(Occurrence.objects.create(
+                event=self.events[-1], start=self.start, finish=self.finish,
+                status=status, calendar=self.calendar
             ))
-        self.model = Event
+        self.model = Calendar
 
     def _test_status_properties(self, prop, status):
         assert_equal(
@@ -47,19 +48,143 @@ class TestCommonManager(TestCase):
     def test_published_property(self):
         self._test_status_properties('published', self.model.PUBLISHED)
 
+    def test_visible_method(self):
+        assert_equal(
+            set(self.model.objects.visible()),
+            set(self.model.objects.filter(status__gte=self.model.CANCELLED))
+        )
+        assert_equal(
+            set(self.model.objects.visible(user=self.user)),
+            set(self.model.objects.filter(status__gte=self.model.CANCELLED))
+        )
+        self.user.is_staff = True
+        self.user.save()
+        assert_equal(
+            set(self.model.objects.visible(user=self.user)),
+            set(self.model.objects.filter(status__gte=self.model.HIDDEN))
+        )
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        assert_equal(
+            set(self.model.objects.visible(user=self.user)),
+            set(self.model.objects.filter(status__gte=self.model.HIDDEN))
+        )
+
+
+class TestCalendarManager(TestCommonManager):
+    def setUp(self):
+        super(TestCalendarManager, self).setUp()
+
 
 class TestEventManager(TestCommonManager):
     def setUp(self):
         super(TestEventManager, self).setUp()
-
-    def test_visible_method(self):
-        pass
+        self.model = Event
 
 
 class TestOccurrenceManager(TestCommonManager):
     def setUp(self):
         super(TestOccurrenceManager, self).setUp()
         self.model = Occurrence
+        self.event = self.occurrences[0].event
 
-    def test_visible_method(self):
-        pass
+    def test_visible_with_hidden_event(self):
+        self.event.status = Event.HIDDEN
+        self.event.save()
+        assert_equal(
+            set(Occurrence.objects.visible()),
+            set(Occurrence.objects.none())
+        )
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.none())
+        )
+        self.user.is_staff = True
+        self.user.save()
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.filter(status__gte=Occurrence.HIDDEN))
+        )
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.filter(status__gte=Occurrence.HIDDEN))
+        )
+
+    def test_visible_with_inactive_event(self):
+        self.event.status = Event.INACTIVE
+        self.event.save()
+        assert_equal(
+            set(Occurrence.objects.visible()),
+            set(Occurrence.objects.none())
+        )
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.none())
+        )
+        self.user.is_staff = True
+        self.user.save()
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.none())
+        )
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.none())
+        )
+
+    def test_visible_with_hidden_calendar(self):
+        self.calendar.status = Calendar.HIDDEN
+        self.calendar.save()
+        assert_equal(
+            set(Occurrence.objects.visible()),
+            set(Occurrence.objects.none())
+        )
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.none())
+        )
+        self.user.is_staff = True
+        self.user.save()
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.filter(status__gte=Occurrence.HIDDEN))
+        )
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.filter(status__gte=Occurrence.HIDDEN))
+        )
+
+    def test_visible_with_inactive_calendar(self):
+        self.calendar.status = Calendar.INACTIVE
+        self.calendar.save()
+        assert_equal(
+            set(Occurrence.objects.visible()),
+            set(Occurrence.objects.none())
+        )
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.none())
+        )
+        self.user.is_staff = True
+        self.user.save()
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.none())
+        )
+        self.user.is_superuser = True
+        self.user.is_staff = False
+        self.user.save()
+        assert_equal(
+            set(Occurrence.objects.visible(self.user)),
+            set(Occurrence.objects.none())
+        )

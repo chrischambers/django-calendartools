@@ -3,13 +3,17 @@
 
 {% block primary %}
   <h1>{{ event.name }}</h1>
+  {% if event.description %}
   <p>{{ event.description }}</p>
+  {% endif %}
 
   {% if occurrences %}
   <h2>Occurrences</h2>
   <ul>
     {% for occurrence in occurrences %}
-    <li{% if occurrence.is_cancelled %} class="cancelled"{% endif %}><a href="{{ occurrence.get_absolute_url }}">{{ occurrence }}</a></li>
+    <li class="{{ occurrence.calendar.slug }}{% if occurrence.is_cancelled %} cancelled{% endif %}">
+      <a href="{{ occurrence.get_absolute_url }}">{{ occurrence }}</a>
+    </li>
     {% endfor %}
   </ul>
   {% endif %}

@@ -7,7 +7,9 @@ from django_extensions.db.fields import (
 from threaded_multihost.fields import CreatorField, EditorField
 from calendartools import defaults
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
-from calendartools.managers import EventManager, OccurrenceManager
+from calendartools.managers import (
+    CalendarManager, EventManager, OccurrenceManager
+)
 from calendartools.signals import collect_occurrence_validators
 from calendartools.validators.defaults import activate_default_validators
 
@@ -59,6 +61,7 @@ class Calendar(EventBase):
             "Events/Occurrences to their former states."
         )
     )
+    objects = CalendarManager()
 
     class Meta(object):
         verbose_name = _('Calendar')
@@ -70,7 +73,7 @@ class Calendar(EventBase):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('calendar', [], {'slug': self.slug})
+        return ('calendar-detail', [], {'slug': self.slug})
 
 
 class Event(EventBase):
@@ -103,7 +106,8 @@ class Event(EventBase):
     def get_absolute_url(self):
         return ('event-detail', [], {'slug': self.slug})
 
-    def add_occurrences(self, start, finish, commit=True, **rrule_params):
+    def add_occurrences(self, calendar, start, finish, commit=True,
+                        **rrule_params):
         '''
         Add one or more occurrences to the event using a comparable API to
         ``dateutil.rrule``. Returns a list of created ``Occurrence`` objects.
@@ -125,9 +129,9 @@ class Event(EventBase):
         rrule_params.setdefault('freq', rrule.DAILY)
 
         if commit:
-            make_occurrence = self.occurrences.create
+            make_occurrence = partial(self.occurrences.create, calendar=calendar)
         else:
-            make_occurrence = partial(Occurrence, event=self)
+            make_occurrence = partial(Occurrence, calendar=calendar, event=self)
 
         if 'count' not in rrule_params and 'until' not in rrule_params:
             return [make_occurrence(start=start, finish=finish)]
@@ -197,11 +201,6 @@ class Occurrence(EventBase):
         self.collect_and_run_validators()
 
     def save(self, *args, **kwargs):
-        try:
-            self.calendar
-        except Calendar.DoesNotExist, e:
-            default_calendar = Calendar.objects.get(slug='')
-            self.calendar = default_calendar
         self.full_clean()
         return super(Occurrence, self).save(*args, **kwargs)
 

@@ -9,7 +9,7 @@ from django.test import TestCase
 from nose.tools import *
 
 from calendartools import constants, defaults, signals
-from calendartools.models import Event
+from calendartools.models import Calendar, Event
 from calendartools.forms import MultipleOccurrenceForm
 from calendartools.validators import BaseValidator
 
@@ -23,6 +23,7 @@ class TestMultipleOccurrenceFormValidation(TestCase):
             self.weekday_long[key.title()] = val
 
         self.creator = User.objects.create(username='TestyMcTesterson')
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.event = Event.objects.create(
             name='Event', slug='event', creator=self.creator
         )
@@ -30,6 +31,7 @@ class TestMultipleOccurrenceFormValidation(TestCase):
         self.tomorrow = self.today + timedelta(1)
 
         self.full_data = {
+            'calendar':               self.calendar.pk,
             'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
@@ -75,6 +77,7 @@ class TestMultipleOccurrenceFormValidation(TestCase):
         }
 
         self.data = {
+            'calendar':               self.calendar.pk,
             'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',
@@ -114,14 +117,19 @@ class TestMultipleOccurrenceFormValidation(TestCase):
             form = MultipleOccurrenceForm(event=self.event, data=self.data)
             assert form.is_valid(), form.errors.as_text()
 
+    def test_calendar_required(self):
+        self.data.update({'freq': rrule.DAILY})
+        del self.data['calendar']
+        form = MultipleOccurrenceForm(event=self.event, data=self.data)
+        assert not form.is_valid()
+        assert "This field is required." in form.errors.get('calendar', [])
+
     def test_repeats_method_count_must_have_count_gt_1(self):
         """If repeats method == 'count', 'count' parameter
         must be provided, and its value must be gt 1."""
         invalid_inputs = [None, -2, -1, 0, self.maximum]
         valid_inputs   = [1, 10, 20, 30, self.maximum - 1]
-        self.data.update({
-            'freq':                   rrule.DAILY,
-        })
+        self.data.update({'freq': rrule.DAILY })
         del self.data['count']
         self._test_formfield('count', invalid_inputs, valid_inputs)
 
@@ -322,6 +330,7 @@ class TestMultipleOccurrenceFormModelValidation(TestCase):
             'Testy@test.com',
             'password'
         )
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.add_occurrence_perm = Permission.objects.get(
             content_type__app_label='calendartools',
             codename='add_occurrence'
@@ -345,6 +354,7 @@ class TestMultipleOccurrenceFormModelValidation(TestCase):
         signals.collect_occurrence_validators.connect(self.validator)
         self.data = {
             '_add':                   True,
+            'calendar':               self.calendar.id,
             'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',

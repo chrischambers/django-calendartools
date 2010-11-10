@@ -31,15 +31,6 @@ greater_than_1 = MinValueValidator(1)
 less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
 
-class AdminAddOccurrenceForm(forms.ModelForm):
-    calendar = forms.ModelChoiceField(
-        Calendar.objects.all(), initial=[1]#Calendar.objects.get(slug='')]
-    )
-
-    class Meta(object):
-        model = Event
-
-
 class EventForm(forms.ModelForm):
     '''
     A simple form for adding and updating Event attributes
@@ -106,6 +97,7 @@ class MultipleOccurrenceForm(OccurrenceBaseForm):
     year_month_ordinal
     year_month_ordinal_day
     """
+    calendar = forms.ModelChoiceField(Calendar.objects.visible())
     day = forms.DateField(
         label=_(u'Date'),
         initial=date.today,
@@ -203,7 +195,13 @@ class MultipleOccurrenceForm(OccurrenceBaseForm):
 
     def __init__(self, event, *args, **kws):
         self.event = event
+        self.request = kws.pop('request', None)
+        self.user = getattr(self.request, 'user', None)
         super(MultipleOccurrenceForm, self).__init__(*args, **kws)
+
+        self.fields['calendar'].choices = Calendar.objects.visible(
+            self.user).values_list('id', 'name')
+
         dtstart = self.initial.get('dtstart', None)
         if dtstart:
             dtstart = dtstart.replace(
@@ -330,6 +328,7 @@ class MultipleOccurrenceForm(OccurrenceBaseForm):
             self.rrules = self._build_rrule_params()
 
         self.occurrences = self.event.add_occurrences(
+            self.cleaned_data['calendar'],
             self.cleaned_data['start_time'],
             self.cleaned_data['end_time'],
             commit=False,

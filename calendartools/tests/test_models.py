@@ -13,6 +13,7 @@ from nose.tools import *
 class TestEvent(TestCase):
     def setUp(self):
         self.creator = User.objects.create(username='TestyMcTesterson')
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.event = Event.objects.create(
             name='Event', slug='event', creator=self.creator
         )
@@ -20,7 +21,7 @@ class TestEvent(TestCase):
         self.finish = self.start + timedelta(hours=2)
 
     def test_add_occurrences_basic(self):
-        self.event.add_occurrences(self.start, self.finish)
+        self.event.add_occurrences(self.calendar, self.start, self.finish)
         assert_equal(self.event.occurrences.count(), 1)
         assert_equal(
             self.event.occurrences.latest().start.replace(microsecond=0),
@@ -32,7 +33,7 @@ class TestEvent(TestCase):
         )
 
     def test_add_occurrences_with_count(self):
-        self.event.add_occurrences(self.start, self.finish, count=3)
+        self.event.add_occurrences(self.calendar, self.start, self.finish, count=3)
         assert_equal(self.event.occurrences.count(), 3)
         expected = [
             self.start,
@@ -42,22 +43,26 @@ class TestEvent(TestCase):
         expected = set([dt.replace(microsecond=0) for dt in expected])
         actual = set(self.event.occurrences.values_list('start', flat=True))
         assert_equal(expected, actual)
+        assert_equal(
+            set(Occurrence.objects.filter(calendar=self.calendar)),
+            set(Occurrence.objects.all()),
+        )
 
     def test_add_occurrences_with_until(self):
         until = self.start + timedelta(5)
-        self.event.add_occurrences(self.start, self.finish, until=until)
+        self.event.add_occurrences(self.calendar, self.start, self.finish, until=until)
         assert_equal(self.event.occurrences.count(), 6)
 
     def test_add_occurrences_with_commit_false(self):
         occurrences = self.event.add_occurrences(
-            self.start, self.finish, commit=False
+            self.calendar, self.start, self.finish, commit=False
         )
         assert_equal(self.event.occurrences.count(), 0)
         assert_equal(len(occurrences), 1)
         assert not occurrences[0].pk
 
         occurrences = self.event.add_occurrences(
-            self.start, self.finish, count=3, commit=False
+            self.calendar, self.start, self.finish, count=3, commit=False
         )
         assert_equal(self.event.occurrences.count(), 0)
         assert_equal(len(occurrences), 3)
@@ -69,13 +74,14 @@ class TestEvent(TestCase):
     def test_add_occurrences_maximum_creation_count_exceeded(self):
         assert_raises(MaxOccurrenceCreationsExceeded,
             self.event.add_occurrences,
-            self.start, self.finish, commit=False,
+            self.calendar, self.start, self.finish, commit=False,
             count=defaults.MAX_OCCURRENCE_CREATION_COUNT + 1
         )
 
     def test_is_cancelled_property(self):
         assert not self.event.is_cancelled
         occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             finish=self.start + timedelta(microseconds=1)
@@ -92,6 +98,7 @@ class TestEvent(TestCase):
 class TestOccurrence(TestCase):
     def setUp(self):
         self.creator = User.objects.create(username='TestyMcTesterson')
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.event = Event.objects.create(
             name='Event', slug='event', creator=self.creator
         )
@@ -102,9 +109,11 @@ class TestOccurrence(TestCase):
             assert_raises(
                 ValidationError,
                 Occurrence.objects.create,
-                event=self.event, start=self.start, finish=finish
+                calendar=self.calendar, event=self.event,
+                start=self.start, finish=finish
             )
         Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             finish=self.start + timedelta(microseconds=1)
@@ -120,15 +129,20 @@ class TestOccurrence(TestCase):
         )
 
     def test_validation_with_missing_start(self):
-        occurrence = Occurrence(event=self.event, start=self.start)
+        occurrence = Occurrence(
+            calendar=self.calendar, event=self.event, start=self.start
+        )
         assert_raises(ValidationError, occurrence.save)
 
     def test_validation_with_missing_end(self):
-        occurrence = Occurrence(event=self.event, finish=self.start)
+        occurrence = Occurrence(
+            calendar=self.calendar, event=self.event, finish=self.start
+        )
         assert_raises(ValidationError, occurrence.save)
 
     def test_updated_occurrences_need_not_occur_in_future(self):
         occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             finish=self.start + timedelta(hours=2)
@@ -152,6 +166,7 @@ class TestOccurrence(TestCase):
                 raise ValidationError(self.error_message)
 
         occurrence = Occurrence(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             finish=self.start # also fails finish > start check.
@@ -173,6 +188,7 @@ class TestOccurrence(TestCase):
 
     def test_is_cancelled_property(self):
         occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             finish=self.start + timedelta(microseconds=1)
@@ -191,14 +207,14 @@ class TestOccurrence(TestCase):
         assert occurrence.is_cancelled
         self.event.status = self.event.PUBLISHED
         self.event.save()
-        calendar = Calendar.objects.get(slug='')
-        calendar.status = calendar.CANCELLED
-        calendar.save()
+        self.calendar.status = Calendar.CANCELLED
+        self.calendar.save()
         occurrence = Occurrence.objects.get(pk=occurrence.pk)
         assert occurrence.is_cancelled
 
     def test_name_property(self):
         occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             finish=self.start + timedelta(microseconds=1)
@@ -207,6 +223,7 @@ class TestOccurrence(TestCase):
 
     def test_description_property(self):
         occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             finish=self.start + timedelta(microseconds=1)

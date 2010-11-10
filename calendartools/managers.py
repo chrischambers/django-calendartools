@@ -36,6 +36,15 @@ class CommonQuerySet(QuerySet):
         return self.filter(status=self.model.PUBLISHED)
 
 
+class CalendarQuerySet(CommonQuerySet):
+    def visible(self, user=None):
+        from calendartools.models import Calendar
+        if user and defaults.view_hidden_calendars_check(user=user):
+            return self.filter(status__gte=Calendar.HIDDEN)
+        else:
+            return self.filter(status__gte=Calendar.CANCELLED)
+
+
 class EventQuerySet(CommonQuerySet):
     def visible(self, user=None):
         from calendartools.models import Event
@@ -47,14 +56,23 @@ class EventQuerySet(CommonQuerySet):
 
 class OccurrenceQuerySet(CommonQuerySet):
     def visible(self, user=None):
-        from calendartools.models import Event, Occurrence
-        qset = self.select_related('event')
+        from calendartools.models import Calendar, Event, Occurrence
+        qset = self.select_related('event', 'calendar')
         if user and defaults.view_hidden_occurrences_check(user=user):
             return (qset.filter(status__gte=Occurrence.HIDDEN) &
-                    qset.filter(event__status__gte=Occurrence.HIDDEN))
+                    qset.filter(event__status__gte=Event.HIDDEN) &
+                    qset.filter(calendar__status__gte=Calendar.HIDDEN))
         else:
-            return (qset.filter(status__gte=Event.CANCELLED) &
-                    qset.filter(event__status__gte=Event.CANCELLED))
+            return (qset.filter(status__gte=Occurrence.CANCELLED) &
+                    qset.filter(event__status__gte=Event.CANCELLED) &
+                    qset.filter(calendar__status__gte=Calendar.CANCELLED))
+
+
+class CalendarManager(DRYManager):
+    use_for_related_fields = True
+
+    def get_query_set(self):
+        return CalendarQuerySet(self.model)
 
 
 class EventManager(DRYManager):

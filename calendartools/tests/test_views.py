@@ -85,6 +85,7 @@ class TestEventDetailView(TestCase):
             'Testy@test.com',
             'password'
         )
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.event = Event.objects.create(
             name='The Test Event',
             slug='event-version-1',
@@ -101,6 +102,7 @@ class TestEventDetailView(TestCase):
         )
         self.start = datetime.utcnow() + timedelta(hours=2)
         self.occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             finish=self.start + timedelta(hours=2)
@@ -224,6 +226,7 @@ class TestEventDetailView(TestCase):
     def test_list_occurrences(self):
         for status, label in Occurrence.STATUS_CHOICES:
             Occurrence.objects.create(
+                calendar=self.calendar,
                 event=self.event,
                 start=self.start,
                 finish=self.start + timedelta(hours=2),
@@ -247,6 +250,7 @@ class TestEventDetailView2(TestCase):
             'Testy@test.com',
             'password'
         )
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.event = Event.objects.create(
             name='The Test Event',
             slug='event-version-1',
@@ -258,6 +262,7 @@ class TestEventDetailView2(TestCase):
     def test_list_occurrences(self):
         for status, label in Occurrence.STATUS_CHOICES:
             Occurrence.objects.create(
+                calendar=self.calendar,
                 event=self.event,
                 start=self.start,
                 finish=self.start + timedelta(hours=2),
@@ -276,6 +281,7 @@ class TestOccurrenceDetailView(TestCase):
             'Testy@test.com',
             'password'
         )
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.event = Event.objects.create(
             name='The Test Event',
             slug='event-version-1',
@@ -284,6 +290,7 @@ class TestOccurrenceDetailView(TestCase):
         )
         now = datetime.utcnow()
         self.occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=now,
             finish=now + timedelta(hours=2)
@@ -421,6 +428,7 @@ class TestConfirmOccurrenceView(TestCase):
             'Testy@test.com',
             'password'
         )
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.add_occurrence_perm = Permission.objects.get(
             content_type__app_label='calendartools',
             codename='add_occurrence'
@@ -439,9 +447,25 @@ class TestConfirmOccurrenceView(TestCase):
         now     = datetime.now() - timedelta.resolution
         start   = now + timedelta(minutes=30)
         finish  = start + timedelta(hours=1)
-        valid   = Occurrence(event=self.event,  start=start, finish=finish)
-        valid2  = Occurrence(event=self.event2, start=start, finish=finish)
-        invalid = Occurrence(event=self.event,  start=now,   finish=finish)
+
+        valid = Occurrence(
+            calendar=self.calendar,
+            event=self.event,
+            start=start,
+            finish=finish
+        )
+        valid2 = Occurrence(
+            calendar=self.calendar,
+            event=self.event2,
+            start=start,
+            finish=finish
+        )
+        invalid = Occurrence(
+            calendar=self.calendar,
+            event=self.event,
+            start=now,
+            finish=finish
+        )
 
         self.valid   = [valid, valid2]
         self.invalid = [(invalid, 'Craziness went down.')]
@@ -508,7 +532,7 @@ class TestConfirmOccurrenceView(TestCase):
         # that:
         # i) the MultipleOccurrenceForm is submitted and,
         # ii) the ConfirmOccurrenceForm is posted
-        # which would causes one of the models fail its validation checks.
+        # which would causes one of the models to fail its validation checks.
         assert_equal(Occurrence.objects.count(), 0)
         response = self.client.get(
             reverse('confirm-occurrences'), follow=True
@@ -1058,6 +1082,7 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
             'Testy@test.com',
             'password'
         )
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.event = Event.objects.create(
             name='The Test Event',
             slug='event-version-1',
@@ -1066,11 +1091,13 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
         )
         self.start = datetime.utcnow() + timedelta(hours=2)
         Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             finish=self.start + timedelta(hours=2)
         )
         Occurrence.objects.create(
+            calendar=self.calendar,
             event=self.event,
             start=self.start,
             status=Occurrence.CANCELLED,

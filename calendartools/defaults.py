@@ -50,6 +50,7 @@ def view_hidden_events_check(request=None, user=None):
     return user.is_superuser or user.is_staff
 
 view_hidden_occurrences_check = view_hidden_events_check
+view_hidden_calendars_check = view_hidden_events_check
 
 def add_occurrence_permission_check(request):
     return request.user.has_perm('calendartools.add_occurrence')
