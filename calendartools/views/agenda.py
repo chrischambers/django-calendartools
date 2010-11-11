@@ -7,12 +7,13 @@ import time
 from calendartools.views.calendars import Calendar, Year, Month, Day
 
 def year_agenda(request, slug, year, *args, **kwargs):
-    slug = slug or ''
-    calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
     year = int(year)
+
     occurrences = Occurrence.objects.visible().select_related('event').filter(
         calendar=calendar,
         start__year=year).order_by('start')
+
     data = {
         'calendar': calendar,
         'occurrences': occurrences,
@@ -21,19 +22,23 @@ def year_agenda(request, slug, year, *args, **kwargs):
     return render_to_response("calendar/year_agenda.html", data,
                             context_instance=RequestContext(request))
 
-def month_agenda(request, slug, year, month, month_format='%b', *args, **kwargs):
-    slug = slug or ''
-    calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
+def month_agenda(request, slug, year, month, month_format='%b', *args,
+                 **kwargs):
+
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
     year = int(year)
+
     try:
         tt = time.strptime("%s-%s" % (year, month), '%s-%s' % ('%Y', month_format))
         d = date(*tt[:3])
     except ValueError:
         raise Http404
+
     occurrences = Occurrence.objects.visible().select_related('event').filter(
         calendar=calendar,
         start__year=d.year, start__month=d.month,
     ).order_by('start')
+
     data = {
         'calendar': calendar,
         'occurrences': occurrences,
@@ -43,19 +48,24 @@ def month_agenda(request, slug, year, month, month_format='%b', *args, **kwargs)
                             context_instance=RequestContext(request))
 
 
-def day_agenda(request, slug, year, month, day, month_format='%b', *args, **kwargs):
-    slug = slug or ''
-    calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
+def day_agenda(request, slug, year, month, day, month_format='%b', *args,
+               **kwargs):
+
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
     year, day = int(year), int(day)
+
     try:
-        tt = time.strptime("%s-%s-%s" % (year, month, day), '%s-%s-%s' % ('%Y', month_format, '%d'))
+        tt = time.strptime("%s-%s-%s" % (year, month, day), '%s-%s-%s' % (
+            '%Y', month_format, '%d'))
         d = date(*tt[:3])
     except ValueError:
         raise Http404
+
     occurrences = Occurrence.objects.visible().select_related('event').filter(
         calendar=calendar,
         start__year=d.year, start__month=d.month, start__day=d.day
     ).order_by('start')
+
     data = {
         'calendar': calendar,
         'occurrences': occurrences,
@@ -66,4 +76,5 @@ def day_agenda(request, slug, year, month, day, month_format='%b', *args, **kwar
 
 def today_agenda(request, slug, *args, **kwargs):
     today = date.today()
-    return day_agenda(request, slug, today.year, today.strftime('%b'), today.day, *args, **kwargs)
+    return day_agenda(request, slug, today.year, today.strftime('%b'),
+                      today.day, *args, **kwargs)

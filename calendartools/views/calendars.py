@@ -14,19 +14,19 @@ from calendartools.periods import Year, Month, TripleMonth, Day
 
 def calendar_list(request, *args, **kwargs):
     kwargs.update({
-        'queryset': Calendar.objects.all(),
+        'queryset': Calendar.objects.visible(request.user),
         'template_name': 'calendar/calendar_list.html'
     })
     return list_detail.object_list(request, *args, **kwargs)
 
 def calendar_detail(request, slug, *args, **kwargs):
-    calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
     data = {'calendar': calendar}
     return render_to_response('calendar/calendar_detail.html', data,
                             context_instance=RequestContext(request))
 
 def year_view(request, slug, year, *args, **kwargs):
-    calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
     year = int(year)
 
     occurrences = Occurrence.objects.visible(
@@ -42,7 +42,7 @@ def year_view(request, slug, year, *args, **kwargs):
                             context_instance=RequestContext(request))
 
 def month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
-    calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
     year = int(year)
 
     try:
@@ -69,7 +69,7 @@ def month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
 def tri_month_view(request, slug, year, month, month_format='%b', *args,
                    **kwargs):
 
-    calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
     year = int(year)
 
     try:
@@ -94,7 +94,7 @@ def tri_month_view(request, slug, year, month, month_format='%b', *args,
 def day_view(request, slug, year, month, day, month_format='%b', *args,
              **kwargs):
 
-    calendar = get_object_or_404(Calendar.objects.all(), slug=slug)
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
     year, day = int(year), int(day)
 
     try:

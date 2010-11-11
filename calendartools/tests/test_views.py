@@ -596,3 +596,136 @@ class TestOccurrenceDetailRedirect(TestCase):
             args=(self.event.slug, self.occurrence.pk)),
             status_code=301
         )
+
+class TestCalendarVisibility(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            'TestyMcTesterson',
+            'Testy@test.com',
+            'password'
+        )
+        self.calendar  = Calendar.objects.create(name='Test1', slug='t1')
+        self.calendar2 = Calendar.objects.create(name='Test2', slug='t2')
+        self.event = Event.objects.create(
+            name='Event', slug='event', creator=self.user
+        )
+        now = datetime.now() + timedelta(days=1)
+        self.occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
+            event=self.event,
+            start=now,
+            finish=now + timedelta(hours=2)
+        )
+        self.assertTrue(self.client.login(
+            username=self.user.username, password='password')
+        )
+        self.urls = (
+            ('agenda', {'slug': self.calendar.slug}),
+            ('calendar-detail', {'slug': self.calendar.slug}),
+
+            ('year-calendar', {
+                'slug': self.calendar.slug,
+                'year': 2010
+            }),
+            ('month-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  2010,
+                'month': 'nov',
+            }),
+            ('small-month-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  2010,
+                'month': 'nov',
+            }),
+            ('tri-month-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  2010,
+                'month': 'nov',
+            }),
+            ('day-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  2010,
+                'month': 'nov',
+                'day':   10,
+            }),
+            ('year-agenda', {
+                'slug': self.calendar.slug,
+                'year': 2010
+            }),
+            ('month-agenda', {
+                'slug':  self.calendar.slug,
+                'year':  2010,
+                'month': 'nov',
+            }),
+            ('day-agenda', {
+                'slug':  self.calendar.slug,
+                'year':  2010,
+                'month': 'nov',
+                'day':   10,
+            }),
+        )
+
+    def test_calendar_list_displays_cancelled_and_above(self):
+        for state in (Calendar.INACTIVE, Calendar.HIDDEN):
+            Calendar.objects.all().update(status=state)
+            response = self.client.get(reverse('calendar-list'), follow=True)
+            assert_equal(len(response.context[-1].get('object_list')), 0)
+
+        for state in (Calendar.CANCELLED, Calendar.PUBLISHED):
+            Calendar.objects.all().update(status=state)
+            response = self.client.get(reverse('calendar-list'), follow=True)
+            assert_equal(len(response.context[-1].get('object_list')), 2)
+
+    def test_calendar_list_displays_hidden_for_staff(self):
+        Calendar.objects.all().update(status=Calendar.HIDDEN)
+
+        self.user.is_superuser = True
+        self.user.save()
+        response = self.client.get(reverse('calendar-list'), follow=True)
+        assert_equal(len(response.context[-1].get('object_list')), 2)
+
+        self.user.is_staff = True
+        self.user.is_superuser = False
+        self.user.save()
+        response = self.client.get(reverse('calendar-list'), follow=True)
+        assert_equal(len(response.context[-1].get('object_list')), 2)
+
+    def test_normal_user_cannot_see_inactive_calendars(self):
+        Calendar.objects.all().update(status=Calendar.INACTIVE)
+        for url in self.urls:
+            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            assert_equal(404, response.status_code)
+
+    def test_normal_user_cannot_see_hidden_calendars(self):
+        Calendar.objects.all().update(status=Calendar.HIDDEN)
+        for url in self.urls:
+            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            assert_equal(404, response.status_code)
+
+    def test_normal_user_can_see_cancelled_calendars(self):
+        Calendar.objects.all().update(status=Calendar.CANCELLED)
+        for url in self.urls:
+            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            assert_equal(200, response.status_code)
+
+    def test_normal_user_can_see_published_calendars(self):
+        Calendar.objects.all().update(status=Calendar.PUBLISHED)
+        for url in self.urls:
+            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            assert_equal(200, response.status_code)
+
+    def test_superuser_can_see_hidden_calendars(self):
+        self.user.is_superuser = True
+        self.user.save()
+        Calendar.objects.all().update(status=Calendar.HIDDEN)
+        for url in self.urls:
+            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            assert_equal(200, response.status_code)
+
+    def test_staff_user_can_see_hidden_calendars(self):
+        self.user.is_staff = True
+        self.user.save()
+        Calendar.objects.all().update(status=Calendar.HIDDEN)
+        for url in self.urls:
+            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            assert_equal(200, response.status_code)
