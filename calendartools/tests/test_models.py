@@ -10,7 +10,7 @@ from calendartools.validators import BaseValidator
 from nose.tools import *
 
 
-class TestCommon(TestCase):
+class TestEventBase(TestCase):
     def setUp(self):
         self.creator = User.objects.create(username='TestyMcTesterson')
         self.calendar = Calendar.objects.create(name='Basic', slug='basic')
@@ -180,7 +180,6 @@ class TestOccurrence(TestCase):
                 '\n%s' % e
             )
 
-
     def test_pluggable_validators_priority(self):
         class AngryValidator(BaseValidator):
             priority = 9000
@@ -198,13 +197,13 @@ class TestOccurrence(TestCase):
         try:
             collect_occurrence_validators.connect(AngryValidator)
             occurrence.save()
-            self.fail('ValidationError of top priority not triggered first')
+            self.fail('ValidationError not triggered')
         except ValidationError, e:
             assert_equal(e.messages[0], AngryValidator.error_message)
             AngryValidator.priority = -1
             try:
                 occurrence.save()
-                self.fail('ValidationError of top priority not triggered first')
+                self.fail('ValidationError not triggered')
             except ValidationError, e:
                 assert_not_equal(e.messages[0], AngryValidator.error_message)
         finally:
