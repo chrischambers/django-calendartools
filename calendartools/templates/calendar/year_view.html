@@ -35,7 +35,7 @@
     {% for month in year.months %}
       {% if month.occurrences %}
         <tr class="month-divider">
-          <th rowspan="{{ occurrences|length }}">
+          <th rowspan="{{ month.occurrences|length }}">
             <a href="{% url month-calendar calendar.slug month.year month.abbr %}">
               {{ month.name }}
             </a>

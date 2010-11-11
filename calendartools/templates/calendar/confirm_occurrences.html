@@ -8,7 +8,7 @@
   <h2>Valid Occurrences</h2>
   <ul>
     {% for occ in valid_occurrences %}
-     <li>{{ occ }}</li>
+    <li class="{{ occ.status_slug }}">{{ occ }}</li>
     {% endfor %}
   </ul>
   {% endif %}
@@ -17,7 +17,7 @@
   <h2>Invalid Occurrences</h2>
   <ul>
     {% for occ, reason in invalid_occurrences %}
-    <li>{{ occ }} - <span class="reason">{{ reason }}</span></li>
+    <li class="{{ occ.status_slug }}">{{ occ }} - <span class="reason">{{ reason }}</span></li>
     {% endfor %}
   </ul>
   {% endif %}

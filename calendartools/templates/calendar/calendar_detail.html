@@ -9,7 +9,7 @@
   <h2>Occurrences</h2>
   <ul>
     {% for occurrence in occurrences %}
-    <li{% if occurrence.is_cancelled %} class="cancelled"{% endif %}><a href="{{ occurrence.get_absolute_url }}">{{ occurrence }}</a></li>
+    <li class="{{ occurrence.status_slug }}"><a href="{{ occurrence.get_absolute_url }}">{{ occurrence }}</a></li>
     {% endfor %}
   </ul>
   {% endif %}

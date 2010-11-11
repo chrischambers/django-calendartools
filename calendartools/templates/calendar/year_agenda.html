@@ -41,7 +41,7 @@
             </a>
           </th>
         {% for o in month.occurrences %}
-          <td><a href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
+          <td><a class="{{ o.status_slug }}" href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
           <td>
             <a href="{% url day-agenda calendar.slug o.start.year o.start|date:"b" o.start.day %}">
               {{ o.start|date:"jS, l" }}

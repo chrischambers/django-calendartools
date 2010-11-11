@@ -45,6 +45,17 @@ class EventBase(AuditedModel):
     class Meta(object):
         abstract = True
 
+    @property
+    def status_slug(self):
+        """
+        Slugs **almost** have the property of being valid css class names:
+        this property allows us to style objects according to their status.
+        """
+        for number, label in self.STATUS_CHOICES:
+            if self.status == number:
+                break
+        return slugify(label.lstrip('1234567890_-'))
+
 
 class Calendar(EventBase):
     name = models.CharField(_('name'), max_length=255)
@@ -64,6 +75,7 @@ class Calendar(EventBase):
     )
     objects = CalendarManager()
 
+
     class Meta(object):
         verbose_name = _('Calendar')
         verbose_name_plural = _('Calendars')
@@ -75,17 +87,6 @@ class Calendar(EventBase):
     @models.permalink
     def get_absolute_url(self):
         return ('calendar-detail', [], {'slug': self.slug})
-
-    @property
-    def status_slug(self):
-        """
-        Slugs **almost** have the property of being valid css class names:
-        this property allows us to style objects according to their status.
-        """
-        for number, label in self.STATUS_CHOICES:
-            if self.status == number:
-                break
-        return slugify(label.lstrip('1234567890_-'))
 
 
 class Event(EventBase):

@@ -8,7 +8,7 @@
   {% for event in object_list %}
     <li>
       <ul>
-        <li><strong><a href="{{ event.get_absolute_url }}">{{ event.name }}</a></strong></li>
+        <li><strong><a class="{{ event.status_slug }}" href="{{ event.get_absolute_url }}">{{ event.name }}</a></strong></li>
         <li>{{ event.description }}</li>
       </ul>
     </li>

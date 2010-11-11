@@ -42,7 +42,7 @@
             </a>
           </th>
         {% for o in day.occurrences %}
-          <td><a href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
+        <td><a class="{{ o.status_slug }}" href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
           <td>{{ o.start|date:"P" }}</td>
           <td>{{ o.finish|date:"P" }}</td>
         </tr>

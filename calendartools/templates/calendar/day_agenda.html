@@ -38,7 +38,7 @@
   <tbody>
     {% for o in day.occurrences %}
       <tr class="hour-divider">
-        <td><a class="{% if o.is_cancelled %}cancelled{% endif %}"
+        <td><a class="{{ o.status_slug }}"
                href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
         <td>{{ o.start|date:"P" }}</td>
         <td>{{ o.finish|date:"P" }}</td>

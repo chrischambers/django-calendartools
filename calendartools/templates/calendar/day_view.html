@@ -42,7 +42,7 @@
           <ul>
             {% for occurrence in cell.occurrences %}
             <li>
-              <a class="{% if occurrence.is_cancelled %}cancelled{% endif %}"
+              <a class="{{ occurrence.status_slug }}"
                  href="{{ occurrence.get_absolute_url }}">
                  {{ occurrence.event.name }}
                </a>

@@ -10,15 +10,27 @@ from calendartools.validators import BaseValidator
 from nose.tools import *
 
 
-class TestCalendar(TestCase):
+class TestCommon(TestCase):
     def setUp(self):
+        self.creator = User.objects.create(username='TestyMcTesterson')
         self.calendar = Calendar.objects.create(name='Basic', slug='basic')
+        self.event = Event.objects.create(
+            name='Event', slug='event', creator=self.creator
+        )
+        self.start = datetime.now() + timedelta(minutes=30)
+        self.finish = self.start + timedelta(hours=2)
+        self.occurrence = self.event.add_occurrences(
+            self.calendar, self.start, self.finish)[0]
 
     def test_status_slug(self):
         mapping = {1: 'inactive', 2: 'hidden', 3: 'cancelled', 4: 'published'}
         for num in mapping:
             self.calendar.status = num
+            self.event.status = num
+            self.occurrence.status = num
             assert_equal(self.calendar.status_slug, mapping[num])
+            assert_equal(self.event.status_slug, mapping[num])
+            assert_equal(self.occurrence.status_slug, mapping[num])
 
 
 class TestEvent(TestCase):

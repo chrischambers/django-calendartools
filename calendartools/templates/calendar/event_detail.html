@@ -11,7 +11,7 @@
   <h2>Occurrences</h2>
   <ul>
     {% for occurrence in occurrences %}
-    <li class="{{ occurrence.calendar.slug }}{% if occurrence.is_cancelled %} cancelled{% endif %}">
+    <li class="{{ occurrence.calendar.slug }} {{ occurrence.status_slug }}">
       <a href="{{ occurrence.get_absolute_url }}">{{ occurrence }}</a>
     </li>
     {% endfor %}
