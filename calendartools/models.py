@@ -1,5 +1,6 @@
 from dateutil import rrule
 from django.db import models
+from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import (
     CreationDateTimeField, ModificationDateTimeField
@@ -74,6 +75,17 @@ class Calendar(EventBase):
     @models.permalink
     def get_absolute_url(self):
         return ('calendar-detail', [], {'slug': self.slug})
+
+    @property
+    def status_slug(self):
+        """
+        Slugs **almost** have the property of being valid css class names:
+        this property allows us to style objects according to their status.
+        """
+        for number, label in self.STATUS_CHOICES:
+            if self.status == number:
+                break
+        return slugify(label.lstrip('1234567890_-'))
 
 
 class Event(EventBase):

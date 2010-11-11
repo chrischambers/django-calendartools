@@ -10,6 +10,17 @@ from calendartools.validators import BaseValidator
 from nose.tools import *
 
 
+class TestCalendar(TestCase):
+    def setUp(self):
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
+
+    def test_status_slug(self):
+        mapping = {1: 'inactive', 2: 'hidden', 3: 'cancelled', 4: 'published'}
+        for num in mapping:
+            self.calendar.status = num
+            assert_equal(self.calendar.status_slug, mapping[num])
+
+
 class TestEvent(TestCase):
     def setUp(self):
         self.creator = User.objects.create(username='TestyMcTesterson')
