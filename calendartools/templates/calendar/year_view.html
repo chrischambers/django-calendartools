@@ -1,7 +1,10 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block title %}Yearly View{% endblock %}
 {% block primary %}
 <h3>Yearly View</h3>
+
+<div class="calendarname">{{ calendar.name }}</div>
 
 <p>Switch to
   <a href="{% url year-agenda calendar.slug year.number %}">
@@ -18,45 +21,130 @@
     title="Next Year">&rarr;</a>
 </h4>
 
-{% if not year.occurrences %}
-  <p>No events occurring in {{ year }}</p>
-{% else %}
-<table class="year-view">
-  <thead>
+<div class="tablewrapper">
+  <table align="center">
     <tr>
-      <th>Month</th>
-      <th>Title</th>
-      <th>Day</th>
-      <th>Start</th>
-      <th>End</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for month in year.months %}
-      {% if month.occurrences %}
-        <tr class="month-divider">
-          <th rowspan="{{ month.occurrences|length }}">
-            <a href="{% url month-calendar calendar.slug month.year month.abbr %}">
-              {{ month.name }}
-            </a>
-          </th>
-        {% for o in month.occurrences %}
-          <td><a class="{{ o.status_slug }}" href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
-          <td>
-            <a href="{% url day-calendar calendar.slug o.start.year o.start|date:"b" o.start.day %}">
-              {{ o.start|date:"jS, l" }}
-            </a>
-          </td>
-          <td>{{ o.start|date:"P" }}</td>
-          <td>{{ o.finish|date:"P" }}</td>
-        </tr>
-          {% if not forloop.last %}
-        <tr>
-          {% endif %}
-        {% endfor %}
-      {% endif %}
-    {% endfor %}
-  </tbody>
-</table>
-{% endif %}
-{% endblock %}
+      {% for month in year.months %}
+      <td valign="top">
+        <a href="{% url month-calendar calendar.slug month.year month.abbr %}">
+          {{month.name}}
+        </a>
+
+        <!-- Month Calendar -->
+        <table align="center" class="calendar">
+          <tr class="daysofweek">
+            <td>&nbsp;</td>
+            {% for dayname in month.day_names %}
+            <td width='120'>{{ dayname }}</td>
+            {% endfor %}
+            {% for week in month.weeks %}
+            <tr>
+              <td>
+                <a href="">
+                  {{week.start|date:"W"}}
+                </a>
+              </td>
+              {% for day in week.days %}
+              {% if day.month != month.number %}
+              <td class="{{size}} daynumber noday"></td>
+              {% else %}
+              {% if day.occurrences %}
+              <td class="{{size}} daynumber busy
+                {% else %}
+                <td class="{{size}} daynumber free
+                  {% endif %}
+                  {% if day == today %}
+                  today">
+                  {% else %}
+                  ">
+                  {% endif %}
+                  <div class="header">
+                    <a href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
+                      <b>{{ day.number }}</b>
+                    </a>
+                  </div>
+                  {% comment %}
+                  <div class="daycell">
+                    {% for o in day.occurrences %}
+                    <div class="eventcell eventcell{{o.class}}{% if o.is_cancelled %} cancelled{% endif %}"
+                      href="#{# {% hash_occurrence o.occurrence %} #}" onclick="openDetail(this);">
+                      <div class="starttime">
+                        {% ifequal o.class 0 %}{{ o.occurrence.start|time:"G:i" }}{% endifequal %}
+                        {% ifequal o.class 1 %}{{ o.occurrence.start|time:"G:i" }}{% endifequal %}
+                        {% ifequal o.class 2 %}(All day){% endifequal %}
+                        {% ifequal o.class 3 %}Ends at {{ o.occurrence.end|time:"G:i" }}{% endifequal %}
+                      </div>
+                      <div class="eventdesc">
+                        <span class="name">{{ o.name }}</span>
+                      </div>
+                    </div>
+                    <div id="{# {% hash_occurrence o.occurrence %} #}" style="display:none;">
+                      <div class="detail">
+                        <h2 align="center">{{ o.name }}</h2>
+                        <table align="center">
+                          <tr>
+                            <td class="left">Starts</td>
+                            <td>{% blocktrans with o.start|date:_("DATETIME_FORMAT") as start_date %}{{ start_date }}{% endblocktrans %}</td>
+                          </tr>
+                          <tr>
+                            <td class="left">Ends</td>
+                            <td>{% blocktrans with o.finish|date:_("DATETIME_FORMAT") as finish_date %}{{ finish_date }}{% endblocktrans %}</td>
+                          </tr>
+                          {#
+                          {% if o.event.rule %}
+                          {% if not occurrence.id %}
+                          <tr>
+                            <td class="left">Reoccurs</td><td>{{occurrence.event.rule}}</td>
+                          </tr>
+                          {% if o.event.end_recurring_period %}
+                          <tr>
+                            <td class="left">Until</td>
+                            <td>{% blocktrans with occurrence.event.end_recurring_period|date:_("DATETIME_FORMAT") as end_date %}{{ end_date }}{% endblocktrans %}</td>
+                          </tr>
+                          {% endif %}
+                          {% endif %}
+                          {% endif %}
+                          #}
+                        </table>
+                        {% if o.description %}
+                        <h3>Description</h3>
+                        <p>{{ o.description }}</p>
+                        {% endif %}
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% endcomment %}
+                </td>
+                {% endif %}
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </table>
+
+            <td width="12">&nbsp;</td>
+            {% ifequal forloop.counter 3  %}
+          </tr>
+          <tr>
+            {% endifequal %}
+            {% ifequal forloop.counter 6  %}
+          </tr>
+          <tr>
+            {% endifequal %}
+            {% ifequal forloop.counter  9 %}
+          </tr>
+          <tr>
+            {% endifequal %}
+            {% endfor %}
+          </tr>
+        </table></p>
+
+        <div class="navigation">
+          <a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
+            Current Month Calendar
+          </a>
+          <a href="{% url year-calendar calendar.slug today.year %}">
+            Current Year Calendar
+          </a>
+        </div>
+        {% endblock %}
