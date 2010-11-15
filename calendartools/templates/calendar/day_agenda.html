@@ -15,7 +15,7 @@
   <a href="{% url day-agenda calendar.slug day.previous.year day.previous.get_month.abbr day.previous.number %}"
     title="Previous Day">&larr;</a>
   <a title="View {{ day|date:"l, jS F, Y"}}" href="{% url day-agenda calendar.slug day.year day.get_month.abbr day.number %}">
-  {{ day|date:"l jS" }}</a>
+    {{ day|date:"l jS" }}</a>
   <a title="View {{ day|date:"F, Y"}}" href="{% url month-agenda calendar.slug day.year day.get_month.abbr %}">
     {{ day|date:"F" }}</a>
   <a title="View {{ day.year}}" href="{% url year-agenda calendar.slug day.year %}">
