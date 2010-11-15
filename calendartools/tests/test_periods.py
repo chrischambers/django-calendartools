@@ -413,6 +413,21 @@ class TestTripleMonth(TestCase):
         assert_equal(self.trimonth.third_month, self.expected[2])
 
 
+class TestWeek(TestCase):
+    def setUp(self):
+        self.datetime = datetime(1982, 8, 17)
+        self.week = Week(self.datetime)
+        self.expected = [
+            datetime(1982, 8, 16), datetime(1982, 8, 22)
+        ]
+
+    def test_first_day(self):
+        assert_equal(self.week.first_day, self.expected[0])
+
+    def test_last_day(self):
+        assert_equal(self.week.last_day, self.expected[1])
+
+
 class TestDateTimeProxiesWithOccurrences(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(

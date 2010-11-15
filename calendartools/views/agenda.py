@@ -1,10 +1,13 @@
-from calendartools.models import Occurrence
+import time
+from datetime import date
+from dateutil.relativedelta import relativedelta
+
 from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from datetime import date
-import time
-from calendartools.views.calendars import Calendar, Year, Month, Day
+
+from calendartools.models import Calendar, Occurrence
+from calendartools.periods import Year, Month, Week, Day, first_day_of_week
 
 def year_agenda(request, slug, year, *args, **kwargs):
     calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
@@ -47,6 +50,33 @@ def month_agenda(request, slug, year, month, month_format='%b', *args,
     return render_to_response("calendar/month_agenda.html", data,
                             context_instance=RequestContext(request))
 
+
+def week_agenda(request, slug, year, month, day, month_format='%b', *args,
+              **kwargs):
+
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
+    year, day = int(year), int(day)
+
+    try:
+        tt = time.strptime("%s-%s-%s" % (year, month, day), '%s-%s-%s' % (
+            '%Y', month_format, '%d'))
+        d = first_day_of_week(date(*tt[:3]))
+    except ValueError:
+        raise Http404
+
+    date_range = (d, d + relativedelta(days=7))
+    occurrences = Occurrence.objects.visible(
+                  ).select_related('event', 'calendar'
+                  ).filter(calendar=calendar, start__range=date_range
+                  ).order_by('start')
+
+    data = {
+        'calendar': calendar,
+        'occurrences': occurrences,
+        'week': Week(d, occurrences=occurrences)
+    }
+    return render_to_response("calendar/week_agenda.html", data,
+                            context_instance=RequestContext(request))
 
 def day_agenda(request, slug, year, month, day, month_format='%b', *args,
                **kwargs):

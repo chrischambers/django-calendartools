@@ -642,6 +642,12 @@ class TestCalendarVisibility(TestCase):
                 'year':  2010,
                 'month': 'nov',
             }),
+            ('week-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  2010,
+                'month': 'nov',
+                'day':   10,
+            }),
             ('day-calendar', {
                 'slug':  self.calendar.slug,
                 'year':  2010,
@@ -656,6 +662,12 @@ class TestCalendarVisibility(TestCase):
                 'slug':  self.calendar.slug,
                 'year':  2010,
                 'month': 'nov',
+            }),
+            ('week-agenda', {
+                'slug':  self.calendar.slug,
+                'year':  2010,
+                'month': 'nov',
+                'day':   10,
             }),
             ('day-agenda', {
                 'slug':  self.calendar.slug,

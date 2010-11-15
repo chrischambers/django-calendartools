@@ -11,8 +11,12 @@ from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 from calendartools.periods.proxybase import SimpleProxy
 from calendartools import defaults
 
-__all__ = ['Period', 'Hour', 'Day', 'Week', 'Month', 'TripleMonth', 'Year']
+__all__ = ['Period', 'Hour', 'Day', 'Week', 'Month', 'TripleMonth', 'Year',
+           'first_day_of_week']
 
+def first_day_of_week(dt):
+    return (datetime(dt.year, dt.month, dt.day) +
+            relativedelta(weekday=calendar.MONDAY, days=-6))
 
 class Period(SimpleProxy):
     day_names = WEEKDAYS.values()
@@ -155,8 +159,7 @@ class Day(Period):
 
 class Week(Period):
     interval = relativedelta(weeks=+1)
-    convert = lambda self, dt: (datetime(dt.year, dt.month, dt.day) +
-                          relativedelta(weekday=calendar.MONDAY, days=-6))
+    convert = lambda self, dt: first_day_of_week(dt)
 
     def __iter__(self):
         return self.days
@@ -176,6 +179,18 @@ class Week(Period):
 
     def get_year(self):
         return Year(self, occurrences=self.occurrences)
+
+    @property
+    def first_day(self):
+        return Day(self.start, occurrences=self.occurrences)
+
+    @property
+    def last_day(self):
+        return Day(self.finish, occurrences=self.occurrences)
+
+    @property
+    def calendar_display(self):
+        return zip(*[d.intervals for d in self])
 
 
 class Month(Period):

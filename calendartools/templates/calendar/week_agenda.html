@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load math %}
+
+{% block title %}Weekly Agenda{% endblock %}
+{% block primary %}
+<h3>Weekly Agenda</h3>
+
+<p>Switch to
+  <a href="{% url week-calendar calendar.slug week.year week.get_month.abbr week.day %}">
+    calendar view
+  </a>.
+</p>
+
+<h4>
+  <a href="{% url week-agenda calendar.slug week.previous.year week.previous.get_month.abbr week.previous.day %}"
+    title="Previous Week">&larr;</a>
+  <a title="View {{ week|date:"l, jS F, Y"}}" href="{% url day-agenda calendar.slug week.year week.get_month.abbr week.start.day %}">
+  {{ week|date:"l jS" }}</a>
+  <a title="View {{ week.get_month.name }}" href="{% url month-agenda calendar.slug week.year week.get_month.abbr %}">
+    {{ week|date:"F" }}</a>
+  <a title="View {{ month.year}}" href="{% url year-agenda calendar.slug week.year %}">
+    {{ week|date:"Y" }}</a>
+  -
+  <a title="View {{ week.last_day|date:"l, jS F, Y"}}" href="{% url day-agenda calendar.slug week.last_day.year week.last_day.get_month.abbr week.last_day.number %}">
+  {{ week.last_day|date:"l jS" }}</a>
+  <a title="View {{ week.last_day.get_month.name }}" href="{% url month-agenda calendar.slug week.last_day.year week.last_day.get_month.abbr %}">
+    {{ week.last_day|date:"F" }}</a>
+  <a title="View {{ week.last_day.year }}" href="{% url year-agenda calendar.slug week.last_day.year %}">
+    {{ week.last_day|date:"Y" }}</a>
+  <a href="{% url week-agenda calendar.slug week.next.year week.next.get_month.abbr week.next.day %}"
+    title="Next Week">&rarr;</a>
+</h4>
+
+{% if not week.occurrences %}
+  <p>No events occurring in {{ week }}</p>
+{% else %}
+<table class="week-agenda">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Day</th>
+      <th>Start</th>
+      <th>End</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for o in week.occurrences %}
+      <tr class="day-divider">
+        <td><a class="{{ o.status_slug }}"
+               href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
+        <td>{{ o.start|date:"l, jS" }}</td>
+        <td>{{ o.start|date:"P" }}</td>
+        <td>{{ o.finish|date:"P" }}</td>
+      </tr>
+        {% if not forloop.last %}
+      <tr>
+          {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

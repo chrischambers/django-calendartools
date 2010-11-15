@@ -40,7 +40,7 @@
             {% for week in month.weeks %}
             <tr>
               <td>
-                <a href="">
+                <a href="{% url week-calendar calendar.slug week.year month.abbr week.day %}">
                   {{week.start|date:"W"}}
                 </a>
               </td>

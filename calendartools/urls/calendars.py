@@ -12,6 +12,8 @@ urlpatterns = patterns('',
         views.month_view, {'small': True}, name='small-month-calendar'),
     url(r'^(?P<slug>[-A-Za-z0-9_]*)/(?P<year>\d{4})/(?P<month>\w{3})/triple/$',
         views.tri_month_view, name='tri-month-calendar'),
+    url(r'^(?P<slug>[-A-Za-z0-9_]*)/(?P<year>\d{4})/(?P<month>\w{3})/(?P<day>[0-3]?\d)/week/$',
+        views.week_view, name='week-calendar'),
     url(r'^(?P<slug>[-A-Za-z0-9_]*)/(?P<year>\d{4})/(?P<month>\w{3})/(?P<day>[0-3]?\d)/$',
         views.day_view, name='day-calendar'),
 

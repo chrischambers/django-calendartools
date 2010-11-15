@@ -7,6 +7,8 @@ urlpatterns = patterns('',
         views.year_agenda, name='year-agenda'),
     url(r'^(?P<slug>[-A-Za-z0-9_]*)/(?P<year>\d{4})/(?P<month>\w{3})/$',
         views.month_agenda, name='month-agenda'),
+    url(r'^(?P<slug>[-A-Za-z0-9_]*)/(?P<year>\d{4})/(?P<month>\w{3})/(?P<day>[0-3]?\d)/week/$',
+        views.week_agenda, name='week-agenda'),
     url(r'^(?P<slug>[-A-Za-z0-9_]*)/(?P<year>\d{4})/(?P<month>\w{3})/(?P<day>[0-3]?\d)/$',
         views.day_agenda, name='day-agenda'),
 )

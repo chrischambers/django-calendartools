@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block extra_head %}
+{{block.super}}
+
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/jquery.weekcalendar.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/weekcalendar.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/schedule_weekcalendar.css" type="text/css" media="screen" />
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.weekcalendar.js"></script>
+{% comment %}
+<script type="text/javascript">
+  {% include "schedule/schedule_lib.js" %}
+</script>
+<script type="text/javascript">
+  {% include "schedule/weekcalendar_config.js" %}
+</script>
+<script type="text/javascript">
+  {% include "schedule/weekcalendar.js" %}
+</script>
+{% endcomment %}
+
+{% endblock %}
+
+{% block primary %}
+<h3>Week View</h3>
+
+<p>Switch to
+  <a href="{% url week-agenda calendar.slug week.year week.get_month.abbr week.day %}">
+    agenda view
+  </a>.
+</p>
+
+<h4>
+  <a href="{% url week-calendar calendar.slug week.previous.year week.previous.get_month.abbr week.previous.day %}"
+    title="Previous Week">&larr;</a>
+  <a title="View {{ week|date:"l, jS F, Y"}}" href="{% url day-calendar calendar.slug week.year week.get_month.abbr week.start.day %}">
+  {{ week|date:"l jS" }}</a>
+  <a title="View {{ week.get_month.name }}" href="{% url month-calendar calendar.slug week.year week.get_month.abbr %}">
+    {{ week|date:"F" }}</a>
+  <a title="View {{ month.year}}" href="{% url year-calendar calendar.slug week.year %}">
+    {{ week|date:"Y" }}</a>
+  -
+  <a title="View {{ week.last_day|date:"l, jS F, Y"}}" href="{% url day-calendar calendar.slug week.last_day.year week.last_day.abbr week.last_day.number %}">
+  {{ week.last_day|date:"l jS" }}</a>
+  <a title="View {{ week.last_day.get_month.name }}" href="{% url month-calendar calendar.slug week.last_day.year week.last_day.get_month.abbr %}">
+    {{ week.last_day|date:"F" }}</a>
+  <a title="View {{ week.last_day.year }}" href="{% url year-calendar calendar.slug week.last_day.year %}">
+    {{ week.last_day|date:"Y" }}</a>
+  <a href="{% url week-calendar calendar.slug week.next.year week.next.get_month.abbr week.next.day %}"
+    title="Next Week">&rarr;</a>
+</h4>
+
+<table class="week-view">
+  <thead>
+    <tr>
+      <th>&nbsp;</th>
+      {% for day in week.days %}
+      <th {% if day == today %}class="today"{% endif %}>
+        <a href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
+          {{ day.name }} {{ day|date:"jS" }}
+        </a>
+      </th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+      {% for row in week.calendar_display %}
+      <tr>
+        {% for cell in row %}
+        {% if forloop.first %}
+        <td>{{ cell|time }}</td>
+        {% endif %}
+        <td>
+          {% if cell.occurrences %}
+          <ul>
+            {% for occurrence in cell.occurrences %}
+            <li>
+              <a class="{{ occurrence.status_slug }}"
+                 href="{{ occurrence.get_absolute_url }}">
+                 {{ occurrence.event.name }}
+               </a>
+            <span class="event_times">{{ occurrence.start|time }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+  </tbody>
+</table>
+
+<div class="navigation">
+  <a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
+    Month
+  </a>
+  <a href="{% url year-calendar calendar.slug today.year %}">
+    Year
+  </a>
+</div>
+
+<div class="tablewrapper">
+    <div class="calendarname">{{ calendar.name }}</div>
+
+    <div class="now">
+      <a href="{% url week-calendar calendar.slug today.year today|date:"b" today.day %}">
+        This week
+      </a>
+    </div>
+</div>
+
+{% comment %}
+<div id="week">
+  <div id='calendar'></div>
+  <div id="editing_choice_dialog" title="This is a recurring event" style="display:none;">
+    Do you want to edit this single occurrence, or the whole chain?
+  </div>
+  <div id="event_edit_container" style="display:none;">
+    <form>
+      <input type="hidden" />
+      <ul>
+        <li>
+        <span>Date: </span><input type="text" name="start_date"/>
+        </li>
+        <li>
+        <label for="start">Start Time: </label><select name="start"><option value="">Select Start Time</option></select>
+        </li>
+        <li>
+        <label for="end">End Time: </label><select name="end"><option value="">Select End Time</option></select>
+        </li>
+        <li>
+        <label for="end">End reccurring period: </label>
+        <input type="text" name="end_recurring_period"/>
+        </li>
+        <li>
+        <label for="title">Title: </label><input type="text" name="title" />
+        </li>
+        <li>
+        <label for="body">Body: </label><textarea name="body"></textarea>
+        </li>
+      </ul>
+    </form>
+  </div>
+  <div id="occurrence_edit_container" style="display:none;">
+    <form>
+      <input type="hidden" />
+      <ul>
+        <li>
+        <span>Date: </span><span class="date_holder"></span>
+        </li>
+        <li>
+        <label for="start">Start Time: </label><select name="start"><option value="">Select Start Time</option></select>
+        </li>
+        <li>
+        <label for="end">End Time: </label><select name="end"><option value="">Select End Time</option></select>
+        </li>
+        <li>
+        <label for="title">Title: </label><input type="text" name="title" />
+        </li>
+        <li>
+        <label for="body">Body: </label><textarea name="body"></textarea>
+        </li>
+      </ul>
+    </form>
+  </div>
+</div>
+{% endcomment %}
+
+      {% comment %}
+<div id="week">
+  {% for day in week.days %}
+    <div class="weekday weekday{{forloop.counter}}">
+      <div class="weekdayheader">
+        <a href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
+          {{day.start|date:"l, d"}}
+        </a>
+      </div>
+      <div class="weekdaytable">
+      {% if forloop.first %}
+          {% daily_table day 230 80 600 9 21 %}
+      {% else %}
+          {% daily_table day 150 15 600 9 21 %}
+      {% endif %}
+      <div class="slot_column" style="width: {% if forloop.first %}80{% else %}15{% endif %}px;
+        height: 600px;">
+          {% for slot in slots %}
+          <div class="slot" style="top:{{slot.top}}px;height:{{slot.height}}px;width:{{width}}px;">
+            <span class="time">{{ slot.start|time:"G:i" }}</span>
+            {% if addable %}
+            {% create_event_url calendar slot.start %}
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div class="occ_column" style="left:{{width_slot}}px;width:{{width_occ}}px;height:{{height}}px;">
+        {% for occ in occurrences %}
+            <div href="#{% hash_occurrence occ %}" class="occ type{{occ.cls}}{% if occ.cancelled %} cancelled{% endif %}"
+            style="top:{{occ.top}}px;left:{{occ.left}}px;width:{{occ.width}}px;height:{{occ.height}}px;" onclick="openDetail(this);">
+              {% options occ %}
+              {% title occ %}
+
+            </div>
+            <div id="{% hash_occurrence occ %}" style="display:none;">
+              {% detail occ %}
+            </div>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+      {% endcomment %}
+{% endblock %}

@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django.views.generic import simple, list_detail
 
 from calendartools.models import Occurrence, Calendar
-from calendartools.periods import Year, Month, TripleMonth, Day
+from calendartools.periods import Year, TripleMonth, Month, Week, Day, first_day_of_week
 
 def calendar_list(request, *args, **kwargs):
     kwargs.update({
@@ -89,6 +89,33 @@ def tri_month_view(request, slug, year, month, month_format='%b', *args,
                                  occurrences=occurrences)
     }
     return render_to_response("calendar/tri_month_view.html", data,
+                            context_instance=RequestContext(request))
+
+def week_view(request, slug, year, month, day, month_format='%b', *args,
+              **kwargs):
+
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
+    year, day = int(year), int(day)
+
+    try:
+        tt = time.strptime("%s-%s-%s" % (year, month, day), '%s-%s-%s' % (
+            '%Y', month_format, '%d'))
+        d = first_day_of_week(date(*tt[:3]))
+    except ValueError:
+        raise Http404
+
+    date_range = (d, d + relativedelta(days=7))
+    occurrences = Occurrence.objects.visible(
+                  ).select_related('event', 'calendar'
+                  ).filter(calendar=calendar, start__range=date_range
+                  ).order_by('start')
+
+    data = {
+        'calendar': calendar,
+        'occurrences': occurrences,
+        'week': Week(d, occurrences=occurrences)
+    }
+    return render_to_response("calendar/week_view.html", data,
                             context_instance=RequestContext(request))
 
 def day_view(request, slug, year, month, day, month_format='%b', *args,
