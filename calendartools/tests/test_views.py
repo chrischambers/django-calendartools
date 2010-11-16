@@ -645,8 +645,7 @@ class TestCalendarVisibility(TestCase):
             ('week-calendar', {
                 'slug':  self.calendar.slug,
                 'year':  2010,
-                'month': 'nov',
-                'day':   10,
+                'week':   10,
             }),
             ('day-calendar', {
                 'slug':  self.calendar.slug,
@@ -666,8 +665,7 @@ class TestCalendarVisibility(TestCase):
             ('week-agenda', {
                 'slug':  self.calendar.slug,
                 'year':  2010,
-                'month': 'nov',
-                'day':   10,
+                'week':   10,
             }),
             ('day-agenda', {
                 'slug':  self.calendar.slug,

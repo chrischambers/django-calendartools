@@ -7,7 +7,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
 from calendartools.models import Calendar, Occurrence
-from calendartools.periods import Year, Month, Week, Day, first_day_of_week
+from calendartools.periods import Year, Month, Week, Day
 
 def year_agenda(request, slug, year, *args, **kwargs):
     calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
@@ -51,16 +51,13 @@ def month_agenda(request, slug, year, month, month_format='%b', *args,
                             context_instance=RequestContext(request))
 
 
-def week_agenda(request, slug, year, month, day, month_format='%b', *args,
-              **kwargs):
-
+def week_agenda(request, slug, year, week, *args, **kwargs):
     calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
-    year, day = int(year), int(day)
+    year, week = int(year), int(week)
 
     try:
-        tt = time.strptime("%s-%s-%s" % (year, month, day), '%s-%s-%s' % (
-            '%Y', month_format, '%d'))
-        d = first_day_of_week(date(*tt[:3]))
+        tt = time.strptime('%s-%s-1' % (year, week), '%Y-%U-%w')
+        d = date(*tt[:3])
     except ValueError:
         raise Http404
 

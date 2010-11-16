@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django.views.generic import simple, list_detail
 
 from calendartools.models import Occurrence, Calendar
-from calendartools.periods import Year, TripleMonth, Month, Week, Day, first_day_of_week
+from calendartools.periods import Year, TripleMonth, Month, Week, Day
 
 def calendar_list(request, *args, **kwargs):
     kwargs.update({
@@ -91,16 +91,13 @@ def tri_month_view(request, slug, year, month, month_format='%b', *args,
     return render_to_response("calendar/tri_month_view.html", data,
                             context_instance=RequestContext(request))
 
-def week_view(request, slug, year, month, day, month_format='%b', *args,
-              **kwargs):
-
+def week_view(request, slug, year, week, *args, **kwargs):
     calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
-    year, day = int(year), int(day)
+    year, week = int(year), int(week)
 
     try:
-        tt = time.strptime("%s-%s-%s" % (year, month, day), '%s-%s-%s' % (
-            '%Y', month_format, '%d'))
-        d = first_day_of_week(date(*tt[:3]))
+        tt = time.strptime('%s-%s-1' % (year, week), '%Y-%U-%w')
+        d = date(*tt[:3])
     except ValueError:
         raise Http404
 

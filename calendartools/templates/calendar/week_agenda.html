@@ -6,13 +6,13 @@
 <h3>Weekly Agenda</h3>
 
 <p>Switch to
-  <a href="{% url week-calendar calendar.slug week.year week.get_month.abbr week.day %}">
+  <a href="{% url week-calendar calendar.slug week.year week.number %}">
     calendar view
   </a>.
 </p>
 
 <h4>
-  <a href="{% url week-agenda calendar.slug week.previous.year week.previous.get_month.abbr week.previous.day %}"
+  <a href="{% url week-agenda calendar.slug week.previous.year week.previous.number %}"
     title="Previous Week">&larr;</a>
   <a title="View {{ week|date:"l, jS F, Y"}}" href="{% url day-agenda calendar.slug week.year week.get_month.abbr week.start.day %}">
   {{ week|date:"l jS" }}</a>
@@ -27,7 +27,7 @@
     {{ week.last_day|date:"F" }}</a>
   <a title="View {{ week.last_day.year }}" href="{% url year-agenda calendar.slug week.last_day.year %}">
     {{ week.last_day|date:"Y" }}</a>
-  <a href="{% url week-agenda calendar.slug week.next.year week.next.get_month.abbr week.next.day %}"
+  <a href="{% url week-agenda calendar.slug week.next.year week.next.number %}"
     title="Next Week">&rarr;</a>
 </h4>
 
