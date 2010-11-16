@@ -7,7 +7,7 @@ class BaseValidator(object):
     priority = 10
 
     def __init__(self, sender, **kwargs):
-        self.sender = sender
+        self.sender = self.occurrence = sender
         self.kwargs = kwargs
 
     def validate(self):

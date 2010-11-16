@@ -6,7 +6,7 @@ from calendartools.validators.base import BaseValidator
 
 class FinishGTStartValidator(BaseValidator):
     def validate(self):
-        if self.sender.start >= self.sender.finish:
+        if self.occurrence.start >= self.occurrence.finish:
             raise ValidationError(
                 'Finish date/time must be greater than start date/time.'
             )
@@ -14,7 +14,7 @@ class FinishGTStartValidator(BaseValidator):
 
 class FutureOccurrencesOnlyValidator(BaseValidator):
     def validate(self):
-        if not self.sender.id and self.sender.start < datetime.now():
+        if not self.occurrence.id and self.occurrence.start < datetime.now():
             raise ValidationError(
                 'Event occurrences cannot be created in the past.'
             )
