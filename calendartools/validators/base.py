@@ -1,3 +1,6 @@
+from threaded_multihost.threadlocals import get_current_request
+
+
 class BaseValidator(object):
     """
     All Occurrence Validation checks should inherit from this base-class, and
@@ -8,6 +11,8 @@ class BaseValidator(object):
 
     def __init__(self, sender, **kwargs):
         self.sender = self.occurrence = sender
+        self.request = get_current_request()
+        self.user = getattr(self.request, 'user', None)
         self.kwargs = kwargs
 
     def validate(self):
