@@ -1,19 +1,19 @@
 import calendar
 from datetime import datetime, date, time, timedelta
-
 from dateutil.rrule import rrule, MONTHLY, WEEKLY, HOURLY, DAILY
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
+from django.test import TestCase
 from nose.tools import *
 
 from calendartools import defaults
 from calendartools.models import Calendar, Event, Occurrence
 from calendartools.periods import (
-    SimpleProxy, Period, Year, Month, Week, Day, Hour, TripleMonth
+    SimpleProxy, Period, Year, Month, Week, Day, Hour, TripleMonth,
+    first_day_of_week
 )
-
 
 class TestSimpleProxy(TestCase):
     def setUp(self):
@@ -386,6 +386,67 @@ class TestDateTimeProxies(TestCase):
         assert_equal(len(intervals), expected_interval_count)
 
 
+class TestDateAwareProperties(TestCase):
+    def setUp(self):
+        from calendartools.periods import *
+        now = datetime.now()
+        self.objects = [Period, Year, Month, Week, Day, Hour]
+        self.objects = [obj(now) for obj in self.objects]
+
+    def tearDown(self):
+        defaults.CALENDAR_FIRST_WEEKDAY = calendar.MONDAY
+
+    def test_day_names_property(self):
+        for obj in self.objects:
+            assert_equal(obj.day_names, WEEKDAYS.values())
+            assert_equal(obj.day_names[0], 'Monday')
+            assert_equal(obj.day_names[6], 'Sunday')
+
+    def test_day_names_abbr_property(self):
+        for obj in self.objects:
+            assert_equal(obj.day_names_abbr, WEEKDAYS_ABBR.values())
+            assert_equal(obj.day_names_abbr[0], 'Mon')
+            assert_equal(obj.day_names_abbr[6], 'Sun')
+
+    def test_month_names_property(self):
+        for obj in self.objects:
+            assert_equal(obj.month_names, MONTHS.values())
+            assert_equal(obj.month_names[0], 'January')
+            assert_equal(obj.month_names[11], 'December')
+
+    def test_month_names_abbr_property(self):
+        for obj in self.objects:
+            assert_equal(obj.month_names_abbr, MONTHS_3.values())
+            assert_equal(obj.month_names_abbr[0], 'jan')
+            assert_equal(obj.month_names_abbr[11], 'dec')
+
+
+class TestFirstDayOfWeek(TestCase):
+    def setUp(self):
+        defaults.CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
+        now = datetime.now()
+        self.objects = [Period, Year, Month, Week, Day, Hour]
+        self.objects = [obj(now) for obj in self.objects]
+
+    def tearDown(self):
+        defaults.CALENDAR_FIRST_WEEKDAY = calendar.MONDAY
+
+    def test_day_names_property(self):
+        for obj in self.objects:
+            assert_equal(obj.day_names[0], 'Sunday')
+            assert_equal(obj.day_names[6], 'Saturday')
+
+    def test_day_names_abbr_property(self):
+        for obj in self.objects:
+            assert_equal(obj.day_names_abbr[0], 'Sun')
+            assert_equal(obj.day_names_abbr[6], 'Sat')
+
+    def test_week_properties(self):
+        self.week = Week(datetime(1982, 8, 17))
+        assert_equal(self.week.start, datetime(1982, 8, 15))
+        assert_equal(self.week.finish, datetime(1982, 8, 22) - timedelta.resolution)
+
+
 class TestTripleMonth(TestCase):
     def setUp(self):
         self.datetime = datetime(1982, 8, 17)
@@ -421,11 +482,26 @@ class TestWeek(TestCase):
             datetime(1982, 8, 16), datetime(1982, 8, 22)
         ]
 
+    def tearDown(self):
+        defaults.CALENDAR_FIRST_WEEKDAY = calendar.MONDAY
+
+    def test_first_day_of_week(self):
+        assert_equal(first_day_of_week(self.datetime), self.expected[0])
+        defaults.CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
+        assert_equal(first_day_of_week(self.datetime),
+                    self.expected[0] - timedelta(1))
+
     def test_first_day(self):
         assert_equal(self.week.first_day, self.expected[0])
+        defaults.CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
+        self.week = Week(self.datetime)
+        assert_equal(self.week.first_day, self.expected[0] - timedelta(1))
 
     def test_last_day(self):
         assert_equal(self.week.last_day, self.expected[1])
+        defaults.CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
+        self.week = Week(self.datetime)
+        assert_equal(self.week.last_day, self.expected[1] - timedelta(1))
 
 
 class TestDateTimeProxiesWithOccurrences(TestCase):
@@ -475,6 +551,8 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
                                 assert not hour.occurrences
                             else:
                                 assert_equal(len(hour.occurrences), 2)
+
+
 
 # Unused:
 # -------
@@ -537,27 +615,3 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
 #             assert_equal(list(cal.years), list(iter(cal)))
 #
 #
-# class TestDateAwarePropreties(TestCase):
-#     def test_day_names_property(self):
-#         for obj in [Period, Calendar]:
-#             assert_equal(obj.day_names, WEEKDAYS.values())
-#             assert_equal(obj.day_names[0], 'Monday')
-#             assert_equal(obj.day_names[6], 'Sunday')
-#
-#     def test_day_names_abbr_property(self):
-#         for obj in [Period, Calendar]:
-#             assert_equal(obj.day_names_abbr, WEEKDAYS_ABBR.values())
-#             assert_equal(obj.day_names_abbr[0], 'Mon')
-#             assert_equal(obj.day_names_abbr[6], 'Sun')
-#
-#     def test_month_names_property(self):
-#         for obj in [Period, Calendar]:
-#             assert_equal(obj.month_names, MONTHS.values())
-#             assert_equal(obj.month_names[0], 'January')
-#             assert_equal(obj.month_names[11], 'December')
-#
-#     def test_month_names_abbr_property(self):
-#         for obj in [Period, Calendar]:
-#             assert_equal(Calendar.month_names_abbr, MONTHS_3.values())
-#             assert_equal(Calendar.month_names_abbr[0], 'jan')
-#             assert_equal(Calendar.month_names_abbr[11], 'dec')

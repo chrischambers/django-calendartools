@@ -1,3 +1,4 @@
+import calendar
 from datetime import datetime, date, time, timedelta
 from django.conf import settings
 from calendartools.utils import time_delta_total_seconds
@@ -31,8 +32,10 @@ TIMESLOT_MIN_COLUMNS = 4
 # a datetime.timedelta object
 DEFAULT_OCCURRENCE_DURATION = timedelta(hours=+1)
 
-# If not None, passed to the calendar module's setfirstweekday function.
-CALENDAR_FIRST_WEEKDAY = 6
+# If not None, passed to the calendar module's setfirstweekday function,
+# amongst other things.
+CALENDAR_FIRST_WEEKDAY = getattr(settings, "CALENDAR_FIRST_WEEKDAY",
+                                 calendar.MONDAY)
 
 # If not None/0, raises a ``MaxOccurrenceCreationsExceeded`` Exception if the
 # ``Event.add_occurrences`` utility function creates more Occurrence objects

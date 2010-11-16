@@ -90,6 +90,11 @@ DEBUG_TOOLBAR_CONFIG = {
 }
 
 
+# Calendar Stuff:
+# ---------------
+import calendar
+CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
+
 import logging
 logging.basicConfig(
     level=logging.DEBUG,

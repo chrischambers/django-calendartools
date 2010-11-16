@@ -14,17 +14,35 @@ from calendartools import defaults
 __all__ = ['Period', 'Hour', 'Day', 'Week', 'Month', 'TripleMonth', 'Year',
            'first_day_of_week']
 
+if defaults.CALENDAR_FIRST_WEEKDAY is not None:
+    calendar.setfirstweekday(defaults.CALENDAR_FIRST_WEEKDAY)
+
+def get_weekday_properties():
+    dayabbrs = WEEKDAYS_ABBR.values() * 2
+    daynames = WEEKDAYS.values() * 2
+    weekday_names = []
+    weekday_abbrs = []
+
+    for i in range(defaults.CALENDAR_FIRST_WEEKDAY,
+                   defaults.CALENDAR_FIRST_WEEKDAY + 7):
+        weekday_names.append(daynames[i])
+        weekday_abbrs.append(dayabbrs[i])
+    return weekday_names, weekday_abbrs
+
 def first_day_of_week(dt):
+    first_dow = calendar.MONDAY
+    if defaults.CALENDAR_FIRST_WEEKDAY is not None:
+        first_dow = defaults.CALENDAR_FIRST_WEEKDAY
     return (datetime(dt.year, dt.month, dt.day) +
-            relativedelta(weekday=calendar.MONDAY, days=-6))
+            relativedelta(weekday=first_dow, days=-6))
+
 
 class Period(SimpleProxy):
-    day_names = WEEKDAYS.values()
-    day_names_abbr = WEEKDAYS_ABBR.values()
     month_names = MONTHS.values()
     month_names_abbr = MONTHS_3.values()
 
     def __init__(self, obj, *args, **kwargs):
+        self.day_names, self.day_names_abbr = get_weekday_properties()
         self._real_obj = obj
         obj = self.convert(obj)
         occurrences = kwargs.pop('occurrences', [])
@@ -289,13 +307,13 @@ class Year(Period):
 # Unused:
 # -------
 
+
 class Calendar(object):
-    day_names = WEEKDAYS.values()
-    day_names_abbr = WEEKDAYS_ABBR.values()
     month_names = MONTHS.values()
     month_names_abbr = MONTHS_3.values()
 
     def __init__(self, start, finish, occurrences=None, *args, **kwargs):
+        self.day_names, self.day_names_abbr = get_weekday_properties()
         self.start  = start
         self.finish = finish
         self.occurrences = occurrences or []
