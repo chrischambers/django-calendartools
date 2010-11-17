@@ -6,7 +6,6 @@ from dateutil.rrule import (
     rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY
 )
 
-from django.template.defaultfilters import date as datefilter
 from django.utils import formats
 from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
@@ -23,7 +22,6 @@ calendar.setfirstweekday(standardise_first_dow(
 ))
 
 def get_weekday_properties():
-    from django.utils import formats
     dayabbrs = WEEKDAYS_ABBR.values() * 2
     daynames = WEEKDAYS.values() * 2
     weekday_names = []
@@ -36,7 +34,6 @@ def get_weekday_properties():
     return weekday_names, weekday_abbrs
 
 def first_day_of_week(dt):
-    from django.utils import formats
     first_dow = standardise_first_dow(formats.get_format('FIRST_DAY_OF_WEEK'))
     return (datetime(dt.year, dt.month, dt.day) +
             relativedelta(weekday=first_dow, days=-6))
@@ -57,9 +54,7 @@ class Period(SimpleProxy):
         self.occurrences = self.process_occurrences(occurrences)
 
     def __unicode__(self):
-        from django.utils import formats
-        datetime_format = formats.get_format(self.format)
-        return datefilter(self, datetime_format)
+        return formats.date_format(self, self.format)
 
     def process_occurrences(self, occurrences, key=None):
         if not key:
