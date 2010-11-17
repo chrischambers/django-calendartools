@@ -10,8 +10,8 @@
   {% endif %}
 
   <p>{{ event.description }}</p>
-  <p>{{ occurrence.start }}</p>
-  <p>{{ occurrence.finish }}</p>
+  <p>{{ occurrence.start|date:"DATE_FORMAT" }}</p>
+  <p>{{ occurrence.start|date:"TIME_FORMAT" }} - {{ occurrence.finish|date:"TIME_FORMAT" }}</p>
 
 {% endblock %}
 
