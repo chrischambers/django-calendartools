@@ -507,13 +507,13 @@ class TestLocalisation(TestCase):
 
 class TestFirstDayOfWeek(TestCase):
     def setUp(self):
-        defaults.CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
+        settings.FIRST_DAY_OF_WEEK = 0 # Sunday
         now = datetime.now()
         self.objects = [Period, Year, Month, Week, Day, Hour]
         self.objects = [obj(now) for obj in self.objects]
 
     def tearDown(self):
-        defaults.CALENDAR_FIRST_WEEKDAY = calendar.MONDAY
+        settings.FIRST_DAY_OF_WEEK = 1 # Monday
 
     def test_day_names_property(self):
         for obj in self.objects:
@@ -567,23 +567,23 @@ class TestWeek(TestCase):
         ]
 
     def tearDown(self):
-        defaults.CALENDAR_FIRST_WEEKDAY = calendar.MONDAY
+        settings.FIRST_DAY_OF_WEEK = 1 # Monday
 
     def test_first_day_of_week(self):
         assert_equal(first_day_of_week(self.datetime), self.expected[0])
-        defaults.CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
+        settings.FIRST_DAY_OF_WEEK = 0 # Sunday
         assert_equal(first_day_of_week(self.datetime),
                     self.expected[0] - timedelta(1))
 
     def test_first_day(self):
         assert_equal(self.week.first_day, self.expected[0])
-        defaults.CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
+        settings.FIRST_DAY_OF_WEEK = 0 # Sunday
         self.week = Week(self.datetime)
         assert_equal(self.week.first_day, self.expected[0] - timedelta(1))
 
     def test_last_day(self):
         assert_equal(self.week.last_day, self.expected[1])
-        defaults.CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
+        settings.FIRST_DAY_OF_WEEK = 0 # Sunday
         self.week = Week(self.datetime)
         assert_equal(self.week.last_day, self.expected[1] - timedelta(1))
 

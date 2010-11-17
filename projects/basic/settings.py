@@ -10,7 +10,7 @@ DATABASES = {
 }
 
 TIME_ZONE = 'Europe/London'
-LANGUAGE_CODE = 'en-GB'
+LANGUAGE_CODE = 'en_GB'
 
 SITE_ID = 1
 SECRET_KEY = '5^m%rm8(t4&cew1v-hkaq1)$4r603yu6d-#sv0k=!1)_@n473i'
@@ -21,7 +21,8 @@ TEMPLATE_LOADERS = (
 )
 USE_L10N = True
 USE_I18N = True
-FIRST_DAY_OF_WEEK = 1
+FIRST_DAY_OF_WEEK = 1 # Monday
+FORMAT_MODULE_PATH = 'calendartools.formats'
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -96,9 +97,6 @@ DEBUG_TOOLBAR_CONFIG = {
 
 # Calendar Stuff:
 # ---------------
-import calendar
-CALENDAR_FIRST_WEEKDAY = calendar.SUNDAY
-
 import logging
 logging.basicConfig(
     level=logging.DEBUG,

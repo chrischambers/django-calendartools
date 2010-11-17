@@ -28,7 +28,7 @@ DAY_MAP = [
     calendar.FRIDAY,
     calendar.SATURDAY,
 ]
-def determine_standardised_first_day_of_week():
+def standardise_first_dow(first_day_of_week=None):
     """
     Django's FIRST_DAY_OF_WEEK setting runs from 0-6, Sunday through Saturday
     (American Convention - apparently for implementation reasons, see:
@@ -46,5 +46,7 @@ def determine_standardised_first_day_of_week():
     >>> determine_standardised_first_day_of_week()
     5
     """
-    from django.conf import settings
-    return DAY_MAP[settings.FIRST_DAY_OF_WEEK]
+    if not first_day_of_week:
+        from django.conf import settings
+        first_day_of_week = settings.FIRST_DAY_OF_WEEK
+    return DAY_MAP[first_day_of_week]

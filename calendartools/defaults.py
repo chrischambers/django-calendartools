@@ -1,9 +1,6 @@
-import calendar
 from datetime import datetime, date, time, timedelta
 from django.conf import settings
-from calendartools.utils import (
-    time_delta_total_seconds, determine_standardised_first_day_of_week
-)
+from calendartools.utils import time_delta_total_seconds
 
 # A "strftime" string for formatting start and end time selectors in forms
 TIMESLOT_TIME_FORMAT = '%I:%M %p'
@@ -33,13 +30,6 @@ TIMESLOT_MIN_COLUMNS = 4
 # Indicate the default length in time for a new occurrence, specifed by using
 # a datetime.timedelta object
 DEFAULT_OCCURRENCE_DURATION = timedelta(hours=+1)
-
-# If not None, passed to the calendar module's setfirstweekday function,
-# amongst other things.
-CALENDAR_FIRST_WEEKDAY = getattr(
-    settings, "CALENDAR_FIRST_WEEKDAY",
-    determine_standardised_first_day_of_week()
-)
 
 # If not None/0, raises a ``MaxOccurrenceCreationsExceeded`` Exception if the
 # ``Event.add_occurrences`` utility function creates more Occurrence objects

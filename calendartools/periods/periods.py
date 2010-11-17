@@ -7,33 +7,37 @@ from dateutil.rrule import (
 )
 
 from django.template.defaultfilters import date as datefilter
+from django.utils import formats
 from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
 from calendartools.periods.proxybase import SimpleProxy
 from calendartools import defaults
+from calendartools.utils import standardise_first_dow
 
 __all__ = ['Period', 'Hour', 'Day', 'Week', 'Month', 'TripleMonth', 'Year',
            'first_day_of_week']
 
-if defaults.CALENDAR_FIRST_WEEKDAY is not None:
-    calendar.setfirstweekday(defaults.CALENDAR_FIRST_WEEKDAY)
+# Sensible default:
+calendar.setfirstweekday(standardise_first_dow(
+    formats.get_format('FIRST_DAY_OF_WEEK')
+))
 
 def get_weekday_properties():
+    from django.utils import formats
     dayabbrs = WEEKDAYS_ABBR.values() * 2
     daynames = WEEKDAYS.values() * 2
     weekday_names = []
     weekday_abbrs = []
+    first_dow = standardise_first_dow(formats.get_format('FIRST_DAY_OF_WEEK'))
 
-    for i in range(defaults.CALENDAR_FIRST_WEEKDAY,
-                   defaults.CALENDAR_FIRST_WEEKDAY + 7):
+    for i in range(first_dow, first_dow + 7):
         weekday_names.append(daynames[i])
         weekday_abbrs.append(dayabbrs[i])
     return weekday_names, weekday_abbrs
 
 def first_day_of_week(dt):
-    first_dow = calendar.MONDAY
-    if defaults.CALENDAR_FIRST_WEEKDAY is not None:
-        first_dow = defaults.CALENDAR_FIRST_WEEKDAY
+    from django.utils import formats
+    first_dow = standardise_first_dow(formats.get_format('FIRST_DAY_OF_WEEK'))
     return (datetime(dt.year, dt.month, dt.day) +
             relativedelta(weekday=first_dow, days=-6))
 
