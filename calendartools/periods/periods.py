@@ -6,6 +6,7 @@ from dateutil.rrule import (
     rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY
 )
 
+from django.template.defaultfilters import date as datefilter
 from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
 from calendartools.periods.proxybase import SimpleProxy
@@ -40,6 +41,8 @@ def first_day_of_week(dt):
 class Period(SimpleProxy):
     month_names = MONTHS.values()
     month_names_abbr = MONTHS_3.values()
+    format = 'DATETIME_FORMAT'
+
 
     def __init__(self, obj, *args, **kwargs):
         self.day_names, self.day_names_abbr = get_weekday_properties()
@@ -48,6 +51,11 @@ class Period(SimpleProxy):
         occurrences = kwargs.pop('occurrences', [])
         super(Period, self).__init__(obj, *args, **kwargs)
         self.occurrences = self.process_occurrences(occurrences)
+
+    def __unicode__(self):
+        from django.utils import formats
+        datetime_format = formats.get_format(self.format)
+        return datefilter(self, datetime_format)
 
     def process_occurrences(self, occurrences, key=None):
         if not key:
@@ -104,6 +112,7 @@ class Period(SimpleProxy):
 class Hour(Period):
     interval = relativedelta(hours=+1)
     convert = lambda self, dt: datetime(dt.year, dt.month, dt.day, dt.hour)
+    format = 'TIME_FORMAT'
 
     def __iter__(self):
         return (dt for dt in rrule(
@@ -130,6 +139,7 @@ class Hour(Period):
 class Day(Period):
     interval = relativedelta(days=+1)
     convert = lambda self, dt: datetime(dt.year, dt.month, dt.day)
+    format = 'DATE_FORMAT'
 
     def __iter__(self):
         return self.hours
@@ -178,6 +188,7 @@ class Day(Period):
 class Week(Period):
     interval = relativedelta(weeks=+1)
     convert = lambda self, dt: first_day_of_week(dt)
+    format = 'DATE_FORMAT'
 
     def __iter__(self):
         return self.days
@@ -214,6 +225,7 @@ class Week(Period):
 class Month(Period):
     interval = relativedelta(months=+1)
     convert = lambda self, dt: datetime(dt.year, dt.month, 1)
+    format = 'DATE_FORMAT'
 
     def __iter__(self):
         return self.weeks
@@ -283,6 +295,7 @@ class TripleMonth(Month):
 class Year(Period):
     interval = relativedelta(years=+1)
     convert = lambda self, dt: datetime(dt.year, 1, 1)
+    format = 'DATE_FORMAT'
 
     def __iter__(self):
         return self.months

@@ -13,12 +13,14 @@ DATABASES = {
 }
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'threaded_multihost.middleware.ThreadLocalMiddleware',
 ]
 
-USE_I18N = False
-USE_L10N = False
+USE_I18N = True
+USE_L10N = True
+FIRST_DAY_OF_WEEK = 1
 SITE_ID = 1
 
 INSTALLED_APPS = (

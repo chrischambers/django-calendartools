@@ -1,9 +1,13 @@
+# -*- coding: UTF-8 -*-
+
 import calendar
 from datetime import datetime, date, time, timedelta
 from dateutil.rrule import rrule, MONTHLY, WEEKLY, HOURLY, DAILY
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
+from django.utils import translation
 
 from django.test import TestCase
 from nose.tools import *
@@ -388,7 +392,6 @@ class TestDateTimeProxies(TestCase):
 
 class TestDateAwareProperties(TestCase):
     def setUp(self):
-        from calendartools.periods import *
         now = datetime.now()
         self.objects = [Period, Year, Month, Week, Day, Hour]
         self.objects = [obj(now) for obj in self.objects]
@@ -419,6 +422,87 @@ class TestDateAwareProperties(TestCase):
             assert_equal(obj.month_names_abbr, MONTHS_3.values())
             assert_equal(obj.month_names_abbr[0], 'jan')
             assert_equal(obj.month_names_abbr[11], 'dec')
+
+
+class TestLocalisation(TestCase):
+    def setUp(self):
+        self.datetime = datetime(1982, 8, 17)
+        self.period   = Period(self.datetime)
+        self.year     = Year(self.datetime)
+        self.month    = Month(self.datetime)
+        self.week     = Week(self.datetime)
+        self.day      = Day(self.datetime)
+        self.hour     = Hour(datetime.combine(self.datetime.date(), time(6, 30, 5)))
+        self.original_language = settings.LANGUAGE_CODE
+
+    def tearDown(self):
+        translation.activate(self.original_language)
+
+    def _test_localisation(self, obj, mapping):
+        for language, expected in mapping:
+            translation.activate(language)
+            assert_equal(unicode(obj), expected)
+
+    def test_period_localisation(self):
+        mapping = (
+            ('en', u'Aug. 17, 1982, midnight'),
+            ('fr', u'17 août 1982 00:00:00'),
+            ('de', u'17. August 1982 00:00:00'),
+            ('zh-cn', u'八月 17, 1982, 午夜'),
+        )
+        self._test_localisation(self.period, mapping)
+
+    def test_year_localisation(self):
+        mapping = (
+            ('en', u'Jan. 1, 1982'),
+            ('fr', u'1 janvier 1982'),
+            ('de', u'1. Januar 1982'),
+            ('zh-cn', u'一月 1, 1982'),
+        )
+        self._test_localisation(self.year, mapping)
+
+    def test_month_localisation(self):
+        mapping = (
+            ('en', u'Aug. 1, 1982'),
+            ('fr', u'1 août 1982'),
+            ('de', u'1. August 1982'),
+            ('zh-cn', u'八月 1, 1982'),
+        )
+        self._test_localisation(self.month, mapping)
+
+    def test_week_localisation(self):
+        mapping = (
+            ('en', u'Aug. 16, 1982'),
+            ('fr', u'16 août 1982'),
+            ('de', u'16. August 1982'),
+            ('zh-cn', u'八月 16, 1982'),
+        )
+        self._test_localisation(self.week, mapping)
+
+    def test_day_localisation(self):
+        mapping = (
+            ('en', u'Aug. 17, 1982'),
+            ('fr', u'17 août 1982'),
+            ('de', u'17. August 1982'),
+            ('zh-cn', u'八月 17, 1982'),
+        )
+        self._test_localisation(self.day, mapping)
+
+    def test_hour_localisation(self):
+        mapping =  (
+            ('en', u'midnight'),
+            ('fr', u'00:00:00'),
+            ('de', u'00:00:00'),
+            ('zh-cn', u'午夜'),
+        )
+        self._test_localisation(Hour(datetime(1982, 8, 17)), mapping)
+        mapping = (
+            ('en', u'6 a.m.'),
+            ('fr', u'06:00:00'),
+            ('de', u'06:00:00'),
+            ('zh-cn', u'6 a.m.'),
+        )
+        self._test_localisation(self.hour, mapping)
 
 
 class TestFirstDayOfWeek(TestCase):
