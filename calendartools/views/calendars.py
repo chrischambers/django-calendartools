@@ -4,6 +4,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from django.core.urlresolvers import reverse
+from django.db.models import Max, Min
 from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -27,17 +28,22 @@ def calendar_detail(request, slug, *args, **kwargs):
 
 def year_view(request, slug, year, *args, **kwargs):
     calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
+    data = calendar.occurrences.visible().aggregate(
+        earliest_occurrence=Min('start'),
+        latest_occurrence=Max('finish'),
+    )
     year = int(year)
 
     occurrences = Occurrence.objects.visible(
                   ).select_related('event', 'calendar'
                   ).filter(calendar=calendar, start__year=year
                   ).order_by('start')
-    data = {
+    data.update({
         'calendar': calendar,
         'occurrences': occurrences,
-        'year': Year(date(year, 1, 1), occurrences=occurrences)
-    }
+        'year': Year(date(year, 1, 1), occurrences=occurrences),
+        'size': 'small'
+    })
     return render_to_response("calendar/year_view.html", data,
                             context_instance=RequestContext(request))
 
@@ -86,7 +92,8 @@ def tri_month_view(request, slug, year, month, month_format='%b', *args,
         'calendar': calendar,
         'occurrences': occurrences,
         'tri_month': TripleMonth(d - relativedelta(months=1),
-                                 occurrences=occurrences)
+                                 occurrences=occurrences),
+        'size': 'small',
     }
     return render_to_response("calendar/tri_month_view.html", data,
                             context_instance=RequestContext(request))
