@@ -1,4 +1,5 @@
 from django import template
+from django.utils import translation
 
 register = template.Library()
 
@@ -62,3 +63,23 @@ def columns(lst, cols):
         stop = start + len(lst[i::cols])
         yield lst[start:stop]
         start = stop
+
+
+def force_no_translation(parser, token):
+    nodelist = parser.parse(('endnotrans',))
+    parser.delete_first_token()
+    return NoTransNode(nodelist)
+
+class NoTransNode(template.Node):
+
+    def __init__(self, nodelist):
+        self.nodelist = nodelist
+
+    def render(self, context):
+        language = translation.get_language()
+        translation.deactivate()
+        output = self.nodelist.render(context)
+        translation.activate(language)
+        return output
+
+register.tag('notrans', force_no_translation)
