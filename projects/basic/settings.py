@@ -43,7 +43,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.media',
+    'django.core.context_processors.request',
     'calendartools.context_processors.current_datetime',
+    'calendartools.context_processors.current_site',
 )
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'

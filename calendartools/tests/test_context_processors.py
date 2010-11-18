@@ -1,3 +1,4 @@
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from nose.tools import *
@@ -15,3 +16,9 @@ class TestContextProcessors(TestCase):
         assert isinstance(today, Day)
         assert_equal(today, expected)
         assert_equal(now.date(), expected)
+
+    def test_current_site(self):
+        expected = Site.objects.get_current()
+        response = self.client.get(reverse('event-list'), follow=True)
+        site     = response.context['current_site']
+        assert_equal(site, expected)
