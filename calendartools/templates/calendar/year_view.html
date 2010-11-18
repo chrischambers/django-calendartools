@@ -64,13 +64,15 @@
             {% endfor %}
           </colgroup>
 
-          <tbody>
+          <thead>
             <tr class="daysofweek">
               <td>&nbsp;</td>
               {% for dayname in month.day_names %}
-              <td class="day name {{ dayname|slugify }}">{{ dayname }}</td>
+              <th class="day name {{ dayname|slugify }}">{{ dayname }}</th>
               {% endfor %}
             </tr>
+          </thead>
+          <tbody>
             {% for week in month.weeks %}
             <tr class="{% cycle "" "alt" %}">
               <td>

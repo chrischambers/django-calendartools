@@ -1,34 +1,67 @@
 {% extends "base.html" %}
-{% block title %}Yearly Agenda{% endblock %}
-{% block primary %}
-<h3>Yearly Agenda</h3>
+{% load i18n %}
+{% block title %}Yearly Agenda - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+{% block extra_head %}
+  <style type="text/css" media="screen">
+    ul#calendar-nav li {display: inline; list-style: none;}
+  </style>
+{% endblock %}
 
-<p>Switch to
+{% block primary %}
+<h3>Yearly Agenda - <span class="calendarname">{{ calendar.name }}</span> Calendar</h3>
+
+<p class="toggle-calendar">Switch to
   <a href="{% url year-calendar calendar.slug year.number %}">
     calendar view
   </a>.
 </p>
 
-<h4>
-  <a href="{% url year-agenda calendar.slug year.previous.number %}"
-    title="Last Year">&larr;</a>
-  <a title="View {{ year}}" href="{% url year-agenda calendar.slug year.number %}">
-    {{ year|date:"Y" }}</a>
-  <a href="{% url year-agenda calendar.slug year.next.number %}"
-    title="Next Year">&rarr;</a>
-</h4>
+<ul id="calendar-nav" class="nav">
+  <li>
+    <a rel="{% if year.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
+       href="{% url year-agenda calendar.slug year.previous.number %}"
+       title="{% trans "Last Year" %}">&larr;
+    </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ year }}"
+       href="{% url year-agenda calendar.slug year.number %}">
+      {{ year|date:"Y" }}
+    </a>
+  </li>
+  <li>
+    <a rel="{% if year.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
+       href="{% url year-agenda calendar.slug year.next.number %}"
+       title="{% trans "Next Year" %}">&rarr;
+    </a>
+  </li>
+</ul>
 
 {% if not year.occurrences %}
-  <p>No events occurring in {{ year }}</p>
+<p class="no-events">{% trans "No events occurring in" %} {{ year }}</p>
 {% else %}
 <table class="year-agenda">
+  <caption>
+    <span class="year start">{{ year.start|date:"DATE_FORMAT" }}</span>
+    -
+    <span class="year finish">{{ year.finish|date:"DATE_FORMAT" }}</span>
+  </caption>
+
+  <colgroup>
+    <col class="month" />
+    <col class="title alt" />
+    <col class="day" />
+    <col class="start alt" />
+    <col class="end" />
+  </colgroup>
+
   <thead>
     <tr>
-      <th>Month</th>
-      <th>Title</th>
-      <th>Day</th>
-      <th>Start</th>
-      <th>End</th>
+      <th>{% trans "Month" %}</th>
+      <th>{% trans "Title" %}</th>
+      <th>{% trans "Day" %}</th>
+      <th>{% trans "Start" %}</th>
+      <th>{% trans "End" %}</th>
     </tr>
   </thead>
   <tbody>
@@ -41,14 +74,14 @@
             </a>
           </th>
         {% for o in month.occurrences %}
-          <td><a class="{{ o.status_slug }}" href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
-          <td>
+          <td class="day event name"><a class="{{ o.status_slug }}" href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
+          <td class="day event start date">
             <a href="{% url day-agenda calendar.slug o.start.year o.start|date:"b" o.start.day %}">
-              {{ o.start|date:"jS, l" }}
+              {{ o.start|date:"DATE_FORMAT" }}
             </a>
           </td>
-          <td>{{ o.start|date:"P" }}</td>
-          <td>{{ o.finish|date:"P" }}</td>
+          <td class="day event start time">{{ o.start|date:"TIME_FORMAT" }}</td>
+          <td class="day event finish time">{{ o.finish|date:"TIME_FORMAT" }}</td>
         </tr>
           {% if not forloop.last %}
         <tr>
