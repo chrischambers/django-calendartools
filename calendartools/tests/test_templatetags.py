@@ -45,6 +45,10 @@ class TestQueryStringManipulation(TestCase):
             'http://example.com/foo/',
             'http://example.com/foo/?a=1&b=2',
             'http://example.com/foo/?a=1&a=4&b=2&b=5',
+            '/foo',
+            '/foo/',
+            '/foo/?a=1&b=2',
+            '/foo/?a=1&a=4&b=2&b=5',
         )
 
     def test_clear_query_string(self):
@@ -53,6 +57,10 @@ class TestQueryStringManipulation(TestCase):
             'http://example.com/foo/',
             'http://example.com/foo/',
             'http://example.com/foo/',
+            '/foo',
+            '/foo/',
+            '/foo/',
+            '/foo/',
         )
 
         for url, expected in zip(self.urls, expected):
@@ -68,6 +76,14 @@ class TestQueryStringManipulation(TestCase):
              'http://example.com/foo/?a=1'),
             ('http://example.com/foo/?a=2&b=2&b=5', 'a', 1,
              'http://example.com/foo/?a=1&b=2&b=5'),
+            ('/foo',            'a', 1,
+             '/foo?a=1'),
+            ('/foo/',           'a', 1,
+             '/foo/?a=1'),
+            ('/foo/?a=2',       'a', 1,
+             '/foo/?a=1'),
+            ('/foo/?a=2&b=2&b=5', 'a', 1,
+             '/foo/?a=1&b=2&b=5'),
         )
         for url, key, value, expected in mapping:
             assert_equal(set_query_string(url, key, value), expected)
@@ -78,6 +94,10 @@ class TestQueryStringManipulation(TestCase):
             ('http://example.com/foo/', 'a', ''),
             ('http://example.com/foo/?a=2', 'a', ['2'],),
             ('http://example.com/foo/?a=2&a=4&b=2&b=5', 'a', ['2','4']),
+            ('/foo',  'a', ''),
+            ('/foo/', 'a', ''),
+            ('/foo/?a=2', 'a', ['2'],),
+            ('/foo/?a=2&a=4&b=2&b=5', 'a', ['2','4']),
         )
         for url, key, expected in mapping:
             assert_equal(get_query_string(url, key), expected)
@@ -92,6 +112,14 @@ class TestQueryStringManipulation(TestCase):
              'http://example.com/foo/',),
             ('http://example.com/foo/?a=2&a=4&b=2&b=5', 'a',
              'http://example.com/foo/?b=2&b=5'),
+            ('/foo',  'a',
+             '/foo'),
+            ('/foo/', 'a',
+             '/foo/'),
+            ('/foo/?a=2', 'a',
+             '/foo/',),
+            ('/foo/?a=2&a=4&b=2&b=5', 'a',
+             '/foo/?b=2&b=5'),
         )
         for url, key, expected in mapping:
             assert_equal(delete_query_string(url, key), expected)

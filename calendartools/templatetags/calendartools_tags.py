@@ -1,4 +1,5 @@
 from django import template
+from django.template.defaultfilters import stringfilter
 from django.utils import translation
 
 register = template.Library()
@@ -91,43 +92,69 @@ except ImportError:
     from cgi import parse_qs
 from urllib import urlencode
 
+@register.filter(name='clear_query_string')
+@stringfilter
 def clear_query_string(url):
     parsed_url = urlparse(url)
-    new_url = "%s://%s%s" % (
-        parsed_url.scheme, parsed_url.hostname,
-        parsed_url.path
-    )
+    new_url = parsed_url.path
+    if parsed_url[0] and parsed_url[1]:
+        new_url = "%s://%s%s" % (
+            parsed_url.scheme, parsed_url.hostname,
+            new_url
+        )
     return new_url
+
+@register.filter(name='set_query_string')
+@stringfilter
+def set_query_string_wrapper(url, arg):
+    """
+    Temporary fix until template filters take multiple arguments:
+    http://code.djangoproject.com/ticket/1199#comment:16
+    """
+    try:
+        key, value = arg.split(',')
+        return set_query_string(url, key, value)
+    except ValueError:
+        return ""
 
 def set_query_string(url, key, value):
     parsed_url = urlparse(url)
     querydict = parse_qs(parsed_url.query)
     querydict[key] = value
     newquery = urlencode(querydict, doseq=True)
-    new_url = "%s://%s%s?%s%s" % (
-        parsed_url.scheme, parsed_url.hostname,
+    new_url = "%s?%s%s" % (
         parsed_url.path, newquery, parsed_url.fragment
     )
+    if parsed_url[0] and parsed_url[1]:
+        new_url = "%s://%s%s" % (
+            parsed_url.scheme, parsed_url.hostname,
+            new_url
+        )
     return new_url
 
+@register.filter(name='get_query_string')
+@stringfilter
 def get_query_string(url, key):
     parsed_url = urlparse(url)
     querydict = parse_qs(parsed_url.query)
     return querydict.get(key, '')
 
+@register.filter(name='delete_query_string')
+@stringfilter
 def delete_query_string(url, key):
     parsed_url = urlparse(url)
     querydict = parse_qs(parsed_url.query)
     querydict.pop(key, None)
     if querydict:
         newquery = urlencode(querydict, doseq=True)
-        new_url = "%s://%s%s?%s%s" % (
-            parsed_url.scheme, parsed_url.hostname,
+        new_url = "%s?%s%s" % (
             parsed_url.path, newquery, parsed_url.fragment
         )
     else:
+        new_url = parsed_url.path
+    if parsed_url[0] and parsed_url[1]:
         new_url = "%s://%s%s" % (
             parsed_url.scheme, parsed_url.hostname,
-            parsed_url.path
+            new_url
         )
     return new_url
