@@ -2,6 +2,10 @@ from datetime import datetime, date, time, timedelta
 from django.conf import settings
 from calendartools.utils import time_delta_total_seconds
 
+# Enables a templatetag override which ensures that nothing within the {% url
+# %} templatetag is translated.
+NO_URL_TRANSLATION = True
+
 # A "strftime" string for formatting start and end time selectors in forms
 TIMESLOT_TIME_FORMAT = '%I:%M %p'
 

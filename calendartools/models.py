@@ -235,5 +235,6 @@ class Occurrence(EventBase):
 
 activate_default_validators()
 
-from django.template import add_to_builtins
-add_to_builtins('calendartools.templatetags.url_override')
+if defaults.NO_URL_TRANSLATION:
+    from django.template import add_to_builtins
+    add_to_builtins('calendartools.templatetags.url_override')
