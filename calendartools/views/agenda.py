@@ -1,5 +1,5 @@
 import time
-from datetime import date
+from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 
 from django.http import Http404
@@ -17,10 +17,24 @@ def year_agenda(request, slug, year, *args, **kwargs):
         calendar=calendar,
         start__year=year).order_by('start')
 
+    period = request.GET.get('period')
+    if period in ['past', 'future', 'today']:
+        if period == 'past':
+            occurrences = occurrences.filter(start__lt=datetime.now())
+        elif period == 'future':
+            occurrences = occurrences.filter(start__gte=datetime.now())
+        else:
+            occurrences = occurrences.filter(
+                start__year=datetime.now().year,
+                start__month=datetime.now().month,
+                start__day=datetime.now().day
+            )
+
     data = {
         'calendar': calendar,
         'occurrences': occurrences,
-        'year': Year(date(year, 1, 1), occurrences=occurrences)
+        'year': Year(date(year, 1, 1), occurrences=occurrences),
+        'filters': {'period': period}
     }
     return render_to_response("calendar/year_agenda.html", data,
                             context_instance=RequestContext(request))

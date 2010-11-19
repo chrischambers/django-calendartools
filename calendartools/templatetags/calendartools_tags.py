@@ -83,3 +83,51 @@ class NoTransNode(template.Node):
         return output
 
 register.tag('notrans', force_no_translation)
+
+from urlparse import urlparse
+try:
+    from urlparse import parse_qs
+except ImportError:
+    from cgi import parse_qs
+from urllib import urlencode
+
+def clear_query_string(url):
+    parsed_url = urlparse(url)
+    new_url = "%s://%s%s" % (
+        parsed_url.scheme, parsed_url.hostname,
+        parsed_url.path
+    )
+    return new_url
+
+def set_query_string(url, key, value):
+    parsed_url = urlparse(url)
+    querydict = parse_qs(parsed_url.query)
+    querydict[key] = value
+    newquery = urlencode(querydict, doseq=True)
+    new_url = "%s://%s%s?%s%s" % (
+        parsed_url.scheme, parsed_url.hostname,
+        parsed_url.path, newquery, parsed_url.fragment
+    )
+    return new_url
+
+def get_query_string(url, key):
+    parsed_url = urlparse(url)
+    querydict = parse_qs(parsed_url.query)
+    return querydict.get(key, '')
+
+def delete_query_string(url, key):
+    parsed_url = urlparse(url)
+    querydict = parse_qs(parsed_url.query)
+    querydict.pop(key, None)
+    if querydict:
+        newquery = urlencode(querydict, doseq=True)
+        new_url = "%s://%s%s?%s%s" % (
+            parsed_url.scheme, parsed_url.hostname,
+            parsed_url.path, newquery, parsed_url.fragment
+        )
+    else:
+        new_url = "%s://%s%s" % (
+            parsed_url.scheme, parsed_url.hostname,
+            parsed_url.path
+        )
+    return new_url

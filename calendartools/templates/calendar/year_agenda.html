@@ -3,7 +3,7 @@
 {% block title %}Yearly Agenda - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
 {% block extra_head %}
   <style type="text/css" media="screen">
-    ul#calendar-nav li {display: inline; list-style: none;}
+    ul#calendar-nav li, ul.filters li {display: inline; list-style: none;}
     .vevent abbr {border:0} /* No borders on microformat markup */
   </style>
 {% endblock %}
@@ -36,6 +36,17 @@
        title="{% trans "Next Year" %}">&rarr;
     </a>
   </li>
+</ul>
+
+<ul class="filters">
+  <li><a class="{% if filters.period == "past" %}on{% endif %}"
+         href="{{ request.path }}?period=past">past</a></li>
+  <li><a class="{% if filters.period == "future" %}on{% endif %}"
+         href="{{ request.path }}?period=future">future</a></li>
+  <li><a class="{% if filters.period == "today" %}on{% endif %}"
+         href="{{ request.path }}?period=today">today</a></li>
+  <li><a class="{% if filters.period == "all" %}on{% endif %}"
+         href="{{ request.path }}">all</a></li>
 </ul>
 
 {% if not year.occurrences %}

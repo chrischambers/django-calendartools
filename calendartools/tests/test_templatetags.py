@@ -5,6 +5,13 @@ from django.test import TestCase
 from django.utils import translation
 from django.utils.translation import ugettext_lazy as _
 from nose.tools import *
+from calendartools.templatetags.calendartools_tags import (
+    get_query_string,
+    set_query_string,
+    delete_query_string,
+    clear_query_string
+)
+
 
 class TestTranslationTags(TestCase):
     def setUp(self):
@@ -29,3 +36,62 @@ class TestTranslationTags(TestCase):
         output = template.render(context)
         assert_not_in(u'يناير', output)
         assert_in('January', output)
+
+
+class TestQueryStringManipulation(TestCase):
+    def setUp(self):
+        self.urls = (
+            'http://example.com/foo',
+            'http://example.com/foo/',
+            'http://example.com/foo/?a=1&b=2',
+            'http://example.com/foo/?a=1&a=4&b=2&b=5',
+        )
+
+    def test_clear_query_string(self):
+        expected = (
+            'http://example.com/foo',
+            'http://example.com/foo/',
+            'http://example.com/foo/',
+            'http://example.com/foo/',
+        )
+
+        for url, expected in zip(self.urls, expected):
+            assert_equal(clear_query_string(url), expected)
+
+    def test_set_query_string(self):
+        mapping = (
+            ('http://example.com/foo',            'a', 1,
+             'http://example.com/foo?a=1'),
+            ('http://example.com/foo/',           'a', 1,
+             'http://example.com/foo/?a=1'),
+            ('http://example.com/foo/?a=2',       'a', 1,
+             'http://example.com/foo/?a=1'),
+            ('http://example.com/foo/?a=2&b=2&b=5', 'a', 1,
+             'http://example.com/foo/?a=1&b=2&b=5'),
+        )
+        for url, key, value, expected in mapping:
+            assert_equal(set_query_string(url, key, value), expected)
+
+    def test_get_query_string(self):
+        mapping = (
+            ('http://example.com/foo',  'a', ''),
+            ('http://example.com/foo/', 'a', ''),
+            ('http://example.com/foo/?a=2', 'a', ['2'],),
+            ('http://example.com/foo/?a=2&a=4&b=2&b=5', 'a', ['2','4']),
+        )
+        for url, key, expected in mapping:
+            assert_equal(get_query_string(url, key), expected)
+
+    def test_delete_query_string(self):
+        mapping = (
+            ('http://example.com/foo',  'a',
+             'http://example.com/foo'),
+            ('http://example.com/foo/', 'a',
+             'http://example.com/foo/'),
+            ('http://example.com/foo/?a=2', 'a',
+             'http://example.com/foo/',),
+            ('http://example.com/foo/?a=2&a=4&b=2&b=5', 'a',
+             'http://example.com/foo/?b=2&b=5'),
+        )
+        for url, key, expected in mapping:
+            assert_equal(delete_query_string(url, key), expected)
