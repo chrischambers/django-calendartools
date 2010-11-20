@@ -22,8 +22,8 @@
     <tbody>
       {% for week in month.weeks %}
       <tr class="{% cycle "" "alt" %}">
-        <td>
-          <a class="week-number" href="{% url week-calendar calendar.slug week.year week.number %}">
+        <td class="week-number">
+          <a href="{% url week-calendar calendar.slug week.year week.number %}">
             {{week.start|date:"W"}}
           </a>
         </td>
@@ -47,15 +47,17 @@
         {% if size != "small" and day.occurrences %}
           <ul class="occurrences">
             {% for o in day.occurrences %}
-            <li class="day event name vevent {{ o.status_slug }}">
-              <a class="summary url" href="{{ o.get_absolute_url }}">{{ o.name }}</a>
-              <span class="day event start time">
+            <li class="day vevent {{ o.status_slug }}">
+              <a class="summary url" href="{{ o.get_absolute_url }}">
+                <span class="name">{{ o.name }}</span>
+              </a>
+              <span class="start time">
                 <abbr class="dtstart" title="{{ o.start|date:"c" }}">
                   {{ o.start|date:"TIME_FORMAT" }}
                 </abbr>
                 -
               </span>
-              <span class="day event finish time">
+              <span class="finish time">
                 <abbr class="dtend" title="{{ o.finish|date:"c" }}">
                   {{ o.finish|date:"TIME_FORMAT" }}
                 </abbr>
