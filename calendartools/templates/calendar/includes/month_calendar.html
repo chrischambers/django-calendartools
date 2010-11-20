@@ -1,0 +1,72 @@
+    <caption>
+      <span class="month start">{{ month.start|date:"DATE_FORMAT" }}</span>
+      -
+      <span class="month finish">{{ month.finish|date:"DATE_FORMAT" }}</span>
+    </caption>
+
+    <colgroup>
+      <col class="week-number" />
+      {% for dayname in month.day_names %}
+      <col class="{{ dayname|slugify }}{% cycle " alt" "" %}" />
+      {% endfor %}
+    </colgroup>
+
+    <thead>
+      <tr class="daysofweek">
+        <td>&nbsp;</td>
+        {% for dayname in month.day_names %}
+        <th class="day name {{ dayname|slugify }}">{{ dayname }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for week in month.weeks %}
+      <tr class="{% cycle "" "alt" %}">
+        <td>
+          <a class="week-number" href="{% url week-calendar calendar.slug week.year week.number %}">
+            {{week.start|date:"W"}}
+          </a>
+        </td>
+        {% for day in week.days %}
+        {% if day.month != month.number %}
+        <td class="day-cell noday">&nbsp;</td><!-- end .day-cell -->
+        {% else %}
+
+        {% if day.occurrences %}
+        <td class="day-cell busy {% if day == today %}today">{% else %}">{% endif %}
+        {% else %}
+        <td class="day-cell free {% if day == today %}today">{% else %}">{% endif %}
+        {% endif %}
+
+        <div class="header">
+          <a href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
+            <span class="day-number">{{ day.number }}</span>
+          </a>
+        </div>
+
+        {% if size != "small" and day.occurrences %}
+          <ul class="occurrences">
+            {% for o in day.occurrences %}
+            <li class="day event name vevent {{ o.status_slug }}">
+              <a class="summary url" href="{{ o.get_absolute_url }}">{{ o.name }}</a>
+              <span class="day event start time">
+                <abbr class="dtstart" title="{{ o.start|date:"c" }}">
+                  {{ o.start|date:"TIME_FORMAT" }}
+                </abbr>
+                -
+              </span>
+              <span class="day event finish time">
+                <abbr class="dtend" title="{{ o.finish|date:"c" }}">
+                  {{ o.finish|date:"TIME_FORMAT" }}
+                </abbr>
+              </span>
+            </li><!-- end .vevent -->
+            {% endfor %}
+          </ul>
+        {% endif %}
+        </td><!-- end .day-cell -->
+        {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
