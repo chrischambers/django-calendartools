@@ -10,11 +10,11 @@
 {% endblock %}
 
 {% block primary %}
-<h3>Monthly Agenda - <span class="calendarname">{{ calendar.name }}</span> Calendar</h3>
+<h3>{% trans "Monthly Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 
-<p class="toggle-calendar">Switch to
+<p class="toggle-calendar">{% trans "Switch to" %}
   <a href="{% url month-calendar calendar.slug month.year month.abbr %}">
-    calendar view
+    {% trans "calendar view" %}
   </a>.
 </p>
 

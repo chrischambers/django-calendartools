@@ -10,11 +10,11 @@
 {% endblock %}
 
 {% block primary %}
-<h3>Yearly Agenda - <span class="calendarname">{{ calendar.name }}</span> Calendar</h3>
+<h3>{% trans "Yearly Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 
-<p class="toggle-calendar">Switch to
+<p class="toggle-calendar">{% trans "Switch to" %}
   <a href="{% url year-calendar calendar.slug year.number %}">
-    calendar view
+    {% trans "calendar view" %}
   </a>.
 </p>
 
@@ -89,8 +89,8 @@
   <thead>
     <tr>
       <th>{% trans "Month" %}</th>
-      <th>{% trans "Title" %}</th>
       <th>{% trans "Day" %}</th>
+      <th>{% trans "Title" %}</th>
       <th>{% trans "Start" %}</th>
       <th>{% trans "End" %}</th>
     </tr>
@@ -105,15 +105,15 @@
             </a>
           </th>
         {% for o in month.occurrences %}
-          <td class="">
-            <a class="{{ o.status_slug }} summary url"
-              href="{{ o.get_absolute_url }}">
-              <span class="name">{{ o.name }}</span>
-            </a>
-          </td>
           <td class="start date">
             <a href="{% url day-agenda calendar.slug o.start.year o.start|date:"b" o.start.day %}">
               {{ o.start|date:"DATE_FORMAT" }}
+            </a>
+          </td>
+          <td class="summary">
+            <a class="{{ o.status_slug }} summary url"
+              href="{{ o.get_absolute_url }}">
+              <span class="name">{{ o.name }}</span>
             </a>
           </td>
           <td class="start time">
