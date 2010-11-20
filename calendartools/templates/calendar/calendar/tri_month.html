@@ -1,65 +1,52 @@
-{% extends "base.html" %}
-{% block title %}Tri Monthly View{% endblock %}
-{% block primary %}
-<h3>Tri Monthly View</h3>
+{% extends "calendar/calendar/base.html" %}
+{% load i18n %}
+{% block title %}Tri-Monthly View - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+{% block heading %}
+<h3>{% trans "Tri-Monthly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
+{% endblock %}
 
-<p>Switch to
-  <a href="{% url month-agenda calendar.slug tri_month.second_month.year tri_month.second_month.abbr %}">
-    agenda view
-  </a>.
-</p>
+{% block agenda_url %}{% url tri-month-agenda calendar.slug tri_month.second_month.year tri_month.second_month.abbr %}{% endblock %}
 
-<h4>
-  <a href="{% url tri-month-calendar calendar.slug tri_month.first_month.year tri_month.first_month.abbr %}"
-    title="Previous 3 Months">&larr;</a>
-  <a title="View {{ tri_month.second_month.name}}" href="{% url tri-month-calendar calendar.slug tri_month.second_month.year tri_month.second_month.abbr %}">
-    {{ tri_month.second_month|date:"F" }}</a>
-  <a title="View {{ tri_month.second_month.year}}" href="{% url year-calendar calendar.slug tri_month.year %}">
-    {{ tri_month.second_month|date:"Y" }}</a>
-  <a href="{% url tri-month-calendar calendar.slug tri_month.third_month.year tri_month.third_month.abbr %}"
-    title="Next 3 Months">&rarr;</a>
-</h4>
+{% block calendar_nav %}
+<ul id="calendar-nav" class="nav">
+  <li>
+    <a rel="{% if tri_month.first_month < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
+       href="{% url tri-month-calendar calendar.slug tri_month.first_month.year tri_month.first_month.abbr %}"
+       title="{% trans "Previous 3 Months" %}">&larr;
+    </a>
+  </li>
+  {% for month in tri_month %}
+  <li>
+    <a title="{% trans "View" %} {{ month.name }}"
+       href="{% url tri-month-agenda calendar.slug month.year month.abbr %}">
+       {{ month|date:"F" }}
+     </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ month.year }}"
+       href="{% url year-agenda calendar.slug month.year %}">
+       {{ month|date:"Y" }}{% if not forloop.last %},&nbsp;{% endif %}
+    </a>
+  </li>
+  {% endfor %}
+  <li>
+    <a rel="{% if tri_month.third_month > latest_occurrence %}nofollow{% else %}next{% endif %}"
+       href="{% url tri-month-calendar calendar.slug tri_month.third_month.year tri_month.third_month.abbr %}"
+       title="{% trans "Next 3 Months" %}">&rarr;
+    </a>
+  </li>
+</ul>
+{% endblock %}
 
+{% block calendar %}
+<div class="tablewrapper">
 {% for month in tri_month %}
 {% if forloop.counter == 2 %}
-<h2>{{ month|date:"F, Y" }}</h2>
+<h4 class="tri-month main">{{ month|date:"DATE_FORMAT" }}</h4>
 {% endif %}
-<table class="tri-month-view">
-  <thead>
-    <tr>
-      {% for dayname in month.day_names %}
-      <th>{{ dayname }}</th>
-      {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in month.calendar_display %}
-      <tr>
-        {% for day in row  %}
-        <td{% if day == today %} class="today"{% endif %}>
-          {% if day %}
-          <div class="day-ordinal">
-            <a href="{% url day-calendar calendar.slug day.year month.abbr day.number %}">{{ day.number }}</a>
-          </div>
-          {% if day.occurrences %}
-          <ul>
-            {% for occurrence in day.occurrences %}
-            <li>
-              <a class="{{ occurrence.status_slug }}"
-                 href="{{ occurrence.get_absolute_url }}">
-                 {{ occurrence.event.name }}
-               </a>
-            <span class="event_times">{{ occurrence.start|time }}</span>
-            </li>
-            {% endfor %}
-          </ul>
-          {% endif %}
-          {% endif %}
-        </td>
-        {% endfor %}
-      </tr>
-    {% endfor %}
-  </tbody>
+<table class="tri-month-view month calendar small">
+  {% include "calendar/includes/month_calendar.html" %}
 </table>
 {% endfor %}
+</div>
 {% endblock %}

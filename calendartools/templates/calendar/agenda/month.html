@@ -14,7 +14,7 @@
   <li>
     <a rel="{% if month.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
        href="{% url month-agenda calendar.slug month.previous.year month.previous.abbr %}"
-       title="{% trans "Last Month" %}">&larr;
+       title="{% trans "Previous Month" %}">&larr;
     </a>
   </li>
   <li>

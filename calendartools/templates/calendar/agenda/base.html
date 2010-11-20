@@ -21,6 +21,17 @@
 {% block calendar_nav %}
 {% endblock %}
 
+{% block current_nav %}
+<ul class="current nav">
+  <li><a href="{% url month-agenda calendar.slug today.year today|date:"b" %}">
+    {% trans "Current Month Agenda" %}
+  </a></li>
+  <li><a href="{% url year-agenda calendar.slug today.year %}">
+    {% trans "Current Year Agenda" %}
+  </a></li>
+</ul>
+{% endblock %}
+
 {% block filters %}
 {% include "calendar/includes/filters.html" %}
 {% endblock %}

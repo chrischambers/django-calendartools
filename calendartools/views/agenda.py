@@ -7,7 +7,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
 from calendartools.models import Calendar, Occurrence
-from calendartools.periods import Year, Month, Week, Day
+from calendartools.periods import Year, TripleMonth, Month, Week, Day
 
 def year_agenda(request, slug, year, *args, **kwargs):
     calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
@@ -64,6 +64,32 @@ def month_agenda(request, slug, year, month, month_format='%b', *args,
     return render_to_response("calendar/agenda/month.html", data,
                             context_instance=RequestContext(request))
 
+
+def tri_month_agenda(request, slug, year, month, month_format='%b', *args,
+                   **kwargs):
+
+    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
+    year = int(year)
+
+    try:
+        tt = time.strptime("%s-%s" % (year, month), '%s-%s' % ('%Y', month_format))
+        d = date(*tt[:3])
+    except ValueError:
+        raise Http404
+
+    date_range = (d - relativedelta(months=1), d + relativedelta(months=2))
+    occurrences = Occurrence.objects.visible(
+                  ).select_related('event', 'calendar').filter(
+                  calendar=calendar, start__range=date_range).order_by('start')
+    data = {
+        'calendar': calendar,
+        'occurrences': occurrences,
+        'tri_month': TripleMonth(d - relativedelta(months=1),
+                                 occurrences=occurrences),
+        'size': 'small',
+    }
+    return render_to_response("calendar/agenda/tri_month.html", data,
+                            context_instance=RequestContext(request))
 
 def week_agenda(request, slug, year, week, *args, **kwargs):
     calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)

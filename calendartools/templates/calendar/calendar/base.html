@@ -26,10 +26,10 @@
 {% block current_nav %}
 <ul class="current nav">
   <li><a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
-    Current Month Calendar
+    {% trans "Current Month Calendar" %}
   </a></li>
   <li><a href="{% url year-calendar calendar.slug today.year %}">
-    Current Year Calendar
+    {% trans "Current Year Calendar" %}
   </a></li>
 </ul>
 {% endblock %}
