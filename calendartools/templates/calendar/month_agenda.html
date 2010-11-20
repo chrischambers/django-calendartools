@@ -1,23 +1,15 @@
-{% extends "base.html" %}
-{% load i18n %}
+{% extends "calendar/year_agenda.html" %}
 {% load calendartools_tags %}
+{% load i18n %}
 {% block title %}Monthly Agenda - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
-{% block extra_head %}
-  <style type="text/css" media="screen">
-    ul#calendar-nav li, ul.filters li {display: inline; list-style: none;}
-    .vevent abbr {border:0} /* No borders on microformat markup */
-  </style>
+
+{% block heading %}
+<h3>{% trans "Monthly Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 {% endblock %}
 
-{% block primary %}
-<h3>{% trans "Monthly Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
+{% block calendar_url %}{% url month-calendar calendar.slug month.year month.abbr %}{% endblock %}
 
-<p class="toggle-calendar">{% trans "Switch to" %}
-  <a href="{% url month-calendar calendar.slug month.year month.abbr %}">
-    {% trans "calendar view" %}
-  </a>.
-</p>
-
+{% block calendar_nav %}
 <ul id="calendar-nav" class="nav">
   <li>
     <a rel="{% if month.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
@@ -44,38 +36,15 @@
     </a>
   </li>
 </ul>
+{% endblock %}
 
-{% with request.get_full_path as here %}
-{% with here|get_query_string:"period" as period %}
-<ul class="filters">
-  <li><a class="{% if "past" in period %}on{% endif %}"
-         href="{{ here|set_query_string:"period,past" }}">past</a></li>
-  <li><a class="{% if "future" in here|get_query_string:"period" %}on{% endif %}"
-         href="{{ here|set_query_string:"period,future" }}">future</a></li>
-  <li><a class="{% if "today" in here|get_query_string:"period" %}on{% endif %}"
-         href="{{ here|set_query_string:"period,today" }}">today</a></li>
-  <li><a class="{% if "all" in period %}on{% endif %}"
-         href="{{ here|delete_query_string:"period" }}">all</a></li>
-</ul>
-{% endwith %}
-{% endwith %}
 
+{% block agenda %}
 {% if not month.occurrences %}
   <p>No events occurring in {{ month }}</p>
 {% else %}
 
-<ul class="follow utils">
-  <li>
-  <a class="feed" href="http://feeds.technorati.com/events/{{ current_site.domain }}{{ request.get_full_path }}">
-      Add Events to Calendar
-    </a>
-  </li>
-  <li>
-  <a class="subscribe" href="webcal://feeds.technorati.com/events/{{ current_site.domain }}{{ request.get_full_path }}">
-      Subscribe to Events
-    </a>
-  </li>
-</ul>
+{% block follow_utils %}{{ block.super }}{% endblock %}
 
 <table class="month-agenda">
   <caption>

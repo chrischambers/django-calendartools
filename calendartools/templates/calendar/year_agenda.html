@@ -10,14 +10,17 @@
 {% endblock %}
 
 {% block primary %}
+{% block heading %}
 <h3>{% trans "Yearly Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
+{% endblock %}
 
 <p class="toggle-calendar">{% trans "Switch to" %}
-  <a href="{% url year-calendar calendar.slug year.number %}">
+<a href="{% block calendar_url %}{% url year-calendar calendar.slug year.number %}{% endblock %}">
     {% trans "calendar view" %}
   </a>.
 </p>
 
+{% block calendar_nav %}
 <ul id="calendar-nav" class="nav">
   <li>
     <a rel="{% if year.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
@@ -38,7 +41,9 @@
     </a>
   </li>
 </ul>
+{% endblock %}
 
+{% block filters %}
 {% with request.get_full_path as here %}
 {% with here|get_query_string:"period" as period %}
 <ul class="filters">
@@ -53,11 +58,14 @@
 </ul>
 {% endwith %}
 {% endwith %}
+{% endblock %}
 
+{% block agenda %}
 {% if not year.occurrences %}
 <p class="no-events">{% trans "No events occurring in" %} {{ year }}</p>
 {% else %}
 
+{% block follow_utils %}
 <ul class="follow utils">
   <li>
   <a class="feed" href="http://feeds.technorati.com/events/{{ current_site.domain }}{{ request.get_full_path }}">
@@ -70,6 +78,7 @@
     </a>
   </li>
 </ul>
+{% endblock %}
 
 <table class="year-agenda">
   <caption>
@@ -136,4 +145,6 @@
   </tbody>
 </table>
 {% endif %}
+{% endblock %}
+
 {% endblock %}
