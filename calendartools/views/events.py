@@ -129,6 +129,6 @@ def confirm_occurrences(request, event, valid_occurrences, invalid_occurrences,
         'invalid_occurrences': invalid_occurrences,
     }
 
-    return render_to_response("calendar/confirm_occurrences.html", data,
+    return render_to_response("calendar/occurrence_confirm.html", data,
                             context_instance=RequestContext(request))
 

@@ -36,7 +36,7 @@ def year_agenda(request, slug, year, *args, **kwargs):
         'year': Year(date(year, 1, 1), occurrences=occurrences),
         'filters': {'period': period}
     }
-    return render_to_response("calendar/year_agenda.html", data,
+    return render_to_response("calendar/agenda/year.html", data,
                             context_instance=RequestContext(request))
 
 def month_agenda(request, slug, year, month, month_format='%b', *args,
@@ -61,7 +61,7 @@ def month_agenda(request, slug, year, month, month_format='%b', *args,
         'occurrences': occurrences,
         'month': Month(d, occurrences=occurrences)
     }
-    return render_to_response("calendar/month_agenda.html", data,
+    return render_to_response("calendar/agenda/month.html", data,
                             context_instance=RequestContext(request))
 
 
@@ -86,7 +86,7 @@ def week_agenda(request, slug, year, week, *args, **kwargs):
         'occurrences': occurrences,
         'week': Week(d, occurrences=occurrences)
     }
-    return render_to_response("calendar/week_agenda.html", data,
+    return render_to_response("calendar/agenda/week.html", data,
                             context_instance=RequestContext(request))
 
 def day_agenda(request, slug, year, month, day, month_format='%b', *args,
@@ -112,7 +112,7 @@ def day_agenda(request, slug, year, month, day, month_format='%b', *args,
         'occurrences': occurrences,
         'day': Day(d, occurrences=occurrences)
     }
-    return render_to_response("calendar/day_agenda.html", data,
+    return render_to_response("calendar/agenda/day.html", data,
                             context_instance=RequestContext(request))
 
 def today_agenda(request, slug, *args, **kwargs):

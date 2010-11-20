@@ -44,7 +44,7 @@ def year_view(request, slug, year, *args, **kwargs):
         'year': Year(date(year, 1, 1), occurrences=occurrences),
         'size': 'small'
     })
-    return render_to_response("calendar/year_view.html", data,
+    return render_to_response("calendar/calendar/year.html", data,
                             context_instance=RequestContext(request))
 
 def month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
@@ -69,7 +69,7 @@ def month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
     small = kwargs.get('small')
     if small:
         data['small'] = True
-    return render_to_response("calendar/month_view.html", data,
+    return render_to_response("calendar/calendar/month.html", data,
                             context_instance=RequestContext(request))
 
 def tri_month_view(request, slug, year, month, month_format='%b', *args,
@@ -95,7 +95,7 @@ def tri_month_view(request, slug, year, month, month_format='%b', *args,
                                  occurrences=occurrences),
         'size': 'small',
     }
-    return render_to_response("calendar/tri_month_view.html", data,
+    return render_to_response("calendar/calendar/tri_month.html", data,
                             context_instance=RequestContext(request))
 
 def week_view(request, slug, year, week, *args, **kwargs):
@@ -119,7 +119,7 @@ def week_view(request, slug, year, week, *args, **kwargs):
         'occurrences': occurrences,
         'week': Week(d, occurrences=occurrences)
     }
-    return render_to_response("calendar/week_view.html", data,
+    return render_to_response("calendar/calendar/week.html", data,
                             context_instance=RequestContext(request))
 
 def day_view(request, slug, year, month, day, month_format='%b', *args,
@@ -146,7 +146,7 @@ def day_view(request, slug, year, month, day, month_format='%b', *args,
         'occurrences': occurrences,
         'day': Day(d, occurrences=occurrences)
     }
-    return render_to_response("calendar/day_view.html", data,
+    return render_to_response("calendar/calendar/day.html", data,
                             context_instance=RequestContext(request))
 
 def today_view(request, slug, *args, **kwargs):
