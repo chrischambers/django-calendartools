@@ -65,14 +65,13 @@ def columns(lst, cols):
         yield lst[start:stop]
         start = stop
 
-
 def force_no_translation(parser, token):
     nodelist = parser.parse(('endnotrans',))
     parser.delete_first_token()
     return NoTransNode(nodelist)
 
-class NoTransNode(template.Node):
 
+class NoTransNode(template.Node):
     def __init__(self, nodelist):
         self.nodelist = nodelist
 
@@ -83,7 +82,17 @@ class NoTransNode(template.Node):
         translation.activate(language)
         return output
 
+def do_no_translation(value, arg=None):
+    language = translation.get_language()
+    translation.deactivate()
+    value = value[:] # force evaluation of django.utils.__proxy__ obj
+    translation.activate(language)
+    return value
+do_no_translation.is_safe = True
+
 register.tag('notrans', force_no_translation)
+register.filter('notrans', do_no_translation)
+
 
 from urlparse import urlparse
 try:

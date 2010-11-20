@@ -37,6 +37,23 @@ class TestTranslationTags(TestCase):
         assert_not_in(u'يناير', output)
         assert_in('January', output)
 
+    def test_no_trans_filter(self):
+        context = Context({
+            'january': _('January')
+        })
+        template = Template("""
+            {{ january }}
+        """)
+        output = template.render(context)
+        assert_in(u'يناير', output)
+        template = Template("""
+            {% load calendartools_tags %}
+            {{ january|notrans }}
+        """)
+        output = template.render(context)
+        assert_not_in(u'يناير', output)
+        assert_in('January', output)
+
 
 class TestQueryStringManipulation(TestCase):
     def setUp(self):

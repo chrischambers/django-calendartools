@@ -98,37 +98,37 @@
   <tbody>
     {% for month in year.months %}
       {% if month.occurrences %}
-        <tr class="month-divider {{ month.abbr }} vevent">
+        <tr class="month-divider {{ month.abbr|notrans }} vevent">
           <th rowspan="{{ month.occurrences|length }}">
             <a href="{% url month-agenda calendar.slug month.year month.abbr %}">
               {{ month.name }}
             </a>
           </th>
         {% for o in month.occurrences %}
-          <td class="day event name summary">
+          <td class="">
             <a class="{{ o.status_slug }} summary url"
               href="{{ o.get_absolute_url }}">
-              {{ o.name }}
+              <span class="name">{{ o.name }}</span>
             </a>
           </td>
-          <td class="day event start date">
+          <td class="start date">
             <a href="{% url day-agenda calendar.slug o.start.year o.start|date:"b" o.start.day %}">
               {{ o.start|date:"DATE_FORMAT" }}
             </a>
           </td>
-          <td class="day event start time">
+          <td class="start time">
             <abbr class="dtstart" title="{{ o.start|date:"c" }}">
               {{ o.start|date:"TIME_FORMAT" }}
             </abbr>
           </td>
-          <td class="day event finish time">
+          <td class="finish time">
             <abbr class="dtend" title="{{ o.finish|date:"c" }}">
               {{ o.finish|date:"TIME_FORMAT" }}
             </abbr>
           </td>
         </tr>
           {% if not forloop.last %}
-        <tr class="vevent">
+        <tr class="{{ month.abbr|notrans }} vevent">
           {% endif %}
         {% endfor %}
       {% endif %}
