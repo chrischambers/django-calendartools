@@ -16,7 +16,7 @@
             <tr class="daysofweek">
               <td>&nbsp;</td>
               {% for dayname in month.day_names %}
-              <th class="day name {{ dayname|slugify }}">{{ dayname }}</th>
+              <th class="day name {{ dayname|notrans|slugify }}">{{ dayname }}</th>
               {% endfor %}
             </tr>
           </thead>
@@ -56,7 +56,7 @@
                       <abbr class="dtstart" title="{{ o.start|date:"c" }}">
                         {{ o.start|date:"TIME_FORMAT" }}
                       </abbr>
-                      -
+                    <em> - </em>
                     </span>
                     <span class="finish time">
                       <abbr class="dtend" title="{{ o.finish|date:"c" }}">

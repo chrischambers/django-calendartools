@@ -75,7 +75,7 @@
   <tbody>
     {% for month in tri_month.months %}
       {% if month.occurrences %}
-        <tr class="month-divider {{ month.abbr|notrans }} vevent">
+        <tr class="month-divider {{ month.abbr|notrans|lower }} vevent">
           <th rowspan="{{ month.occurrences|length }}">
             <a href="{% url month-agenda calendar.slug month.year month.abbr %}">
               {{ month.name }}
@@ -105,7 +105,7 @@
           </td>
         </tr>
           {% if not forloop.last %}
-        <tr class="{{ month.abbr|notrans }} vevent">
+        <tr class="{{ month.abbr|notrans|lower }} vevent">
           {% endif %}
         {% endfor %}
       {% endif %}

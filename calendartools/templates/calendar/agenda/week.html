@@ -1,61 +1,131 @@
-{% extends "base.html" %}
+{% extends "calendar/agenda/base.html" %}
 {% load calendartools_tags %}
+{% load i18n %}
+{% block title %}Week Agenda - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
 
-{% block title %}Weekly Agenda{% endblock %}
-{% block primary %}
-<h3>Weekly Agenda</h3>
+{% block heading %}
+<h3>{% trans "Week Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
+{% endblock %}
 
-<p>Switch to
-  <a href="{% url week-calendar calendar.slug week.year week.number %}">
-    calendar view
-  </a>.
-</p>
+{% block calendar_url %}{% url week-calendar calendar.slug week.year week.number %}{% endblock %}
 
-<h4>
-  <a href="{% url week-agenda calendar.slug week.previous.year week.previous.number %}"
-    title="Previous Week">&larr;</a>
-  <a title="View {{ week|date:"l, jS F, Y"}}" href="{% url day-agenda calendar.slug week.year week.get_month.abbr week.start.day %}">
-  {{ week|date:"l jS" }}</a>
-  <a title="View {{ week.get_month.name }}" href="{% url month-agenda calendar.slug week.year week.get_month.abbr %}">
-    {{ week|date:"F" }}</a>
-  <a title="View {{ month.year}}" href="{% url year-agenda calendar.slug week.year %}">
-    {{ week|date:"Y" }}</a>
-  -
-  <a title="View {{ week.last_day|date:"l, jS F, Y"}}" href="{% url day-agenda calendar.slug week.last_day.year week.last_day.get_month.abbr week.last_day.number %}">
-  {{ week.last_day|date:"l jS" }}</a>
-  <a title="View {{ week.last_day.get_month.name }}" href="{% url month-agenda calendar.slug week.last_day.year week.last_day.get_month.abbr %}">
-    {{ week.last_day|date:"F" }}</a>
-  <a title="View {{ week.last_day.year }}" href="{% url year-agenda calendar.slug week.last_day.year %}">
-    {{ week.last_day|date:"Y" }}</a>
-  <a href="{% url week-agenda calendar.slug week.next.year week.next.number %}"
-    title="Next Week">&rarr;</a>
-</h4>
+{% block calendar_nav %}
+<ul id="calendar-nav" class="nav">
+  <li>
+    <a rel="{% if week.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
+       href="{% url week-agenda calendar.slug week.previous.year week.previous.number %}"
+       title="{% trans "Previous week" %}">&larr;
+    </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ week|date:"DATE_FORMAT"}}"
+       href="{% url day-agenda calendar.slug week.year week.get_month.abbr week.start.day %}">
+       {{ week|date:"l, jS" }}
+     </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ week.get_month.name }}"
+       href="{% url month-agenda calendar.slug week.year week.get_month.abbr %}">
+       {{ week|date:"F," }}
+     </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ week.year }}"
+       href="{% url year-agenda calendar.slug week.year %}">
+       {{ week|date:"Y" }}
+    </a>
+  </li>
+  <li><em> - </em></li>
+  <li>
+    <a title="{% trans "View" %} {{ week.last_day|date:"DATE_FORMAT"}}"
+       href="{% url day-agenda calendar.slug week.last_day.year week.last_day.get_month.abbr week.last_day.day %}">
+       {{ week.last_day|date:"l, jS" }}
+     </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ week.last_day.get_month.name }}"
+       href="{% url month-agenda calendar.slug week.last_day.year week.last_day.get_month.abbr %}">
+       {{ week.last_day|date:"F," }}
+     </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ week.last_day.year }}"
+       href="{% url year-agenda calendar.slug week.last_day.year %}">
+       {{ week.last_day|date:"Y" }}
+    </a>
+  </li>
+  <li>
+    <a rel="{% if week.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
+       href="{% url week-agenda calendar.slug week.next.year week.next.number %}"
+       title="{% trans "Next week" %}">&rarr;
+    </a>
+  </li>
+</ul>
+{% endblock %}
 
+{% block agenda %}
 {% if not week.occurrences %}
   <p>No events occurring in {{ week }}</p>
 {% else %}
+
+{% block follow_utils %}{{ block.super }}{% endblock %}
+
 <table class="week-agenda">
+  <caption>
+    <span class="week start">{{ week.start|date:"DATE_FORMAT" }}</span>
+    <em> - </em>
+    <span class="week finish">{{ week.finish|date:"DATE_FORMAT" }}</span>
+  </caption>
+
+  <colgroup>
+    <col class="day" />
+    <col class="title alt" />
+    <col class="start" />
+    <col class="end alt" />
+  </colgroup>
+
   <thead>
     <tr>
-      <th>Title</th>
-      <th>Day</th>
-      <th>Start</th>
-      <th>End</th>
+      <th>{% trans "Day" %}</th>
+      <th>{% trans "Title" %}</th>
+      <th>{% trans "Start" %}</th>
+      <th>{% trans "End" %}</th>
     </tr>
   </thead>
+
   <tbody>
-    {% for o in week.occurrences %}
-      <tr class="day-divider">
-        <td><a class="{{ o.status_slug }}"
-               href="{{ o.get_absolute_url }}">{{ o.name }}</a></td>
-        <td>{{ o.start|date:"l, jS" }}</td>
-        <td>{{ o.start|date:"P" }}</td>
-        <td>{{ o.finish|date:"P" }}</td>
+    {% for day in week.days %}
+      {% if day.occurrences %}
+      <tr class="day-divider {{ day.name|notrans|lower }} vevent">
+        <th class="start date" rowspan="{{ day.occurrences|length }}">
+          <a href="{% url day-agenda calendar.slug day.year day.get_month.abbr day.number %}">
+            {{ day|date:"DATE_FORMAT" }}
+          </a>
+        </th>
+      {% for o in day.occurrences %}
+        <td class="summary">
+          <a class="{{ o.status_slug }} summary url"
+              href="{{ o.get_absolute_url }}">
+              <span class="name">{{ o.name }}</span>
+          </a>
+        </td>
+        <td class="start time">
+          <abbr class="dtstart" title="{{ o.start|date:"c" }}">
+            {{ o.start|date:"TIME_FORMAT" }}
+          </abbr>
+        </td>
+        <td class="finish time">
+          <abbr class="dtend" title="{{ o.finish|date:"c" }}">
+            {{ o.finish|date:"TIME_FORMAT" }}
+          </abbr>
+        </td>
       </tr>
         {% if not forloop.last %}
-      <tr>
-          {% endif %}
-    {% endfor %}
+      <tr class="{{ day.name|notrans|lower }} vevent">
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
   </tbody>
 </table>
 {% endif %}

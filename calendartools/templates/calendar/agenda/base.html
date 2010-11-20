@@ -23,6 +23,9 @@
 
 {% block current_nav %}
 <ul class="current nav">
+  <li><a href="{% url week-agenda calendar.slug today.year today.get_week.number %}">
+    {% trans "Current Week Agenda" %}
+  </a></li>
   <li><a href="{% url month-agenda calendar.slug today.year today|date:"b" %}">
     {% trans "Current Month Agenda" %}
   </a></li>
