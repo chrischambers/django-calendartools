@@ -74,41 +74,7 @@
 
   <tbody>
     {% for month in tri_month.months %}
-      {% if month.occurrences %}
-        <tr class="month-divider {{ month.abbr|notrans|lower }} vevent">
-          <th rowspan="{{ month.occurrences|length }}">
-            <a href="{% url month-agenda calendar.slug month.year month.abbr %}">
-              {{ month.name }}
-            </a>
-          </th>
-        {% for o in month.occurrences %}
-          <td class="start date">
-            <a href="{% url day-agenda calendar.slug o.start.year o.start|date:"b" o.start.day %}">
-              {{ o.start|date:"DATE_FORMAT" }}
-            </a>
-          </td>
-          <td class="summary">
-            <a class="{{ o.status_slug }} summary url"
-              href="{{ o.get_absolute_url }}">
-              <span class="name">{{ o.name }}</span>
-            </a>
-          </td>
-          <td class="start time">
-            <abbr class="dtstart" title="{{ o.start|date:"c" }}">
-              {{ o.start|date:"TIME_FORMAT" }}
-            </abbr>
-          </td>
-          <td class="finish time">
-            <abbr class="dtend" title="{{ o.finish|date:"c" }}">
-              {{ o.finish|date:"TIME_FORMAT" }}
-            </abbr>
-          </td>
-        </tr>
-          {% if not forloop.last %}
-        <tr class="{{ month.abbr|notrans|lower }} vevent">
-          {% endif %}
-        {% endfor %}
-      {% endif %}
+    {% include "calendar/includes/month_agenda.html" %}
     {% endfor %}
   </tbody>
 </table>

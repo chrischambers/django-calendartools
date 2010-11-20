@@ -2,14 +2,6 @@
 {% load i18n %}
 {% load calendartools_tags %}
 {% block title %}Yearly View - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
-{% block extra_head %}
-  <style type="text/css" media="screen">
-    ul#calendar-nav li {display: inline; list-style: none;}
-    td.day.name {width: 120px;}
-    td.month-cell {vertical-align: top;}
-    table#year-calendar {text-align: center;}
-  </style>
-{% endblock %}
 
 {% block heading %}
 <h3>{% trans "Yearly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
