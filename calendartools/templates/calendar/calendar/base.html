@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load calendartools_tags %}
+{% block extra_head %}
+  <style type="text/css" media="screen">
+    ul#calendar-nav li {display: inline; list-style: none;}
+    td.day.name {width: 120px;}
+    td.month-cell {vertical-align: top;}
+    table#year-calendar {text-align: center;}
+  </style>
+{% endblock %}
+
+{% block primary %}
+{% block heading %}{% endblock %}
+
+<p class="toggle-agenda">{% trans "Switch to" %}
+<a href="{% block agenda_url %}{% endblock %}">
+    {% trans "agenda view" %}
+  </a>.
+</p>
+
+{% block calendar_nav %}
+{% endblock %}
+
+{% block current_nav %}
+<ul class="current nav">
+  <li><a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
+    Current Month Calendar
+  </a></li>
+  <li><a href="{% url year-calendar calendar.slug today.year %}">
+    Current Year Calendar
+  </a></li>
+</ul>
+{% endblock %}
+
+{% block calendar %}
+{% endblock %}
+
+{% endblock %}

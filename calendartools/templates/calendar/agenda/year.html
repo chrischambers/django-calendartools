@@ -1,24 +1,13 @@
-{% extends "base.html" %}
+{% extends "calendar/agenda/base.html" %}
 {% load i18n %}
 {% load calendartools_tags %}
 {% block title %}Yearly Agenda - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
-{% block extra_head %}
-  <style type="text/css" media="screen">
-    ul#calendar-nav li, ul.filters li {display: inline; list-style: none;}
-    .vevent abbr {border:0} /* No borders on microformat markup */
-  </style>
-{% endblock %}
 
-{% block primary %}
 {% block heading %}
 <h3>{% trans "Yearly Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 {% endblock %}
 
-<p class="toggle-calendar">{% trans "Switch to" %}
-<a href="{% block calendar_url %}{% url year-calendar calendar.slug year.number %}{% endblock %}">
-    {% trans "calendar view" %}
-  </a>.
-</p>
+{% block calendar_url %}{% url year-calendar calendar.slug year.number %}{% endblock %}
 
 {% block calendar_nav %}
 <ul id="calendar-nav" class="nav">
@@ -43,42 +32,12 @@
 </ul>
 {% endblock %}
 
-{% block filters %}
-{% with request.get_full_path as here %}
-{% with here|get_query_string:"period" as period %}
-<ul class="filters">
-  <li><a class="{% if "past" in period %}on{% endif %}"
-         href="{{ here|set_query_string:"period,past" }}">past</a></li>
-  <li><a class="{% if "future" in here|get_query_string:"period" %}on{% endif %}"
-         href="{{ here|set_query_string:"period,future" }}">future</a></li>
-  <li><a class="{% if "today" in here|get_query_string:"period" %}on{% endif %}"
-         href="{{ here|set_query_string:"period,today" }}">today</a></li>
-  <li><a class="{% if "all" in period %}on{% endif %}"
-         href="{{ here|delete_query_string:"period" }}">all</a></li>
-</ul>
-{% endwith %}
-{% endwith %}
-{% endblock %}
-
 {% block agenda %}
 {% if not year.occurrences %}
 <p class="no-events">{% trans "No events occurring in" %} {{ year }}</p>
 {% else %}
 
-{% block follow_utils %}
-<ul class="follow utils">
-  <li>
-  <a class="feed" href="http://feeds.technorati.com/events/{{ current_site.domain }}{{ request.get_full_path }}">
-      Add Events to Calendar
-    </a>
-  </li>
-  <li>
-  <a class="subscribe" href="webcal://feeds.technorati.com/events/{{ current_site.domain }}{{ request.get_full_path }}">
-      Subscribe to Events
-    </a>
-  </li>
-</ul>
-{% endblock %}
+{% block follow_utils %}{{ block.super }}{% endblock %}
 
 <table class="year-agenda">
   <caption>
@@ -145,6 +104,4 @@
   </tbody>
 </table>
 {% endif %}
-{% endblock %}
-
 {% endblock %}
