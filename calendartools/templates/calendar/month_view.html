@@ -1,25 +1,14 @@
-{% extends "base.html" %}
+{% extends "calendar/year_view.html" %}
 {% load i18n %}
-{% load calendartools_tags %}
 {% block title %}Monthly View - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
-{% block extra_head %}
-  <style type="text/css" media="screen">
-    ul#calendar-nav li {display: inline; list-style: none;}
-    td.day.name {width: 120px;}
-    td.month-cell {vertical-align: top;}
-    table#year-calendar {text-align: center;}
-  </style>
+
+{% block heading %}
+<h3>{% trans "Monthly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 {% endblock %}
 
-{% block primary %}
-<h3>{% trans "Monthly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
+{% block agenda_url %}{% url month-agenda calendar.slug month.year month.abbr %}{% endblock %}
 
-<p class="toggle-agenda">{% trans "Switch to" %}
-  <a href="{% url month-agenda calendar.slug month.year month.abbr %}">
-    {% trans "agenda view" %}
-  </a>.
-</p>
-
+{% block calendar_nav %}
 <ul id="calendar-nav" class="nav">
   <li>
     <a rel="{% if month.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
@@ -58,20 +47,12 @@
     </a>
   </li>
 </ul>
+{% endblock %}
 
-<ul class="current nav">
-  <li><a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
-    Current Month Calendar
-  </a></li>
-  <li><a href="{% url year-calendar calendar.slug today.year %}">
-    Current Year Calendar
-  </a></li>
-</ul>
-
+{% block calendar %}
 <div class="tablewrapper">
   <table class="month calendar {{ size|default:"medium" }}">
   {% include "calendar/includes/month_calendar.html" %}
   </table>
 </div>
-
 {% endblock %}

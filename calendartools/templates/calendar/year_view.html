@@ -12,14 +12,17 @@
 {% endblock %}
 
 {% block primary %}
+{% block heading %}
 <h3>{% trans "Yearly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
+{% endblock %}
 
 <p class="toggle-agenda">{% trans "Switch to" %}
-  <a href="{% url year-agenda calendar.slug year.number %}">
+<a href="{% block agenda_url %}{% url year-agenda calendar.slug year.number %}{% endblock %}">
     {% trans "agenda view" %}
   </a>.
 </p>
 
+{% block calendar_nav %}
 <ul id="calendar-nav" class="nav">
   <li>
     <a rel="{% if year.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
@@ -40,7 +43,9 @@
     </a>
   </li>
 </ul>
+{% endblock %}
 
+{% block current_nav %}
 <ul class="current nav">
   <li><a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
     Current Month Calendar
@@ -49,7 +54,9 @@
     Current Year Calendar
   </a></li>
 </ul>
+{% endblock %}
 
+{% block calendar %}
 <div class="tablewrapper">
   <table id="year-calendar" class="year calendar">
     <tr>
@@ -71,5 +78,6 @@
     </tr>
   </table>
 </div>
+{% endblock %}
 
 {% endblock %}
