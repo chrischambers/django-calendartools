@@ -12,11 +12,11 @@
 {% endblock %}
 
 {% block primary %}
-<h3>Yearly View - <span class="calendarname">{{ calendar.name }}</span> Calendar</h3>
+<h3>{% trans "Yearly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 
-<p class="toggle-agenda">Switch to
+<p class="toggle-agenda">{% trans "Switch to" %}
   <a href="{% url year-agenda calendar.slug year.number %}">
-    agenda view
+    {% trans "agenda view" %}
   </a>.
 </p>
 
@@ -41,6 +41,15 @@
   </li>
 </ul>
 
+<ul class="current nav">
+  <li><a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
+    Current Month Calendar
+  </a></li>
+  <li><a href="{% url year-calendar calendar.slug today.year %}">
+    Current Year Calendar
+  </a></li>
+</ul>
+
 <div class="tablewrapper">
   <table id="year-calendar" class="year calendar">
     <tr>
@@ -50,7 +59,6 @@
           <span>{{ month.name }}</span>
         </a>
 
-        <!-- Month Calendar -->
         <table class="month calendar calendar-{{ forloop.counter }} {% cycle "" "alt" %}">
           {% include "calendar/includes/month_calendar.html" %}
         </table>
@@ -64,12 +72,4 @@
   </table>
 </div>
 
-<div class="navigation">
-  <a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
-    Current Month Calendar
-  </a>
-  <a href="{% url year-calendar calendar.slug today.year %}">
-    Current Year Calendar
-  </a>
-</div>
 {% endblock %}

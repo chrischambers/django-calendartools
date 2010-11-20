@@ -12,11 +12,11 @@
 {% endblock %}
 
 {% block primary %}
-<h3>Monthly View - <span class="calendarname">{{ calendar.name }}</span> Calendar</h3>
+<h3>{% trans "Monthly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 
-<p class="toggle-agenda">Switch to
+<p class="toggle-agenda">{% trans "Switch to" %}
   <a href="{% url month-agenda calendar.slug month.year month.abbr %}">
-    agenda view
+    {% trans "agenda view" %}
   </a>.
 </p>
 
@@ -59,19 +59,19 @@
   </li>
 </ul>
 
+<ul class="current nav">
+  <li><a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
+    Current Month Calendar
+  </a></li>
+  <li><a href="{% url year-calendar calendar.slug today.year %}">
+    Current Year Calendar
+  </a></li>
+</ul>
+
 <div class="tablewrapper">
   <table class="month calendar {{ size|default:"medium" }}">
   {% include "calendar/includes/month_calendar.html" %}
   </table>
-</div>
-
-<div class="navigation">
-  <a href="{% url month-calendar calendar.slug today.year today|date:"b" %}">
-    Current Month Calendar
-  </a>
-  <a href="{% url year-calendar calendar.slug today.year %}">
-    Current Year Calendar
-  </a>
 </div>
 
 {% endblock %}
