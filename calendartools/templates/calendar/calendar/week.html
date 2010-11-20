@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load calendartools_tags %}
 {% block title %}Weekly View - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+
 {% block heading %}
 <h3>{% trans "Weekly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 {% endblock %}
@@ -113,8 +114,8 @@
                   <abbr class="dtstart" title="{{ o.start|date:"c" }}">
                     {{ o.start|date:"TIME_FORMAT" }}
                   </abbr>
-                  <em> - </em>
                 </span>
+                <em> - </em>
                 <span class="finish time">
                   <abbr class="dtend" title="{{ o.finish|date:"c" }}">
                     {{ o.finish|date:"TIME_FORMAT" }}

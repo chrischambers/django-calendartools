@@ -1,61 +1,114 @@
-{% extends "base.html" %}
+{% extends "calendar/calendar/base.html" %}
+{% load i18n %}
 {% load calendartools_tags %}
+{% block title %}Daily View - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
 
-{% block title %}Day View{% endblock %}
-{% block extra_head %}
-  <style type="text/css" media="screen">
-    .day-view-1 {float: left;}
-  </style>
+{% block heading %}
+<h3>{% trans "Daily View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 {% endblock %}
 
-{% block primary %}
-<h3>Day View</h3>
+{% block agenda_url %}{% url day-agenda calendar.slug day.year day.get_month.abbr day.number %}{% endblock %}
 
-<p>Switch to
-  <a href="{% url day-agenda calendar.slug day.year day.get_month.abbr day.number %}">
-    agenda view
-  </a>.
-</p>
+{% block calendar_nav %}
+<ul id="calendar-nav" class="nav">
+  <li>
+    <a rel="{% if day.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
+       href="{% url day-calendar calendar.slug day.previous.year day.previous.get_month.abbr day.previous.number %}"
+       title="{% trans "Previous day" %}">&larr;
+    </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ day|date:"DATE_FORMAT"}}"
+       href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.start.day %}">
+       {{ day|date:"l, jS" }}
+     </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ day.get_month.name }}"
+       href="{% url month-calendar calendar.slug day.year day.get_month.abbr %}">
+       {{ day|date:"F," }}
+     </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ day.year }}"
+       href="{% url year-calendar calendar.slug day.year %}">
+       {{ day|date:"Y" }}
+    </a>
+  </li>
+  <li>
+    <a rel="{% if day.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
+       href="{% url day-calendar calendar.slug day.next.year day.next.get_month.abbr day.next.number %}"
+       title="{% trans "Next day" %}">&rarr;
+    </a>
+  </li>
+</ul>
+{% endblock %}
 
-<h4>
-  <a href="{% url day-calendar calendar.slug day.previous.year day.previous.get_month.abbr day.previous.number %}"
-    title="Previous Day">&larr;</a>
-  <a title="View {{ day|date:"l, jS F, Y"}}" href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
-  {{ day|date:"l jS" }}</a>
-  <a title="View {{ day|date:"F, Y"}}" href="{% url month-calendar calendar.slug day.year day.get_month.abbr %}">
-    {{ day|date:"F" }}</a>
-  <a title="View {{ day.year}}" href="{% url year-calendar calendar.slug day.year %}">
-    {{ day|date:"Y" }}</a>
-  <a href="{% url day-calendar calendar.slug day.next.year day.next.get_month.abbr day.next.number %}"
-    title="Next Day">&rarr;</a>
-</h4>
+{% block calendar %}
+<div class="tablewrapper">
+  <table class="day calendar">
+    <caption>
+      <span class="day start">{{ day.start|date:"DATE_FORMAT" }}</span>
+      -
+      <span class="day finish">{{ day.finish|date:"DATE_FORMAT" }}</span>
+    </caption>
 
-{% with day.intervals as intervals %}
-{% for column in intervals|columns:2 %}
-<table class="day-view-{{ forloop.counter }}">
-  {% for cell in column %}
-  <tbody>
+    <tbody>
       <tr>
-        <td>{{ cell.start|time:"h:i:s" }}</td>
+        {% with day.intervals as intervals %}
+        {% for column in intervals|columns:2 %}
         <td>
-          {% if cell.occurrences %}
-          <ul>
-            {% for occurrence in cell.occurrences %}
-            <li>
-              <a class="{{ occurrence.status_slug }}"
-                 href="{{ occurrence.get_absolute_url }}">
-                 {{ occurrence.event.name }}
-               </a>
-            <span class="event_times">{{ occurrence.start|time }}</span>
-            </li>
+          <table class="day column column-{{ forloop.counter }}{% cycle "" " alt" %}">
+
+            <colgroup>
+              <col class="day time{% if day == today %} today{% endif %}" />
+              <col class="day events{% if day == today %} today{% endif %}" />
+            </colgroup>
+
+            <thead>
+              <tr>
+                <th>{% trans "Time" %}</th>
+                <th>{% trans "Events" %}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+            {% for cell in column %}
+              <tr>
+                <td class="day time">{{ cell.start|time:"TIME_FORMAT" }}</td>
+                <td>
+                  {% if cell.occurrences %}
+                  <ul class="occurrences">
+                    {% for o in cell.occurrences %}
+                    <li class="period vevent {{ o.status_slug }}">
+                      <a class="summary url" href="{{ o.get_absolute_url }}">
+                        <span class="name">{{ o.name }}</span>
+                      </a>
+                      <span class="start time">
+                        <abbr class="dtstart" title="{{ o.start|date:"c" }}">
+                          {{ o.start|date:"TIME_FORMAT" }}
+                        </abbr>
+                      </span>
+                      <em> - </em>
+                      <span class="finish time">
+                        <abbr class="dtend" title="{{ o.finish|date:"c" }}">
+                          {{ o.finish|date:"TIME_FORMAT" }}
+                        </abbr>
+                      </span>
+                    </li><!-- end .vevent -->
+                    {% endfor %}
+                  </ul>
+                  {% endif %}
+                </td>
+              </tr>
             {% endfor %}
-          </ul>
-          {% endif %}
+            </tbody>
+          </table><!-- end day-column-{{ forloop.counter }}-->
         </td>
+        {% endfor %}
+        {% endwith %}
       </tr>
-  </tbody>
-  {% endfor %}
-</table>
-{% endfor %}
-{% endwith %}
+    </tbody>
+  </table><!--end .day.calendar -->
+</div>
 {% endblock %}
