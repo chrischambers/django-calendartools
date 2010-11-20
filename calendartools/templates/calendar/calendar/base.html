@@ -3,7 +3,8 @@
 {% load calendartools_tags %}
 {% block extra_head %}
   <style type="text/css" media="screen">
-    ul#calendar-nav li {display: inline; list-style: none;}
+    ul#calendar-nav li, ul.filters li {display: inline; list-style: none;}
+    .vevent abbr {border:0} /* No borders on microformat markup */
     td.day.name {width: 120px;}
     td.month-cell {vertical-align: top;}
     table#year-calendar {text-align: center;}
@@ -31,6 +32,10 @@
     Current Year Calendar
   </a></li>
 </ul>
+{% endblock %}
+
+{% block filters %}
+{% include "calendar/includes/filters.html" %}
 {% endblock %}
 
 {% block calendar %}

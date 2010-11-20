@@ -22,20 +22,7 @@
 {% endblock %}
 
 {% block filters %}
-{% with request.get_full_path as here %}
-{% with here|get_query_string:"period" as period %}
-<ul class="filters">
-  <li><a class="{% if "past" in period %}on{% endif %}"
-         href="{{ here|set_query_string:"period,past" }}">past</a></li>
-  <li><a class="{% if "future" in here|get_query_string:"period" %}on{% endif %}"
-         href="{{ here|set_query_string:"period,future" }}">future</a></li>
-  <li><a class="{% if "today" in here|get_query_string:"period" %}on{% endif %}"
-         href="{{ here|set_query_string:"period,today" }}">today</a></li>
-  <li><a class="{% if "all" in period %}on{% endif %}"
-         href="{{ here|delete_query_string:"period" }}">all</a></li>
-</ul>
-{% endwith %}
-{% endwith %}
+{% include "calendar/includes/filters.html" %}
 {% endblock %}
 
 {% block agenda %}

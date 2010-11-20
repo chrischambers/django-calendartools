@@ -1,0 +1,34 @@
+
+{% load i18n %}
+{% load calendartools_tags %}
+
+{% with request.get_full_path as here %}
+{% with here|get_query_string:"period" as period %}
+<ul class="filters">
+  <li>
+    <a class="{% if "past" in period %}on{% endif %}"
+       href="{{ here|set_query_string:"period,past" }}">
+       {% trans "past" %}
+    </a>
+  </li>
+  <li>
+    <a class="{% if "future" in period %}on{% endif %}"
+       href="{{ here|set_query_string:"period,future" }}">
+      {% trans "future" %}
+    </a>
+  </li>
+  <li>
+    <a class="{% if "today" in period %}on{% endif %}"
+        href="{{ here|set_query_string:"period,today" }}">
+       {% trans "today" %}
+    </a>
+  </li>
+  <li>
+    <a class="{% if "all" in period %}on{% endif %}"
+        href="{{ here|delete_query_string:"period" }}">
+        {% trans "all" %}
+    </a>
+  </li>
+</ul>
+{% endwith %}
+{% endwith %}
