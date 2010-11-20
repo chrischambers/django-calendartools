@@ -12,7 +12,7 @@
 <ul id="calendar-nav" class="nav">
   <li>
     <a rel="{% if month.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
-       {% if small %}
+       {% if size == "small" %}
        href="{% url small-month-calendar calendar.slug month.previous.year month.previous.abbr %}"
        {% else %}
        href="{% url month-calendar calendar.slug month.previous.year month.previous.abbr %}"
@@ -22,7 +22,7 @@
   </li>
   <li>
     <a title="{% trans "View" %} {{ month.name }}"
-       {% if small %}
+       {% if size == "small" %}
        href="{% url small-month-calendar calendar.slug month.year month.abbr %}">
        {% else %}
        href="{% url month-calendar calendar.slug month.year month.abbr %}">
@@ -38,7 +38,7 @@
   </li>
   <li>
     <a rel="{% if month.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
-       {% if small %}
+       {% if size == "small" %}
        href="{% url small-month-calendar calendar.slug month.next.year month.next.abbr %}"
        {% else %}
        href="{% url month-calendar calendar.slug month.next.year month.next.abbr %}"

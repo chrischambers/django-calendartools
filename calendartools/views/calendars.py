@@ -68,7 +68,7 @@ def month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
     }
     small = kwargs.get('small')
     if small:
-        data['small'] = True
+        data['size'] = 'small'
     return render_to_response("calendar/calendar/month.html", data,
                             context_instance=RequestContext(request))
 
