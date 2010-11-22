@@ -1,7 +1,7 @@
 # Minimal settings used for testing.
-import os
-CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
-APPLICATION_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+from os import path
+CURRENT_DIR = path.abspath(path.dirname(__file__))
+APPLICATION_DIR = path.abspath(path.dirname(path.dirname(__file__)))
 
 APPEND_SLASH = True
 DEBUG = TEMPLATE_DEBUG = True
@@ -17,6 +17,9 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'threaded_multihost.middleware.ThreadLocalMiddleware',
 ]
+STATIC_DOC_ROOT = path.join(path.split(APPLICATION_DIR)[0], 'static')
+MEDIA_ROOT = STATIC_DOC_ROOT
+MEDIA_URL = '/media/'
 
 USE_I18N = True
 USE_L10N = True
@@ -40,8 +43,8 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.load_template_source',
 )
 
-TEMPLATE_DIRS = [os.path.join(APPLICATION_DIR, 'templates'),
-                 os.path.join(CURRENT_DIR, 'templates')]
+TEMPLATE_DIRS = [path.join(APPLICATION_DIR, 'templates'),
+                 path.join(CURRENT_DIR, 'templates')]
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.auth',
     'django.core.context_processors.debug',

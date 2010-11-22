@@ -46,13 +46,14 @@
               <td class="day-cell free {{ day|time_relative_to_today }}">
               {% endif %}
 
-                <div class="header">
-                  <a class="day-number" href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
-                    <span >{{ day.number }}</span>
-                  </a>
-                </div>
+                <div class="period-wrapper">
+                  <div class="header">
+                    <a class="day-number" href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
+                      <span >{{ day.number }}</span>
+                    </a>
+                  </div>
 
-                {% if size != "small" and day.occurrences %}
+                  {% if size != "small" and day.occurrences %}
                   <ul class="occurrences">
                     {% for o in day.occurrences %}
                     <li class="day vevent {{ o.status_slug }}">
@@ -73,7 +74,8 @@
                     </li><!-- end .vevent -->
                     {% endfor %}
                   </ul>
-                {% endif %}
+                  {% endif %}
+                </div><! -- end .period-wrapper -->
               </td><!-- end .day-cell -->
               {% endif %}
               {% endfor %}

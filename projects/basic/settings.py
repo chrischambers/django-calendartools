@@ -1,5 +1,5 @@
-import os
-PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+from os import path
+PROJECT_ROOT = path.abspath(path.dirname(__file__))
 
 DEBUG = TEMPLATE_DEBUG = True
 DATABASES = {
@@ -36,8 +36,11 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'basic.urls'
 
+STATIC_DOC_ROOT = path.join(PROJECT_ROOT, 'static')
+MEDIA_ROOT = STATIC_DOC_ROOT
+MEDIA_URL = '/media/'
 TEMPLATE_DIRS = (
-    os.path.join(PROJECT_ROOT, 'templates'),
+    path.join(PROJECT_ROOT, 'templates'),
 )
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.auth',
@@ -49,8 +52,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
-MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
-MEDIA_URL = '/media/'
 
 INSTALLED_APPS = (
     'django.contrib.auth',

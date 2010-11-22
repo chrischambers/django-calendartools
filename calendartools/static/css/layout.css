@@ -1,0 +1,56 @@
+div.tablewrapper {text-align: center;}
+table#year-calendar {text-align: center; margin: 0 auto;}
+table.day.calendar td {vertical-align: top; }
+
+/* Calendar Chrome */
+ul#calendar-nav li, ul.filters li/*, ul.current.nav li*/
+{display: inline; list-style: none;}
+ul.filters a.on {color: red;}
+
+
+/* Microformats */
+.vevent abbr {border:0} /* No borders on microformat markup */
+
+/* Year Calendar */
+table.calendar {
+    border-collapse: separate; border-spacing: 2px; border:2px solid #f0f0f0;
+}
+table.calendar .daysofweek {height: 20px; text-align: center}
+
+/* table.calendar td {min-height: 100px; width: 100px;} */
+
+table.calendar.small td {height: 20px; width: 40px;}
+table.calendar.small a.day-number {height: 20px; width: 40px; display: block;}
+table.calendar.small a.day-number:hover {background-color: #FF9ECE;}
+table.calendar.small td.week-number {width: 20px;}
+
+table.calendar th.day.name,
+table.calendar th.day.abbr {font-size: 14px;}
+table.calendar .week-number a {font-size: 11px}
+
+table.calendar td.month-cell {vertical-align: top; padding: 5px 10px;}
+table.calendar td.day-cell {vertical-align: top;}
+table.calendar td.day-cell .header {display: block; position: relative;}
+
+table.calendar a.day-number span {font-size: 12px; font-weight: bold; position: absolute; top: 0; right: 2px;}
+
+/* Colour */
+table.calendar .week-number a {color: red;}
+table.calendar td.noday {background-color: #eef;}
+table.calendar td.free {background-color: #c5dbff;}
+table.calendar td.busy {background-color: #ffcece;}
+table.calendar td.today {background-color: #FF9ECE;}
+/*
+table.calendar td.past {background: rgba(200, 54, 54, 0.3)}
+table.calendar td.future {background: rgba(200, 54, 54, 0.7)}
+
+table.calendar td.past .period-wrapper {background: rgba(200, 54, 54, 0.3)}
+table.calendar td.future .period-wrapper {background: rgba(200, 54, 54, 0.7)}
+.period-wrapper {margin: 0; width: 100%; height: 100%}
+*/
+
+/* Sensible font-family */
+/*
+body {font-family: "Lucida Grande","DejaVu Sans",
+                   "Bitstream Vera Sans",Verdana,Arial,sans-serif;}
+*/
