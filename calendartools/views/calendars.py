@@ -4,13 +4,12 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from django.core.urlresolvers import reverse
-from django.db.models import Max, Min
 from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic import simple, list_detail
 
-from calendartools.models import Occurrence, Calendar
+from calendartools.models import Calendar
 from calendartools.periods import Year, TripleMonth, Month, Week, Day
 from calendartools.views.base import CalendarViewBase
 from calendartools.views.generic.dates import (
@@ -75,6 +74,7 @@ class TriMonthView(MonthView):
     def create_period_object(self, dt, occurrences):
         return self.period(dt - relativedelta(months=1), occurrences=occurrences)
 
+
 class WeekView(CalendarViewBase, YearMixin, WeekMixin):
     period_name = 'week'
     period = Week
@@ -101,6 +101,7 @@ class WeekView(CalendarViewBase, YearMixin, WeekMixin):
         filter_kwargs = {'%s__range' % date_field: date_range}
         order = '' if order == 'asc' else '-'
         return qs.filter(**filter_kwargs).order_by("%s%s" % (order, date_field))
+
 
 class DayView(CalendarViewBase, YearMixin, MonthMixin, DayMixin):
     period_name = 'day'
