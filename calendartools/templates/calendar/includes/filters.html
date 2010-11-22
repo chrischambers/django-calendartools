@@ -24,7 +24,7 @@
     </a>
   </li>
   <li>
-    <a class="{% if "all" in period %}on{% endif %}"
+    <a class="{% if not period %}on{% endif %}"
         href="{{ here|delete_query_string:"period" }}">
         {% trans "all" %}
     </a>
