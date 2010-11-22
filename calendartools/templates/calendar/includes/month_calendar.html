@@ -41,9 +41,9 @@
               {% else %}
 
               {% if day.occurrences %}
-              <td class="day-cell busy {% if day == today %}today">{% else %}">{% endif %}
+              <td class="day-cell busy {{ day|time_relative_to_today }}">
               {% else %}
-              <td class="day-cell free {% if day == today %}today">{% else %}">{% endif %}
+              <td class="day-cell free {{ day|time_relative_to_today }}">
               {% endif %}
 
               <div class="header">
