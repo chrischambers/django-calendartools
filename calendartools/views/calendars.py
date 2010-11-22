@@ -12,6 +12,10 @@ from django.views.generic import simple, list_detail
 
 from calendartools.models import Occurrence, Calendar
 from calendartools.periods import Year, TripleMonth, Month, Week, Day
+from calendartools.views.base import CalendarViewBase
+from calendartools.views.generic.dates import (
+    YearMixin, MonthMixin, WeekMixin, DayMixin
+)
 
 def calendar_list(request, *args, **kwargs):
     kwargs.update({
@@ -26,133 +30,88 @@ def calendar_detail(request, slug, *args, **kwargs):
     return render_to_response('calendar/calendar_detail.html', data,
                             context_instance=RequestContext(request))
 
-def year_view(request, slug, year, *args, **kwargs):
-    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
-    data = calendar.occurrences.visible().aggregate(
-        earliest_occurrence=Min('start'),
-        latest_occurrence=Max('finish'),
-    )
-    year = int(year)
 
-    occurrences = Occurrence.objects.visible(
-                  ).select_related('event', 'calendar'
-                  ).filter(calendar=calendar, start__year=year
-                  ).order_by('start')
-    data.update({
-        'calendar': calendar,
-        'occurrences': occurrences,
-        'year': Year(date(year, 1, 1), occurrences=occurrences),
-        'size': 'small'
-    })
-    return render_to_response("calendar/calendar/year.html", data,
-                            context_instance=RequestContext(request))
+class YearView(CalendarViewBase, YearMixin):
+    period_name = 'year'
+    period = Year
+    template_name = "calendar/calendar/year.html"
 
-def month_view(request, slug, year, month, month_format='%b', *args, **kwargs):
-    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
-    year = int(year)
+    @property
+    def date(self):
+        return date(int(self.get_year()), 1, 1)
 
-    try:
-        tt = time.strptime("%s-%s" % (year, month), '%s-%s' % ('%Y', month_format))
-        d = date(*tt[:3])
-    except ValueError:
-        raise Http404
+    def get_context_data(self, **kwargs):
+        context = super(YearView, self).get_context_data(**kwargs)
+        context.update({'size': 'small'})
+        return context
 
-    occurrences = Occurrence.objects.visible(
-                  ).select_related('event', 'calendar').filter(
-                  calendar=calendar, start__year=d.year, start__month=d.month
-                  ).order_by('start')
-    data = {
-        'calendar': calendar,
-        'occurrences': occurrences,
-        'month': Month(d, occurrences=occurrences)
-    }
-    small = kwargs.get('small')
-    if small:
-        data['size'] = 'small'
-    return render_to_response("calendar/calendar/month.html", data,
-                            context_instance=RequestContext(request))
 
-def tri_month_view(request, slug, year, month, month_format='%b', *args,
-                   **kwargs):
+class MonthView(CalendarViewBase, YearMixin, MonthMixin):
+    period_name = 'month'
+    period = Month
+    template_name = "calendar/calendar/month.html"
 
-    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
-    year = int(year)
 
-    try:
-        tt = time.strptime("%s-%s" % (year, month), '%s-%s' % ('%Y', month_format))
-        d = date(*tt[:3])
-    except ValueError:
-        raise Http404
+class TriMonthView(MonthView):
+    period_name = 'tri_month'
+    period = TripleMonth
+    template_name = "calendar/calendar/tri_month.html"
 
-    date_range = (d - relativedelta(months=1), d + relativedelta(months=2))
-    occurrences = Occurrence.objects.visible(
-                  ).select_related('event', 'calendar').filter(
-                  calendar=calendar, start__range=date_range).order_by('start')
-    data = {
-        'calendar': calendar,
-        'occurrences': occurrences,
-        'tri_month': TripleMonth(d - relativedelta(months=1),
-                                 occurrences=occurrences),
-        'size': 'small',
-    }
-    return render_to_response("calendar/calendar/tri_month.html", data,
-                            context_instance=RequestContext(request))
+    def get_dated_queryset(self, order='asc', **lookup):
+        d = self.date
+        date_field = self.get_date_field()
+        qs = self.get_queryset().filter(**lookup)
 
-def week_view(request, slug, year, week, *args, **kwargs):
-    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
-    year, week = int(year), int(week)
+        date_range = (d - relativedelta(months=1), d + relativedelta(months=2))
+        filter_kwargs = {'%s__range' % date_field: date_range}
+        order = '' if order == 'asc' else '-'
+        return qs.filter(**filter_kwargs).order_by("%s%s" % (order, date_field))
 
-    try:
-        tt = time.strptime('%s-%s-1' % (year, week), '%Y-%U-%w')
-        d = date(*tt[:3])
-    except ValueError:
-        raise Http404
+    def get_context_data(self, **kwargs):
+        context = super(TriMonthView, self).get_context_data(**kwargs)
+        context.update({'size': 'small'})
+        return context
 
-    date_range = (d, d + relativedelta(days=7))
-    occurrences = Occurrence.objects.visible(
-                  ).select_related('event', 'calendar'
-                  ).filter(calendar=calendar, start__range=date_range
-                  ).order_by('start')
+    def create_period_object(self, dt, occurrences):
+        return self.period(dt - relativedelta(months=1), occurrences=occurrences)
 
-    data = {
-        'calendar': calendar,
-        'occurrences': occurrences,
-        'week': Week(d, occurrences=occurrences)
-    }
-    return render_to_response("calendar/calendar/week.html", data,
-                            context_instance=RequestContext(request))
+class WeekView(CalendarViewBase, YearMixin, WeekMixin):
+    period_name = 'week'
+    period = Week
+    week_format = '%W'
 
-def day_view(request, slug, year, month, day, month_format='%b', *args,
-             **kwargs):
+    template_name = "calendar/calendar/week.html"
 
-    calendar = get_object_or_404(Calendar.objects.visible(request.user), slug=slug)
-    year, day = int(year), int(day)
+    @property
+    def date(self):
+        year = self.get_year()
+        week = self.get_week()
+        try:
+            tt = time.strptime('%s-%s-1' % (year, week), '%Y-%U-%w')
+            return date(*tt[:3])
+        except ValueError:
+            raise Http404
 
-    try:
-        tt = time.strptime("%s-%s-%s" % (year, month, day), '%s-%s-%s' % (
-            '%Y', month_format, '%d'))
-        d = date(*tt[:3])
-    except ValueError:
-        raise Http404
+    def get_dated_queryset(self, order='asc', **lookup):
+        d = self.date
+        date_field = self.get_date_field()
+        qs = self.get_queryset().filter(**lookup)
 
-    occurrences = Occurrence.objects.visible(
-                  ).select_related('event', 'calendar'
-                  ).filter(calendar=calendar, start__year=d.year,
-                           start__month=d.month, start__day=d.day
-                  ).order_by('start')
+        date_range = (d, d + relativedelta(days=7))
+        filter_kwargs = {'%s__range' % date_field: date_range}
+        order = '' if order == 'asc' else '-'
+        return qs.filter(**filter_kwargs).order_by("%s%s" % (order, date_field))
 
-    data = {
-        'calendar': calendar,
-        'occurrences': occurrences,
-        'day': Day(d, occurrences=occurrences)
-    }
-    return render_to_response("calendar/calendar/day.html", data,
-                            context_instance=RequestContext(request))
+class DayView(CalendarViewBase, YearMixin, MonthMixin, DayMixin):
+    period_name = 'day'
+    period = Day
+    template_name = "calendar/calendar/day.html"
 
 def today_view(request, slug, *args, **kwargs):
     today = date.today()
-    return day_view(request, slug, today.year, today.strftime('%b'), today.day,
-                    *args, **kwargs)
+    view = DayView(request=request, slug=slug, year=str(today.year),
+                   month=str(today.strftime('%b').lower()), day=str(today.day), **kwargs)
+    return view.get(request, slug=slug, year=today.year, day=today.day)
 
 def occurrence_detail_redirect(request, slug, year, month, day, event_slug,
                                pk):

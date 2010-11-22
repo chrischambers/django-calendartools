@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from dateutil.relativedelta import relativedelta
 
 from django.contrib.auth.models import User, Permission
 from django.core.urlresolvers import reverse
@@ -6,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from calendartools.models import Calendar, Event, Occurrence
-from calendartools import signals
+from calendartools import signals, views
 from calendartools.forms import (
     EventForm,
     MultipleOccurrenceForm,
@@ -739,3 +740,125 @@ class TestCalendarVisibility(TestCase):
         for url in self.urls:
             response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
             assert_equal(200, response.status_code)
+
+
+class TestCalendarViews(TestCase):
+    urls = 'calendartools.tests.test_urls.calendar_view_tests'
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            'TestyMcTesterson',
+            'Testy@test.com',
+            'password'
+        )
+        self.calendar  = Calendar.objects.create(name='Test1', slug='t1')
+        self.event = Event.objects.create(
+            name='Event', slug='event', creator=self.user
+        )
+        now = datetime.now()
+        self.base_datetime = datetime(now.year + 1, 1, 7)
+        self.datetimes = [
+            self.base_datetime,
+            self.base_datetime + relativedelta(days=1),
+            self.base_datetime + relativedelta(weeks=1),
+            self.base_datetime + relativedelta(months=1),
+            self.base_datetime + relativedelta(months=2),
+            self.base_datetime + relativedelta(months=5),
+        ]
+        for dt in self.datetimes:
+            Occurrence.objects.create(
+                calendar=self.calendar,
+                event=self.event,
+                start=dt,
+                finish=dt + timedelta(hours=2)
+            )
+        self.assertTrue(self.client.login(
+            username=self.user.username, password='password')
+        )
+        self.urls = [
+            ('year-calendar', {
+                'slug': self.calendar.slug,
+                'year': self.base_datetime.year
+            }),
+            ('tri-month-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  self.base_datetime.year,
+                'month': self.base_datetime.strftime('%b').lower(),
+            }),
+            ('small-month-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  self.base_datetime.year,
+                'month': self.base_datetime.strftime('%b').lower(),
+            }),
+            ('month-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  self.base_datetime.year,
+                'month': self.base_datetime.strftime('%b').lower(),
+            }),
+            ('week-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  self.base_datetime.year,
+                'week':  1,
+            }),
+            ('day-calendar', {
+                'slug':  self.calendar.slug,
+                'year':  self.base_datetime.year,
+                'month': self.base_datetime.strftime('%b').lower(),
+                'day':   self.base_datetime.day
+            }),
+        ]
+        self.expected_occurrences = [6, 4, 3, 3, 2, 1]
+
+    def test_date(self):
+        o = views.calendars.YearView(slug='foo', year='2010')
+        assert_equal(o.date, date(2010, 1, 1))
+        o = views.calendars.TriMonthView(slug='foo', year='2010', month='nov')
+        assert_equal(o.date, date(2010, 11, 1))
+        o = views.calendars.MonthView(slug='foo', year='2010', month='nov')
+        assert_equal(o.date, date(2010, 11, 1))
+        o = views.calendars.WeekView(slug='foo', year='2010', week='1')
+        assert_equal(o.date, date(2010, 1, 4)) # monday
+        o = views.calendars.DayView(slug='foo', year='2010', month='aug', day='17')
+        assert_equal(o.date, date(2010, 8, 17))
+
+    def test_occurrences_populated_correctly(self):
+        for amount, url_params in zip(self.expected_occurrences, self.urls):
+            url, params = url_params
+            response = self.client.get(reverse(url, kwargs=params), follow=True)
+            assert_equal(response.context[-1].get('occurrences').count(), amount)
+
+    def test_allow_future(self):
+        response = self.client.get(
+            reverse('year-calendar-no-future', kwargs=self.urls[0][1]), follow=True)
+        assert_equal(response.context[-1].get('occurrences').count(), 0)
+
+    def test_allow_empty(self):
+        response = self.client.get(
+            reverse('year-calendar-no-empty', args=['foo', 2010]), follow=True)
+        assert_equal(response.status_code, 404)
+
+    def test_filters(self):
+        for url_params in self.urls:
+            urlname, params = url_params
+            for period in ['today', 'past']:
+                url = '%s?period=%s' % (reverse(urlname, kwargs=params), period)
+                response = self.client.get(url, follow=True)
+                assert_equal(response.context[-1].get('occurrences').count(), 0)
+
+        for amount, url_params in zip(self.expected_occurrences, self.urls):
+            url, params = url_params
+            url = '%s?period=future' % reverse(url, kwargs=params)
+            response = self.client.get(url, follow=True)
+            assert_equal(response.context[-1].get('occurrences').count(), amount)
+
+    def test_size_context(self):
+        small_urls = self.urls[:3]
+        for url_params in self.urls:
+            expected = 'small' if url_params in small_urls else None
+            url, params = url_params
+            response = self.client.get(reverse(url, kwargs=params), follow=True)
+            assert_equal(response.context[-1].get('size'), expected)
+
+
+class TestAgendaViews(TestCase):
+    pass
