@@ -15,10 +15,16 @@
 
           <thead>
             <tr class="daysofweek">
-              <td>&nbsp;</td>
+              <th class="week-number">&nbsp;</th>
+              {% if size == "small" %}
+              {% for abbr in month.day_names_abbr %}
+              <th class="day abbr {{ abbr|notrans|slugify }}">{{ abbr }}</th>
+              {% endfor %}
+              {% else %}
               {% for dayname in month.day_names %}
               <th class="day name {{ dayname|notrans|slugify }}">{{ dayname }}</th>
               {% endfor %}
+              {% endif %}
             </tr>
           </thead>
           <tbody>
