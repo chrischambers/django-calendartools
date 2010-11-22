@@ -167,3 +167,15 @@ def delete_query_string(url, key):
             new_url
         )
     return new_url
+
+@register.filter()
+def time_relative_to_today(dt):
+    from calendartools.periods import Day
+    from datetime import datetime
+    today = Day(datetime.now())
+    if dt < today:
+        return 'past'
+    elif dt in today:
+        return 'today'
+    else:
+        return 'future'

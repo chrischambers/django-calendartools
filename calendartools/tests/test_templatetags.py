@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from datetime import datetime, timedelta
 from django.template import Template, Context
 from django.test import TestCase
 from django.utils import translation
@@ -9,8 +10,10 @@ from calendartools.templatetags.calendartools_tags import (
     get_query_string,
     set_query_string,
     delete_query_string,
-    clear_query_string
+    clear_query_string,
+    time_relative_to_today
 )
+from calendartools.periods import Day
 
 
 class TestTranslationTags(TestCase):
@@ -140,3 +143,31 @@ class TestQueryStringManipulation(TestCase):
         )
         for url, key, expected in mapping:
             assert_equal(delete_query_string(url, key), expected)
+
+
+class TestTimeRelativeToToday(TestCase):
+    def setUp(self):
+        now = datetime.now()
+        first_thing = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        last_thing = (first_thing + timedelta(1)) - timedelta.resolution
+
+        yesterday = first_thing - timedelta.resolution
+        last_week = first_thing - timedelta(7)
+
+        tomorrow = last_thing + timedelta.resolution
+        next_week = first_thing + timedelta(7)
+
+        self.mapping = [
+            (now,         'today'),
+            (first_thing, 'today'),
+            (last_thing,  'today'),
+            (Day(now),    'today'),
+            (yesterday,   'past'),
+            (last_week,   'past'),
+            (tomorrow,    'future'),
+            (next_week,   'future'),
+        ]
+
+    def test_time_relative_to_today(self):
+        for dt, expected in self.mapping:
+            assert_equal(time_relative_to_today(dt), expected)
