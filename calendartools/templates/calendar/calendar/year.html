@@ -46,7 +46,7 @@
           <span>{{ month.name }}</span>
         </a>
 
-        <table class="month calendar calendar-{{ forloop.counter }} {% cycle "" "alt" %}">
+        <table class="month calendar {{ size|default:"medium" }} calendar-{{ forloop.counter }} {% cycle "" "alt" %}">
           {% include "calendar/includes/month_calendar.html" %}
         </table>
       </td>
