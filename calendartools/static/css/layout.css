@@ -54,6 +54,9 @@ table.calendar td.today {background-color: #FF9ECE;}
 table.calendar td.now {background-color: #FF0CDF;}
 /*table.calendar col.today */
 
+table.day.column tr.day.row {background: #EEE;}
+table.day.column tr.day.row.alt {background: #FFF;}
+
 /*
 table.calendar td.past {background: rgba(200, 54, 54, 0.3)}
 table.calendar td.future {background: rgba(200, 54, 54, 0.7)}
