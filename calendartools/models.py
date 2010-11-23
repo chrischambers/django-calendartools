@@ -1,4 +1,5 @@
 from dateutil import rrule
+from django.contrib.auth.models import User
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
@@ -11,7 +12,9 @@ from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools.managers import (
     CalendarManager, EventManager, OccurrenceManager
 )
-from calendartools.signals import collect_occurrence_validators
+from calendartools.signals import (
+    collect_occurrence_validators, collect_user_attendance_validators
+)
 from calendartools.validators.defaults import activate_default_validators
 
 try:
@@ -165,7 +168,28 @@ class Event(EventBase):
         return self.status == self.CANCELLED
 
 
-class Occurrence(EventBase):
+class PluggableValidationMixin(object):
+    """
+    Must define ``validation_signal``.
+    """
+    def collect_and_run_validators(self):
+        """Collects all pluggable validation checks and runs them, in order of
+        priority."""
+        validators = self.validation_signal.send(sender=self)
+        validators = [v[1] for v in validators] # instances only
+        validators.sort(key=lambda v: v.priority, reverse=True)
+        for validator in validators:
+            validator.validate()
+
+    def clean(self):
+        self.collect_and_run_validators()
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super(PluggableValidationMixin, self).save(*args, **kwargs)
+
+
+class Occurrence(PluggableValidationMixin, EventBase):
     calendar = models.ForeignKey(Calendar, verbose_name=_('calendar'),
         related_name='occurrences'
     )
@@ -181,6 +205,7 @@ class Occurrence(EventBase):
     )
     objects = OccurrenceManager()
 
+    validation_signal = collect_occurrence_validators
 
     class Meta(object):
         verbose_name = _('Occurrence')
@@ -199,23 +224,10 @@ class Occurrence(EventBase):
             'pk':     self.pk
         })
 
-    def collect_and_run_validators(self):
-        """Collects all pluggable validation checks and runs them, in order of
-        priority."""
-        validators = collect_occurrence_validators.send(sender=self)
-        validators = [v[1] for v in validators] # instances only
-        validators.sort(key=lambda v: v.priority, reverse=True)
-        for validator in validators:
-            validator.validate()
-
     def clean(self):
         if not self.start or not self.finish:
             return # to be dealt with by built-in validators
-        self.collect_and_run_validators()
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        return super(Occurrence, self).save(*args, **kwargs)
+        super(Occurrence, self).clean()
 
     @property
     def is_cancelled(self):
@@ -232,6 +244,29 @@ class Occurrence(EventBase):
     @property
     def description(self):
         return self.event.description
+
+
+class Attendance(PluggableValidationMixin, AuditedModel):
+    user = models.ForeignKey(User, verbose_name=_('user'),
+        related_name='attendance'
+    )
+    occurrence = models.ForeignKey(Occurrence, verbose_name=_('occurrence'),
+        related_name='attendees' # users_attended? user_attendance(s)?
+    )
+    validation_signal = collect_user_attendance_validators
+
+
+    class Meta(object):
+        verbose_name = _('Attendance')
+        verbose_name_plural = _('Attendances')
+        get_latest_by = 'datetime_created'
+
+    def __unicode__(self):
+        return u"%s @ %s" % (self.user.username, self.occurrence.event.name)
+
+    # @models.permalink
+    # def get_absolute_url(self):
+    #     return ('attendance_record', [], {})
 
 activate_default_validators()
 

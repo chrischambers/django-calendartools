@@ -1,10 +1,10 @@
 from datetime import datetime
 from django.core.exceptions import ValidationError
 from calendartools.signals import collect_occurrence_validators
-from calendartools.validators.base import BaseValidator
+from calendartools.validators.base import BaseOccurrenceValidator
 
 
-class FinishGTStartValidator(BaseValidator):
+class FinishGTStartValidator(BaseOccurrenceValidator):
     def validate(self):
         if self.occurrence.start >= self.occurrence.finish:
             raise ValidationError(
@@ -12,7 +12,7 @@ class FinishGTStartValidator(BaseValidator):
             )
 
 
-class FutureOccurrencesOnlyValidator(BaseValidator):
+class FutureOccurrencesOnlyValidator(BaseOccurrenceValidator):
     def validate(self):
         if not self.occurrence.id and self.occurrence.start < datetime.now():
             raise ValidationError(
