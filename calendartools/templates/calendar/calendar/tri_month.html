@@ -46,7 +46,7 @@
       <td class="month-cell">
         <a class="month name" href="{% url month-calendar calendar.slug month.year month.abbr %}">
           {% if forloop.counter == 2 %}
-          <span>{{ month|date:"DATE_FORMAT" }}</span>
+          <span>{{ month.name }}</span>
           {% endif %}
         </a>
         <table class="tri-month-view month calendar small calendar-{{ forloop.counter }} {% cycle "" "alt" %}">
