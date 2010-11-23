@@ -104,27 +104,29 @@
           {% else %}
           <td class="period-cell free {{ cell|time_relative_to_today }}{% if now in cell %} now{% endif %}">
           {% endif %}
-            {% if cell.occurrences %}
-            <ul class="occurrences">
-              {% for o in cell.occurrences %}
-              <li class="period vevent {{ o.status_slug }}">
-                <a class="summary url" href="{{ o.get_absolute_url }}">
-                  <span class="name">{{ o.name }}</span>
-                </a>
-                <span class="start time">
-                  <abbr class="dtstart" title="{{ o.start|date:"c" }}">
-                    {{ o.start|date:"TIME_FORMAT" }}
-                  </abbr>
-                </span>
-                <em> - </em>
-                <span class="finish time">
-                  <abbr class="dtend" title="{{ o.finish|date:"c" }}">
-                    {{ o.finish|date:"TIME_FORMAT" }}
-                  </abbr>
-                </span>
-              </li><!-- end .vevent -->
-              {% endfor %}
-            </ul>
+            <div class="period-wrapper">
+              {% if cell.occurrences %}
+              <ul class="occurrences">
+                {% for o in cell.occurrences %}
+                <li class="period vevent {{ o.status_slug }}">
+                  <a class="summary url" href="{{ o.get_absolute_url }}">
+                    <span class="name">{{ o.name }}</span>
+                  </a>
+                  <span class="start time">
+                    <abbr class="dtstart" title="{{ o.start|date:"c" }}">
+                      {{ o.start|date:"TIME_FORMAT" }}
+                    </abbr>
+                  </span>
+                  <em> - </em>
+                  <span class="finish time">
+                    <abbr class="dtend" title="{{ o.finish|date:"c" }}">
+                      {{ o.finish|date:"TIME_FORMAT" }}
+                    </abbr>
+                  </span>
+                </li><!-- end .vevent -->
+                {% endfor %}
+              </ul>
+            </div><! -- end .period-wrapper -->
             {% endif %}
           </td><!-- end .period-cell -->
           {% endfor %}
