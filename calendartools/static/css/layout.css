@@ -21,7 +21,8 @@ ul.occurrences {margin: 0; padding: 5px;}
 ul.occurrences li {display: inline; list-style: none; text-indent: 0; font-size: 14px;}
 
 table.calendar td {height: 100px; min-width: 100px; width: 14%}
-table.calendar td.week.day {width: 2%;}
+table.calendar td.week.day,
+table.calendar td.week-number {width: 2%;}
 
 table.calendar.small td {height: 20px; min-width: 40px; width: 40px;}
 table.calendar.small a.day-number {height: 20px; width: 40px; display: block;}
@@ -41,6 +42,9 @@ table.calendar a.day-number span {font-size: 16px; font-weight: bold; position: 
 table.calendar.small a.day-number span {font-size: 12px; right: 2px;} /*override*/
 
 table#tri-month-calendar td.month-cell {vertical-align: bottom;}
+
+table.calendar.small {margin: auto;}
+
 /* Colour */
 table.calendar .week-number a {color: red;}
 table.calendar td.noday {background-color: #eef;}
