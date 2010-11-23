@@ -40,13 +40,21 @@
 
 {% block calendar %}
 <div class="tablewrapper">
-{% for month in tri_month %}
-{% if forloop.counter == 2 %}
-<h4 class="tri-month main">{{ month|date:"DATE_FORMAT" }}</h4>
-{% endif %}
-<table class="tri-month-view month calendar small">
-  {% include "calendar/includes/month_calendar.html" %}
-</table>
-{% endfor %}
+  <table id="tri-month-calendar" class="calendar">
+    <tr>
+      {% for month in tri_month %}
+      <td class="month-cell">
+        <a class="month name" href="{% url month-calendar calendar.slug month.year month.abbr %}">
+          {% if forloop.counter == 2 %}
+          <span>{{ month|date:"DATE_FORMAT" }}</span>
+          {% endif %}
+        </a>
+        <table class="tri-month-view month calendar small calendar-{{ forloop.counter }} {% cycle "" "alt" %}">
+          {% include "calendar/includes/month_calendar.html" %}
+        </table>
+      </td>
+      {% endfor %}
+    </tr>
+  </table>
 </div>
 {% endblock %}

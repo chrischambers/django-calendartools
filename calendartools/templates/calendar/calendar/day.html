@@ -61,8 +61,8 @@
           <table class="day column column-{{ forloop.counter }}{% cycle "" " alt" %}">
 
             <colgroup>
-              <col class="day time{% if day == today %} today{% endif %}" />
-              <col class="day events{% if day == today %} today{% endif %}" />
+              <col class="day time {{ day|time_relative_to_today }}" />
+              <col class="day events {{ day|time_relative_to_today }}" />
             </colgroup>
 
             <thead>
@@ -74,8 +74,10 @@
 
             <tbody>
             {% for cell in column %}
-              <tr>
-                <td class="day time">{{ cell.start|time:"TIME_FORMAT" }}</td>
+            <tr class="day row{% cycle "" " alt" %}">
+                <td class="day time {{ cell|time_relative_to_today }}{% if now in cell %} now{% endif %}">
+                  {{ cell.start|time:"TIME_FORMAT" }}
+                </td>
                 <td>
                   {% if cell.occurrences %}
                   <ul class="occurrences">

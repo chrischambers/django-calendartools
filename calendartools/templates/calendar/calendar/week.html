@@ -73,8 +73,9 @@
     </caption>
 
     <colgroup>
+      <col class="times" />
       {% for day in week.days %}
-      <col class="{{ day.name|notrans|slugify }}{% cycle " alt" "" %}{% if day == today %} today{% endif %}" />
+      <col class="{{ day.name|notrans|slugify }}{% cycle " alt" "" %} {{ day|time_relative_to_today }}" />
       {% endfor %}
     </colgroup>
 
@@ -99,9 +100,9 @@
           <td class="week day time">{{ cell|time:"TIME_FORMAT" }}</td>
           {% endif %}
           {% if cell.occurrences %}
-          <td class="period-cell busy{% if now in cell %} now{% endif %}">
+          <td class="period-cell busy {{ cell|time_relative_to_today }}{% if now in cell %} now{% endif %}">
           {% else %}
-          <td class="period-cell free{% if now in cell %} now{% endif %}">
+          <td class="period-cell free {{ cell|time_relative_to_today }}{% if now in cell %} now{% endif %}">
           {% endif %}
             {% if cell.occurrences %}
             <ul class="occurrences">
