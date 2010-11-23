@@ -65,6 +65,7 @@ table.calendar td.past .period-wrapper {background: rgba(200, 54, 54, 0.3)}
 table.calendar td.future .period-wrapper {background: rgba(200, 54, 54, 0.7)}
 */
 .period-wrapper {margin: 0; width: 100%; height: 100%}
+table.calendar td.future .period-wrapper {background: rgba(80, 80, 80, 0.1)}
 
 /* Sensible font-family */
 /*
