@@ -19,7 +19,8 @@ table.calendar .daysofweek {height: 20px; text-align: center}
 ul.occurrences {margin: 0; padding: 5px;}
 ul.occurrences li {display: inline; list-style: none; text-indent: 0; font-size: 14px;}
 
-table.calendar td {height: 100px; min-width: 100px; width: 14%}
+table.calendar tr {height: 100%}
+table.calendar td {height: 100%; min-width: 100px; width: 14%}
 table.calendar td.week.day,
 table.calendar td.week-number {width: 2%;}
 
