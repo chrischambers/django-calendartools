@@ -1,6 +1,5 @@
 div.tablewrapper {text-align: center;}
 table#year-calendar {text-align: center; margin: 0 auto;}
-table.day.calendar td {vertical-align: top; }
 
 /* Calendar Chrome */
 ul#calendar-nav li, ul.filters li/*, ul.current.nav li*/
@@ -44,6 +43,10 @@ table.calendar.small a.day-number span {font-size: 12px; right: 2px;} /*override
 table#tri-month-calendar td.month-cell {vertical-align: bottom;}
 
 table.calendar.small {margin: auto;}
+
+/* Day Calendar */
+table.day.calendar tr {vertical-align: top; }
+table.day.column td {vertical-align: middle; height: 100%;}
 
 /* Colour */
 table.calendar .week-number a {color: red;}
