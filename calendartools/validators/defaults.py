@@ -32,6 +32,23 @@ class CannotAttendFinishedEventsValidator(BaseUserAttendanceValidator):
                 'Cannot attend events which have occurred in the past.'
             )
 
+
+class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator):
+    def validate(self):
+        from calendartools.models import Attendance
+        already_attending = Attendance.objects.filter(
+            user=self.attendance.user,
+            occurrence=self.attendance.occurrence,
+            status__in=[Attendance.BOOKED, Attendance.ATTENDED]
+        )
+        if self.attendance.id:
+            already_attending = already_attending.exclude(id=self.attendance.id)
+
+        if already_attending.exists():
+            raise ValidationError(
+                'User already has an active attendance record for this event.'
+            )
+
 def activate_default_occurrence_validators():
     collect_occurrence_validators.connect(
         FinishGTStartValidator
@@ -43,6 +60,9 @@ def activate_default_occurrence_validators():
 def activate_default_attendance_validators():
     collect_attendance_validators.connect(
         CannotAttendFinishedEventsValidator
+    )
+    collect_attendance_validators.connect(
+        OnlyOneActiveAttendanceForOccurrenceValidator
     )
 
 def activate_default_validators():

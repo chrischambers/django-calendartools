@@ -279,3 +279,19 @@ class TestAttendance(TestCase):
         self.assertRaises(ValidationError, Attendance.objects.create,
             user=self.user, occurrence=self.occurrence
         )
+
+    def test_only_one_active_attendance_record_for_user_occurrence(self):
+        att = Attendance(user=self.user, occurrence=self.occurrence)
+        for status in [Attendance.BOOKED, Attendance.ATTENDED]:
+            att.status = att.ATTENDED
+            att.save()
+            self.assertRaises(ValidationError, Attendance.objects.create,
+                user=self.user, occurrence=self.occurrence
+            )
+        for status in [Attendance.INACTIVE, Attendance.CANCELLED]:
+            att.status = status
+            att.save()
+            att2 = Attendance.objects.create(
+                user=self.user, occurrence=self.occurrence
+            )
+            att2.delete()
