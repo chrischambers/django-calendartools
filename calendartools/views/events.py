@@ -92,14 +92,15 @@ def occurrence_detail(request, slug, pk, *args, **kwargs):
     user = request.user
     if not user.is_authenticated():
         attendance = None
-    try:
-        attendance = Attendance.objects.get(
-            user=user,
-            occurrence=occurrence,
-            status__in=[Attendance.BOOKED, Attendance.ATTENDED]
-        )
-    except Attendance.DoesNotExist:
-        attendance = Attendance(user=user, occurrence=occurrence)
+    else:
+        try:
+            attendance = Attendance.objects.get(
+                user=user,
+                occurrence=occurrence,
+                status__in=[Attendance.BOOKED, Attendance.ATTENDED]
+            )
+        except Attendance.DoesNotExist:
+            attendance = Attendance(user=user, occurrence=occurrence)
 
     if request.method == 'POST' and attendance:
         form = forms.AttendanceForm(request.POST, instance=attendance)

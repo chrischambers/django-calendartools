@@ -33,31 +33,16 @@ less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
 
 class AttendanceForm(forms.ModelForm):
-    valid_statuses = [Attendance.CANCELLED, Attendance.BOOKED]
-
-    def __init__(self, *args, **kwargs):
-        super(AttendanceForm, self).__init__(*args, **kwargs)
-        # self.fields['occurrence'].widget = forms.widgets.HiddenInput()
-        # self.fields['user'].widget = forms.widgets.HiddenInput()
-        self.fields['status'].widget = forms.widgets.HiddenInput()
-
-    def clean_status(self):
-        status = self.cleaned_data['status']
-        if not status in self.valid_statuses:
-            # suspicious?
-            raise ValidationError('Not a valid status')
-        return status
+    noop = forms.CharField(required=False, widget=forms.widgets.HiddenInput())
 
     class Meta(object):
         model = Attendance
-        fields = ['status']
+        fields = ['noop']
 
-    def save(self, commit=False, *args, **kwargs):
-        attendance = super(AttendanceForm, self).save(commit=False, *args, **kwargs)
-        if attendance.pk:
-            attendance.status = Attendance.CANCELLED
-        attendance.save()
-        return attendance
+    def clean(self):
+        if self.instance.pk and self.instance.status == Attendance.BOOKED:
+            self.instance.status = Attendance.CANCELLED
+        return self.cleaned_data
 
 
 class EventForm(forms.ModelForm):
