@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from calendartools.models import Calendar, Event, Occurrence
+from calendartools.models import Calendar, Event, Occurrence, Attendance
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools import defaults
 from calendartools.signals import collect_occurrence_validators
@@ -252,3 +252,22 @@ class TestOccurrence(TestCase):
             finish=self.start + timedelta(microseconds=1)
         )
         assert_equal(occurrence.description, self.event.description)
+
+
+class TestAttendance(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='TestyMcTesterson')
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
+        self.event = Event.objects.create(
+            name='Event', slug='event', creator=self.user
+        )
+        self.start = datetime.now() + timedelta(minutes=30)
+        self.finish = self.start + timedelta(minutes=30)
+        self.occurrence = self.event.add_occurrences(
+            self.calendar, self.start, self.finish)[0]
+
+    def test_create_attendance(self):
+        att = Attendance.objects.create(
+            user=self.user, occurrence=self.occurrence
+        )
+        assert_equal(att.status, Attendance.BOOKED)

@@ -247,11 +247,25 @@ class Occurrence(PluggableValidationMixin, EventBase):
 
 
 class Attendance(PluggableValidationMixin, AuditedModel):
+    INACTIVE, BOOKED, ATTENDED, CANCELLED = 1, 2, 3, 4
+    STATUS_CHOICES = (
+        (INACTIVE,  _('Inactive')),
+        (BOOKED,    _('Booked')),
+        (ATTENDED,  _('Attended')),
+        (CANCELLED, _('Cancelled')),
+    )
+
     user = models.ForeignKey(User, verbose_name=_('user'),
         related_name='attendance'
     )
     occurrence = models.ForeignKey(Occurrence, verbose_name=_('occurrence'),
         related_name='attendees' # users_attended? user_attendance(s)?
+    )
+    status = models.SmallIntegerField(_('status'),
+        choices=STATUS_CHOICES,
+        default=BOOKED,
+        help_text=_("Toggle attendance records inactive rather "
+                    "than deleting them.")
     )
     validation_signal = collect_user_attendance_validators
 
