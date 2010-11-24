@@ -276,7 +276,10 @@ class Attendance(PluggableValidationMixin, AuditedModel):
         get_latest_by = 'datetime_created'
 
     def __unicode__(self):
-        return u"%s @ %s" % (self.user.username, self.occurrence.event.name)
+        return u"%s @ %s (%s)" % (
+            self.user.username, self.occurrence.event.name,
+            self.occurrence.start.strftime('%Y/%m/%d - %H:%M:%S')
+        )
 
     # @models.permalink
     # def get_absolute_url(self):
