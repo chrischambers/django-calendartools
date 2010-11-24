@@ -272,7 +272,7 @@ class Attendance(PluggableValidationMixin, AuditedModel):
 
     class Meta(object):
         verbose_name = _('Attendance')
-        verbose_name_plural = _('Attendances')
+        verbose_name_plural = _('Attendance')
         get_latest_by = 'datetime_created'
 
     def __unicode__(self):
