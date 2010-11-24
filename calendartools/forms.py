@@ -12,7 +12,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.forms.extras.widgets import SelectDateWidget
 
-from calendartools.models import Event, Calendar
+from calendartools.models import Event, Calendar, Attendance
 from calendartools.constants import (
     WEEKDAY_SHORT, WEEKDAY_LONG,
     MONTH_SHORT, ORDINAL,
@@ -29,6 +29,17 @@ log = logging.getLogger('calendartools.forms')
 # Form Validaton Helpers:
 greater_than_1 = MinValueValidator(1)
 less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
+
+
+class AttendanceForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AttendanceForm, self).__init__(*args, **kwargs)
+        self.fields['occurrence'].widget = forms.widgets.HiddenInput()
+        self.fields['user'].widget = forms.widgets.HiddenInput()
+
+    class Meta(object):
+        model = Attendance
+        fields = ['user', 'occurrence']
 
 
 class EventForm(forms.ModelForm):

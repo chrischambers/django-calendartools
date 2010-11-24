@@ -89,7 +89,27 @@ def occurrence_detail(request, slug, pk, *args, **kwargs):
             event__slug=slug).select_related('event'),
             pk=pk
     )
-    data = {'occurrence': occurrence, 'event': occurrence.event}
+    initial = {
+        'user': request.user.is_authenticated() and request.user or None,
+        'occurrence': occurrence,
+    }
+
+    if request.method == 'POST':
+        form = forms.AttendanceForm(request.POST, initial=initial)
+        if form.is_valid():
+            form.save()
+            return http.HttpResponseRedirect(
+                reverse("occurrence-detail", args=(slug, pk))
+            )
+    else:
+        form = forms.AttendanceForm(initial=initial)
+
+    data = {
+        'form': form,
+        'event': occurrence.event,
+        'occurrence': occurrence,
+    }
+
     return render_to_response("calendar/occurrence_detail.html", data,
                             context_instance=RequestContext(request))
 
