@@ -34,6 +34,8 @@ class CannotAttendFinishedEventsValidator(BaseUserAttendanceValidator):
 
 
 class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator):
+    priority = 50
+
     def validate(self):
         from calendartools.models import Attendance
         already_attending = Attendance.objects.filter(
