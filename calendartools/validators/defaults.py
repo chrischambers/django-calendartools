@@ -1,7 +1,11 @@
 from datetime import datetime
 from django.core.exceptions import ValidationError
-from calendartools.signals import collect_occurrence_validators
-from calendartools.validators.base import BaseOccurrenceValidator
+from calendartools.signals import (
+    collect_occurrence_validators, collect_attendance_validators
+)
+from calendartools.validators.base import (
+    BaseOccurrenceValidator, BaseUserAttendanceValidator
+)
 
 
 class FinishGTStartValidator(BaseOccurrenceValidator):
@@ -19,10 +23,28 @@ class FutureOccurrencesOnlyValidator(BaseOccurrenceValidator):
                 'Event occurrences cannot be created in the past.'
             )
 
-def activate_default_validators():
+
+class CannotAttendFinishedEventsValidator(BaseUserAttendanceValidator):
+    def validate(self):
+        if (not self.attendance.id and
+            self.attendance.occurrence.finish < datetime.now()):
+            raise ValidationError(
+                'Cannot attend events which have occurred in the past.'
+            )
+
+def activate_default_occurrence_validators():
     collect_occurrence_validators.connect(
         FinishGTStartValidator
     )
     collect_occurrence_validators.connect(
         FutureOccurrencesOnlyValidator
     )
+
+def activate_default_attendance_validators():
+    collect_attendance_validators.connect(
+        CannotAttendFinishedEventsValidator
+    )
+
+def activate_default_validators():
+    activate_default_occurrence_validators()
+    activate_default_attendance_validators()

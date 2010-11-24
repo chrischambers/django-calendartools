@@ -271,3 +271,11 @@ class TestAttendance(TestCase):
             user=self.user, occurrence=self.occurrence
         )
         assert_equal(att.status, Attendance.BOOKED)
+
+    def test_cannot_attend_finished_occurrences(self):
+        self.occurrence.start = self.occurrence.start - timedelta(1)
+        self.occurrence.finish = self.occurrence.finish - timedelta(1)
+        self.occurrence.save()
+        self.assertRaises(ValidationError, Attendance.objects.create,
+            user=self.user, occurrence=self.occurrence
+        )

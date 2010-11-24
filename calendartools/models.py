@@ -13,7 +13,7 @@ from calendartools.managers import (
     CalendarManager, EventManager, OccurrenceManager
 )
 from calendartools.signals import (
-    collect_occurrence_validators, collect_user_attendance_validators
+    collect_occurrence_validators, collect_attendance_validators
 )
 from calendartools.validators.defaults import activate_default_validators
 
@@ -267,7 +267,7 @@ class Attendance(PluggableValidationMixin, AuditedModel):
         help_text=_("Toggle attendance records inactive rather "
                     "than deleting them.")
     )
-    validation_signal = collect_user_attendance_validators
+    validation_signal = collect_attendance_validators
 
 
     class Meta(object):
