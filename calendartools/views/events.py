@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic import list_detail
 
-from calendartools.models import Event, Occurrence
+from calendartools.models import Event, Occurrence, Attendance
 from calendartools import forms, defaults, decorators
 
 def event_list(request, *args, **kwargs):
@@ -89,26 +89,35 @@ def occurrence_detail(request, slug, pk, *args, **kwargs):
             event__slug=slug).select_related('event'),
             pk=pk
     )
-    initial = {
-        'user': request.user.is_authenticated() and request.user or None,
-        'occurrence': occurrence,
-    }
+    user = request.user
+    if not user.is_authenticated():
+        attendance = None
+    try:
+        attendance = Attendance.objects.get(
+            user=user,
+            occurrence=occurrence,
+            status__in=[Attendance.BOOKED, Attendance.ATTENDED]
+        )
+    except Attendance.DoesNotExist:
+        attendance = Attendance(user=user, occurrence=occurrence)
 
-    if request.method == 'POST':
-        form = forms.AttendanceForm(request.POST, initial=initial)
+    if request.method == 'POST' and attendance:
+        form = forms.AttendanceForm(request.POST, instance=attendance)
         if form.is_valid():
             form.save()
             return http.HttpResponseRedirect(
                 reverse("occurrence-detail", args=(slug, pk))
             )
     else:
-        form = forms.AttendanceForm(initial=initial)
+        form = forms.AttendanceForm(instance=attendance)
 
     data = {
-        'form': form,
         'event': occurrence.event,
+        'attendance': attendance,
         'occurrence': occurrence,
     }
+    if attendance:
+        data['form'] = form
 
     return render_to_response("calendar/occurrence_detail.html", data,
                             context_instance=RequestContext(request))

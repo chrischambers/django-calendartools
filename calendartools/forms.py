@@ -8,6 +8,7 @@ from dateutil import rrule
 from pprint import pformat
 
 from django import forms
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.forms.extras.widgets import SelectDateWidget
@@ -32,14 +33,31 @@ less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
 
 class AttendanceForm(forms.ModelForm):
+    valid_statuses = [Attendance.CANCELLED, Attendance.BOOKED]
+
     def __init__(self, *args, **kwargs):
         super(AttendanceForm, self).__init__(*args, **kwargs)
-        self.fields['occurrence'].widget = forms.widgets.HiddenInput()
-        self.fields['user'].widget = forms.widgets.HiddenInput()
+        # self.fields['occurrence'].widget = forms.widgets.HiddenInput()
+        # self.fields['user'].widget = forms.widgets.HiddenInput()
+        self.fields['status'].widget = forms.widgets.HiddenInput()
+
+    def clean_status(self):
+        status = self.cleaned_data['status']
+        if not status in self.valid_statuses:
+            # suspicious?
+            raise ValidationError('Not a valid status')
+        return status
 
     class Meta(object):
         model = Attendance
-        fields = ['user', 'occurrence']
+        fields = ['status']
+
+    def save(self, commit=False, *args, **kwargs):
+        attendance = super(AttendanceForm, self).save(commit=False, *args, **kwargs)
+        if attendance.pk:
+            attendance.status = Attendance.CANCELLED
+        attendance.save()
+        return attendance
 
 
 class EventForm(forms.ModelForm):
