@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 from dateutil import rrule
 
 from django import forms
@@ -9,9 +9,53 @@ from django.test import TestCase
 from nose.tools import *
 
 from calendartools import constants, defaults, signals
-from calendartools.models import Calendar, Event
-from calendartools.forms import MultipleOccurrenceForm
+from calendartools.models import Calendar, Event, Occurrence, Attendance
+from calendartools.forms import MultipleOccurrenceForm, AttendanceForm
 from calendartools.validators import BaseValidator
+
+class TestAttendanceForm(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='TestyMcTesterson')
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
+        self.event = Event.objects.create(
+            name='Event', slug='event', creator=self.user
+        )
+        self.start = datetime.now() + timedelta(1)
+        self.occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
+            event=self.event,
+            start=self.start,
+            finish=self.start + timedelta(1)
+        )
+
+    def test_unpersisted_instance_saved_for_valid_forms(self):
+        attendance = Attendance(user=self.user, occurrence=self.occurrence)
+        assert not attendance.pk
+        form = AttendanceForm(instance=attendance, data={})
+        assert form.is_valid()
+        attendance = form.save()
+        assert attendance.pk
+
+    def test_clean_method_sets_instance_cancelled_when_status_is_booked(self):
+        attendance = Attendance.objects.create(
+            user=self.user,
+            occurrence=self.occurrence,
+        )
+        form = AttendanceForm(instance=attendance, data={})
+        assert form.instance.status == Attendance.BOOKED
+        assert form.is_valid()
+        assert form.instance.status == Attendance.CANCELLED
+
+    def test_clean_method_performs_noop_if_status_attended(self):
+        attendance = Attendance.objects.create(
+            user=self.user,
+            occurrence=self.occurrence,
+            status=Attendance.ATTENDED
+        )
+        form = AttendanceForm(instance=attendance, data={})
+        assert form.is_valid()
+        form.save()
+        assert form.instance.status == Attendance.ATTENDED
 
 
 class TestMultipleOccurrenceFormValidation(TestCase):

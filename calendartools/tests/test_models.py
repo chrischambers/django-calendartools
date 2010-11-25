@@ -180,6 +180,7 @@ class TestOccurrence(TestCase):
                 '\n%s' % e
             )
 
+
     def test_pluggable_validators_priority(self):
         class AngryValidator(BaseValidator):
             priority = 9000

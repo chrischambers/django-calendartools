@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from calendartools.models import Calendar, Event, Occurrence
+from calendartools.models import Calendar, Event, Occurrence, Attendance
 from calendartools import signals, views
 from calendartools.forms import (
     EventForm,
@@ -304,6 +304,27 @@ class TestOccurrenceDetailView(TestCase):
                     args=(self.event.slug, self.occurrence.pk)), follow=True
         )
         assert_equal(response.context['event'], self.event)
+        assert_equal(response.context['attendance'],
+                     Attendance(user=self.user, occurrence=self.occurrence))
+
+    def test_attendance_context_only_populated_with_desired_statuses(self):
+        attendance = Attendance(user=self.user, occurrence=self.occurrence)
+        for status in (Attendance.CANCELLED, Attendance.INACTIVE):
+            attendance.status = status
+            attendance.save()
+            response = self.client.get(
+                reverse('occurrence-detail',
+                        args=(self.event.slug, self.occurrence.pk)), follow=True
+            )
+            assert_not_equal(response.context['attendance'], attendance)
+        for status in (Attendance.BOOKED, Attendance.ATTENDED):
+            attendance.status = status
+            attendance.save()
+            response = self.client.get(
+                reverse('occurrence-detail',
+                        args=(self.event.slug, self.occurrence.pk)), follow=True
+            )
+            assert_equal(response.context['attendance'], attendance)
 
     def test_occurrence_detail(self):
         response = self.client.get(
