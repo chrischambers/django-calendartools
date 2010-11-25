@@ -51,18 +51,22 @@ table.day.column td {vertical-align: middle; height: 100%;}
 
 /* Colour */
 table.calendar .week-number a {color: red;}
+table.calendar .week-number {background: #FFF;}
 table.calendar td.noday {background-color: #eef;}
-table.calendar td.free {background-color: #c5dbff;}
+table.calendar td.free {background-color: rgba(175, 206, 255, 0.9);}
 table.calendar td.busy {background-color: #ffcece;}
 
-table.day.column tr.day.row {background: #EEE;}
-table.day.column tr.day.row.alt {background: #FFF;}
+/*Horizontal stripes:*/
+/*table.calendar tr.alt {background-color: rgba(175, 206, 255, 0.8);}*/
+/*Vertical stripes:*/
+/*table.calendar col.alt {background-color: rgba(90, 90, 90, 0.6);}*/
 
 .period-wrapper {margin: 0; width: 100%; height: 100%}
 table.calendar td.future .period-wrapper {background: rgba(80, 80, 80, 0.1)}
 table.calendar td.today .period-wrapper {background: rgba(255, 158, 206, 0.6)}
 /*table.calendar col.today */
 table.calendar td.now .period-wrapper {background: rgba(255, 158, 206, 0.9); border: 1px solid #FF0CDF;}
+table.calendar th.day.name, table.calendar th.day.abbr {background: #FFF}
 
 /* Sensible font-family */
 /*
