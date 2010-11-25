@@ -42,6 +42,10 @@ DEFAULT_OCCURRENCE_DURATION = timedelta(hours=+1)
 # length.
 MAX_OCCURRENCE_CREATION_COUNT = 100
 
+# When set to a value > 0, the agenda views will be paginated by the value
+# specified.
+MAX_AGENDA_ITEMS_PER_PAGE = getattr(settings, 'MAX_AGENDA_ITEMS_PER_PAGE', 0)
+
 def view_hidden_events_check(request=None, user=None):
     user = request and request.user or user
     if not user:

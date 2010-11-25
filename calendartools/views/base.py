@@ -119,13 +119,16 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
         occurrences = self.allow_future_check(occurrences)
         occurrences = self.allow_empty_check(occurrences)
 
-        self.period_object = self.create_period_object(self.date, occurrences)
         context = self.get_context_data(**{
             'calendar': self.calendar,
             'object_list': occurrences,
-            self.period_name: self.period_object,
         })
+        self.period_object = self.create_period_object(
+            self.date, context['object_list']
+        )
         context.update(self.calendar_bounds)
+        context[self.period_name] = self.period_object
+
         if kwargs.get('small'):
             context['size'] = 'small'
         return self.render_to_response(context)
