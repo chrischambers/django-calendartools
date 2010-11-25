@@ -14,6 +14,6 @@ form tfoot td { text-align: center; background-color: #EEE; }
 .horizontal { width: 30em; }
 .horizontal li { float: left; margin: 0; }
 .horizontal li label { width: 4em; display: block; float: left; }
-div#interval {padding: 10px 5px;}
+div#interval {padding: 10px 5px; float: left;}
 #recurrence-options { float: left; }
 #recurrence-options li { margin-bottom: 4px; }
