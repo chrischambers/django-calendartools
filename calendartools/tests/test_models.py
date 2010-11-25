@@ -153,12 +153,6 @@ class TestOccurrence(TestCase):
 
     def test_validation_with_missing_start(self):
         occurrence = Occurrence(
-            calendar=self.calendar, event=self.event, start=self.start
-        )
-        assert_raises(ValidationError, occurrence.save)
-
-    def test_validation_with_missing_end(self):
-        occurrence = Occurrence(
             calendar=self.calendar, event=self.event, finish=self.start
         )
         assert_raises(ValidationError, occurrence.save)
@@ -265,7 +259,6 @@ class TestOccurrenceDuration(TestCase):
         self.start = datetime.now() + timedelta(minutes=30)
         defaults.MAX_OCCURRENCE_DURATION = timedelta(hours=2)
         defaults.MIN_OCCURRENCE_DURATION = timedelta(minutes=15)
-        defaults.DEFAULT_OCCURRENCE_DURATION = timedelta(hours=1)
 
     def test_default_finish(self):
         o = Occurrence.objects.create(
@@ -274,12 +267,6 @@ class TestOccurrenceDuration(TestCase):
             start=self.start,
         )
         assert_equal(o.finish, o.start + defaults.DEFAULT_OCCURRENCE_DURATION)
-        defaults.DEFAULT_OCCURRENCE_DURATION = None
-        assert_raises(ValidationError, Occurrence.objects.create,
-            calendar=self.calendar,
-            event=self.event,
-            start=self.start,
-        )
 
     def test_max_occurrence_length(self):
         occurrence = Occurrence.objects.create(

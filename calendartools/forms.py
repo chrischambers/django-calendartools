@@ -31,21 +31,6 @@ greater_than_1 = MinValueValidator(1)
 less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
 
-class AdminOccurrenceForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(AdminOccurrenceForm, self).__init__(*args, **kwargs)
-
-        if DEFAULT_OCCURRENCE_DURATION:
-            self.fields['finish'].required = False
-            self.fields['finish'].help_text = _(
-                'if left blank, will default to the start time + %s.' %
-                DEFAULT_OCCURRENCE_DURATION
-            )
-
-    class Meta(object):
-        model = Occurrence
-
-
 class AttendanceForm(forms.ModelForm):
     # Necessary to hide all the other fields:
     noop = forms.CharField(required=False, widget=forms.widgets.HiddenInput())

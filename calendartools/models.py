@@ -197,7 +197,10 @@ class Occurrence(PluggableValidationMixin, EventBase):
         related_name='occurrences'
     )
     start = models.DateTimeField(_('start'))
-    finish = models.DateTimeField(_('finish'))
+    finish = models.DateTimeField(_('finish'), blank=True, help_text=_(
+        'if left blank, will default to the start time + %s.' %
+        defaults.DEFAULT_OCCURRENCE_DURATION
+    ))
     status = models.SmallIntegerField(_('status'),
         choices=EventBase.STATUS_CHOICES,
         default=EventBase.PUBLISHED,
