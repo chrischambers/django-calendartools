@@ -7,7 +7,7 @@ from calendartools.models import (
 )
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools import defaults
-from calendartools.signals import collect_occurrence_validators
+from calendartools.signals import collect_validators
 from calendartools.validators import BaseValidator
 from nose.tools import *
 
@@ -192,7 +192,7 @@ class TestOccurrence(TestCase):
             finish=self.start # also fails finish > start check.
         )
         try:
-            collect_occurrence_validators.connect(AngryValidator)
+            collect_validators.connect(AngryValidator, sender=Occurrence)
             occurrence.save()
             self.fail('ValidationError not triggered')
         except ValidationError, e:
@@ -204,7 +204,7 @@ class TestOccurrence(TestCase):
             except ValidationError, e:
                 assert_not_equal(e.messages[0], AngryValidator.error_message)
         finally:
-            collect_occurrence_validators.disconnect(AngryValidator)
+            collect_validators.disconnect(AngryValidator, sender=Occurrence)
 
     def test_is_cancelled_property(self):
         occurrence = Occurrence.objects.create(

@@ -8,8 +8,9 @@ class BaseValidator(object):
     """
     priority = 10
 
-    def __init__(self, sender, **kwargs):
+    def __init__(self, sender, instance, **kwargs):
         self.sender = sender
+        self.instance = instance
         self.request = get_current_request()
         self.user = getattr(self.request, 'user', None)
         self.kwargs = kwargs
@@ -20,12 +21,16 @@ class BaseValidator(object):
 
 
 class BaseOccurrenceValidator(BaseValidator):
-    def __init__(self, sender, **kwargs):
-        super(BaseOccurrenceValidator, self).__init__(sender, **kwargs)
-        self.occurrence = self.sender
+    def __init__(self, sender, instance, **kwargs):
+        super(BaseOccurrenceValidator, self).__init__(
+            sender, instance, **kwargs
+        )
+        self.occurrence = self.instance
 
 
 class BaseUserAttendanceValidator(BaseValidator):
-    def __init__(self, sender, **kwargs):
-        super(BaseUserAttendanceValidator, self).__init__(sender, **kwargs)
-        self.attendance = self.sender
+    def __init__(self, sender, instance, **kwargs):
+        super(BaseUserAttendanceValidator, self).__init__(
+            sender, instance, **kwargs
+        )
+        self.attendance = self.instance

@@ -391,11 +391,11 @@ class TestMultipleOccurrenceFormModelValidation(TestCase):
             error_message = "Events can't start tomorrow!"
             def validate(self):
                 tomorrow = date.today() + timedelta(1)
-                if self.sender.start.date() == tomorrow:
+                if self.instance.start.date() == tomorrow:
                     raise forms.ValidationError(self.error_message)
 
         self.validator = TomorrowEventsNotAllowed
-        signals.collect_occurrence_validators.connect(self.validator)
+        signals.collect_validators.connect(self.validator, sender=Occurrence)
         self.data = {
             '_add':                   True,
             'calendar':               self.calendar.id,
@@ -412,7 +412,7 @@ class TestMultipleOccurrenceFormModelValidation(TestCase):
         )
 
     def tearDown(self):
-        signals.collect_occurrence_validators.disconnect(self.validator)
+        signals.collect_validators.disconnect(self.validator, sender=Occurrence)
 
     def test_model_form_validation_occurs(self):
         form = MultipleOccurrenceForm(event=self.event, data=self.data)

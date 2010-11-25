@@ -13,9 +13,7 @@ from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools.managers import (
     CalendarManager, EventManager, OccurrenceManager
 )
-from calendartools.signals import (
-    collect_occurrence_validators, collect_attendance_validators
-)
+from calendartools.signals import collect_validators
 from calendartools.validators.defaults import activate_default_validators
 
 try:
@@ -170,13 +168,10 @@ class Event(EventBase):
 
 
 class PluggableValidationMixin(object):
-    """
-    Must define ``validation_signal``.
-    """
     def collect_and_run_validators(self):
         """Collects all pluggable validation checks and runs them, in order of
         priority."""
-        validators = self.validation_signal.send(sender=self)
+        validators = collect_validators.send(sender=self.__class__, instance=self)
         validators = [v[1] for v in validators] # instances only
         validators.sort(key=lambda v: v.priority, reverse=True)
         for validator in validators:
@@ -208,8 +203,6 @@ class Occurrence(PluggableValidationMixin, EventBase):
         help_text=_('Toggle occurrences inactive rather than deleting them.')
     )
     objects = OccurrenceManager()
-
-    validation_signal = collect_occurrence_validators
 
 
     class Meta(object):
@@ -274,9 +267,6 @@ class Attendance(PluggableValidationMixin, AuditedModel):
         help_text=_("Toggle attendance records inactive rather "
                     "than deleting them.")
     )
-
-
-    validation_signal = collect_attendance_validators
 
 
     class Meta(object):

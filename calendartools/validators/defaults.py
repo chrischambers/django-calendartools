@@ -1,9 +1,7 @@
 from datetime import datetime
 from django.core.exceptions import ValidationError
 from calendartools import defaults
-from calendartools.signals import (
-    collect_occurrence_validators, collect_attendance_validators
-)
+from calendartools.signals import collect_validators
 from calendartools.validators.base import (
     BaseOccurrenceValidator, BaseUserAttendanceValidator
 )
@@ -75,25 +73,33 @@ class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator)
             )
 
 def activate_default_occurrence_validators():
-    collect_occurrence_validators.connect(
-        FinishGTStartValidator
+    from calendartools.models import Occurrence
+    collect_validators.connect(
+        FinishGTStartValidator,
+        sender=Occurrence
     )
-    collect_occurrence_validators.connect(
-        FutureOccurrencesOnlyValidator
+    collect_validators.connect(
+        FutureOccurrencesOnlyValidator,
+        sender=Occurrence
     )
-    collect_occurrence_validators.connect(
-        MaxOccurrenceLengthValidator
+    collect_validators.connect(
+        MaxOccurrenceLengthValidator,
+        sender=Occurrence
     )
-    collect_occurrence_validators.connect(
-        MinOccurrenceLengthValidator
+    collect_validators.connect(
+        MinOccurrenceLengthValidator,
+        sender=Occurrence
     )
 
 def activate_default_attendance_validators():
-    collect_attendance_validators.connect(
-        CannotAttendFinishedEventsValidator
+    from calendartools.models import Attendance
+    collect_validators.connect(
+        CannotAttendFinishedEventsValidator,
+        sender=Attendance
     )
-    collect_attendance_validators.connect(
-        OnlyOneActiveAttendanceForOccurrenceValidator
+    collect_validators.connect(
+        OnlyOneActiveAttendanceForOccurrenceValidator,
+        sender=Attendance
     )
 
 def activate_default_validators():

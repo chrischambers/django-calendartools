@@ -563,11 +563,11 @@ class TestConfirmOccurrenceView(TestCase):
                 priority = 9000
                 error_message = "Event 'other-event' isn't allowed!"
                 def validate(self):
-                    if self.sender.event.slug == 'other-event':
+                    if self.instance.event.slug == 'other-event':
                         raise ValidationError(self.error_message)
 
             self.validator = Event2EventsNotAllowed
-            signals.collect_occurrence_validators.connect(self.validator)
+            signals.collect_validators.connect(self.validator, sender=Occurrence)
 
             response = self.client.post(
                 reverse('confirm-occurrences'), data={}, follow=True
@@ -588,7 +588,7 @@ class TestConfirmOccurrenceView(TestCase):
             assert not self.client.session.get(self.occurrence_key)
 
         finally:
-            signals.collect_occurrence_validators.disconnect(self.validator)
+            signals.collect_validators.disconnect(self.validator, sender=Occurrence)
 
 
 class TestOccurrenceDetailRedirect(TestCase):
