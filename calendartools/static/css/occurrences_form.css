@@ -1,0 +1,19 @@
+table { border-collapse: collapse; font-size: 0.9em; }
+td, th { padding: 5px; border: 1px solid #ccc; }
+th { background-color: #DDD; }
+dt { font-weight: bold; }
+dt { font-weight: bold; }
+dd { margin-bottom: .5em; }
+/*form table { width: 100% }*/
+form table ul { margin: 0; padding: 0;}
+form table li { list-style-type: none; padding: 1px;}
+form table th { text-align: right; width: 10em; }
+form table th label {margin-right: 5px;}
+form tfoot td { text-align: center; background-color: #EEE; }
+.form-indent { margin-left: 2.5em; }
+.horizontal { width: 30em; }
+.horizontal li { float: left; margin: 0; }
+.horizontal li label { width: 4em; display: block; float: left; }
+div#interval {padding: 10px 5px;}
+#recurrence-options { float: left; }
+#recurrence-options li { margin-bottom: 4px; }

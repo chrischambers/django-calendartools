@@ -1,5 +1,10 @@
 {% extends "calendar/event_list.html" %}
 {% block title %}{{ event.name }} - {{ block.super }}{% endblock %}
+{% block extra_head %}
+  <link rel="stylesheet" type="text/css" media="all"
+        href="{{ MEDIA_URL }}css/occurrences_form.css" />
+{% endblock extra_head %}
+
 
 {% block primary %}
   <h1>{{ event.name }}</h1>
@@ -38,7 +43,7 @@
 
   {% if can_add_occurrences %}
   <h3>Add Occurrences</h3>
-  <form action="" method="post">{% csrf_token %}
+  <form id="occurrences-form" action="" method="post">{% csrf_token %}
     <table>
       <tfoot>
         <tr>
