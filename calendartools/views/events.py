@@ -44,11 +44,13 @@ def event_detail(request, slug, template='calendar/event_detail.html',
                 event_form.save(event)
                 return http.HttpResponseRedirect(success_url)
         elif '_add' in request.POST and can_add_occurrences:
-            recurrence_form = recurrence_form_class(data=request.POST, event=event, request=request)
+            recurrence_form = recurrence_form_class(
+                data=request.POST, event=event, request=request
+            )
             if recurrence_form.is_valid():
                 if recurrence_form.invalid_occurrences:
                     session_data = {
-                        'event':   recurrence_form.event,
+                        'event': recurrence_form.event,
                         'valid_occurrences': recurrence_form.valid_occurrences,
                         'invalid_occurrences': recurrence_form.invalid_occurrences,
                     }

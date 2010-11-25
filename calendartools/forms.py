@@ -33,6 +33,7 @@ less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
 
 class AttendanceForm(forms.ModelForm):
+    # Necessary to hide all the other fields:
     noop = forms.CharField(required=False, widget=forms.widgets.HiddenInput())
 
     class Meta(object):
