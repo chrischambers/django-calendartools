@@ -255,6 +255,48 @@ class TestOccurrence(TestCase):
         assert_equal(occurrence.description, self.event.description)
 
 
+class TestOccurrenceDuration(TestCase):
+    def setUp(self):
+        self.creator = User.objects.create(username='TestyMcTesterson')
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
+        self.event = Event.objects.create(
+            name='Event', slug='event', creator=self.creator
+        )
+        self.start = datetime.now() + timedelta(minutes=30)
+        defaults.MAX_OCCURRENCE_DURATION = timedelta(hours=2)
+        defaults.MIN_OCCURRENCE_DURATION = timedelta(minutes=15)
+
+    def test_max_occurrence_length(self):
+        occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
+            event=self.event,
+            start=self.start,
+            finish=self.start + defaults.MAX_OCCURRENCE_DURATION
+        )
+        assert_raises(
+            ValidationError, Occurrence.objects.create,
+            calendar=self.calendar,
+            event=self.event,
+            start=self.start,
+            finish=self.start + defaults.MAX_OCCURRENCE_DURATION + timedelta.resolution
+        )
+
+    def test_min_occurrence_duration(self):
+        occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
+            event=self.event,
+            start=self.start,
+            finish=self.start + defaults.MIN_OCCURRENCE_DURATION
+        )
+        assert_raises(
+            ValidationError, Occurrence.objects.create,
+            calendar=self.calendar,
+            event=self.event,
+            start=self.start,
+            finish=self.start + defaults.MIN_OCCURRENCE_DURATION - timedelta.resolution
+        )
+
+
 class TestAttendance(TestCase):
     def setUp(self):
         self.user = User.objects.create(username='TestyMcTesterson')

@@ -33,7 +33,11 @@ TIMESLOT_MIN_COLUMNS = 4
 
 # Indicate the default length in time for a new occurrence, specifed by using
 # a datetime.timedelta object
-DEFAULT_OCCURRENCE_DURATION = timedelta(hours=+1)
+DEFAULT_OCCURRENCE_DURATION = getattr(settings, 'DEFAULT_OCCURRENCE_DURATION',
+                                      timedelta(hours=+1))
+
+MIN_OCCURRENCE_DURATION = getattr(settings, 'MIN_OCCURRENCE_DURATION', None)
+MAX_OCCURRENCE_DURATION = getattr(settings, 'MAX_OCCURRENCE_DURATION', None)
 
 # If not None/0, raises a ``MaxOccurrenceCreationsExceeded`` Exception if the
 # ``Event.add_occurrences`` utility function creates more Occurrence objects

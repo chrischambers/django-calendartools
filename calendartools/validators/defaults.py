@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.core.exceptions import ValidationError
+from calendartools import defaults
 from calendartools.signals import (
     collect_occurrence_validators, collect_attendance_validators
 )
@@ -22,6 +23,28 @@ class FutureOccurrencesOnlyValidator(BaseOccurrenceValidator):
             raise ValidationError(
                 'Event occurrences cannot be created in the past.'
             )
+
+
+class MaxOccurrenceLengthValidator(BaseOccurrenceValidator):
+    def validate(self):
+        max_length = defaults.MAX_OCCURRENCE_DURATION
+        if max_length:
+            length = self.occurrence.finish - self.occurrence.start
+            if not length <= max_length:
+                raise ValidationError(
+                    'Events must be less than %s long.' % max_length
+                )
+
+
+class MinOccurrenceLengthValidator(BaseOccurrenceValidator):
+    def validate(self):
+        min_length = defaults.MIN_OCCURRENCE_DURATION
+        if min_length:
+            length = self.occurrence.finish - self.occurrence.start
+            if not length >= min_length:
+                raise ValidationError(
+                    'Events must be greater than %s long.' % min_length
+                )
 
 
 class CannotAttendFinishedEventsValidator(BaseUserAttendanceValidator):
@@ -57,6 +80,12 @@ def activate_default_occurrence_validators():
     )
     collect_occurrence_validators.connect(
         FutureOccurrencesOnlyValidator
+    )
+    collect_occurrence_validators.connect(
+        MaxOccurrenceLengthValidator
+    )
+    collect_occurrence_validators.connect(
+        MinOccurrenceLengthValidator
     )
 
 def activate_default_attendance_validators():
