@@ -12,6 +12,8 @@ from calendartools import constants, defaults, signals
 from calendartools.models import Calendar, Event, Occurrence, Attendance
 from calendartools.forms import MultipleOccurrenceForm, AttendanceForm
 from calendartools.validators import BaseValidator
+from calendartools.validators.defaults import CannotAttendFutureEventsValidator
+
 
 class TestAttendanceForm(TestCase):
     def setUp(self):
@@ -47,15 +49,23 @@ class TestAttendanceForm(TestCase):
         assert form.instance.status == Attendance.CANCELLED
 
     def test_clean_method_performs_noop_if_status_attended(self):
-        attendance = Attendance.objects.create(
-            user=self.user,
-            occurrence=self.occurrence,
-            status=Attendance.ATTENDED
-        )
-        form = AttendanceForm(instance=attendance, data={})
-        assert form.is_valid()
-        form.save()
-        assert form.instance.status == Attendance.ATTENDED
+        try:
+            signals.collect_validators.disconnect(
+                CannotAttendFutureEventsValidator, sender=Attendance
+            )
+            attendance = Attendance.objects.create(
+                user=self.user,
+                occurrence=self.occurrence,
+                status=Attendance.ATTENDED
+            )
+            form = AttendanceForm(instance=attendance, data={})
+            assert form.is_valid()
+            form.save()
+            assert form.instance.status == Attendance.ATTENDED
+        finally:
+            signals.collect_validators.connect(
+                CannotAttendFutureEventsValidator, sender=Attendance
+            )
 
 
 class TestMultipleOccurrenceFormValidation(TestCase):

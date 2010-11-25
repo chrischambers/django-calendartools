@@ -45,12 +45,21 @@ class MinOccurrenceLengthValidator(BaseOccurrenceValidator):
                 )
 
 
-class CannotAttendFinishedEventsValidator(BaseUserAttendanceValidator):
+class CannotBookFinishedEventsValidator(BaseUserAttendanceValidator):
     def validate(self):
         if (not self.attendance.id and
             self.attendance.occurrence.finish < datetime.now()):
             raise ValidationError(
-                'Cannot attend events which have occurred in the past.'
+                'Cannot book/attend events which have occurred in the past.'
+            )
+
+
+class CannotAttendFutureEventsValidator(BaseUserAttendanceValidator):
+    def validate(self):
+        if (self.attendance.status == self.attendance.ATTENDED and
+            self.attendance.occurrence.start > datetime.now()):
+            raise ValidationError(
+                'Cannot attend events which have not yet occurred.'
             )
 
 
@@ -94,7 +103,11 @@ def activate_default_occurrence_validators():
 def activate_default_attendance_validators():
     from calendartools.models import Attendance
     collect_validators.connect(
-        CannotAttendFinishedEventsValidator,
+        CannotBookFinishedEventsValidator,
+        sender=Attendance
+    )
+    collect_validators.connect(
+        CannotAttendFutureEventsValidator,
         sender=Attendance
     )
     collect_validators.connect(

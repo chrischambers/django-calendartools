@@ -9,6 +9,7 @@ from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools import defaults
 from calendartools.signals import collect_validators
 from calendartools.validators import BaseValidator
+from calendartools.validators.defaults import CannotAttendFutureEventsValidator
 from nose.tools import *
 
 
@@ -319,7 +320,7 @@ class TestAttendance(TestCase):
         )
         assert_equal(att.status, Attendance.BOOKED)
 
-    def test_cannot_attend_finished_occurrences(self):
+    def test_cannot_book_finished_occurrences(self):
         self.occurrence.start = self.occurrence.start - timedelta(1)
         self.occurrence.finish = self.occurrence.finish - timedelta(1)
         self.occurrence.save()
@@ -327,21 +328,51 @@ class TestAttendance(TestCase):
             user=self.user, occurrence=self.occurrence
         )
 
+    def test_cannot_have_attended_future_occurrences(self):
+        self.assertRaises(
+            ValidationError,
+            Attendance.objects.create,
+            user=self.user,
+            occurrence=self.occurrence,
+            status=Attendance.ATTENDED
+        )
+
     def test_only_one_active_attendance_record_for_user_occurrence(self):
-        att = Attendance(user=self.user, occurrence=self.occurrence)
-        for status in [Attendance.BOOKED, Attendance.ATTENDED]:
-            att.status = att.ATTENDED
-            att.save()
-            self.assertRaises(ValidationError, Attendance.objects.create,
-                user=self.user, occurrence=self.occurrence
+        try:
+            collect_validators.disconnect(
+                CannotAttendFutureEventsValidator, sender=Attendance
             )
-        for status in [Attendance.INACTIVE, Attendance.CANCELLED]:
-            att.status = status
-            att.save()
-            att2 = Attendance.objects.create(
-                user=self.user, occurrence=self.occurrence
+            att = Attendance(user=self.user, occurrence=self.occurrence)
+            for status in [Attendance.BOOKED, Attendance.ATTENDED]:
+                att.status = att.ATTENDED
+                att.save()
+                self.assertRaises(ValidationError, Attendance.objects.create,
+                    user=self.user, occurrence=self.occurrence
+                )
+            for status in [Attendance.INACTIVE, Attendance.CANCELLED]:
+                att.status = status
+                att.save()
+                att2 = Attendance.objects.create(
+                    user=self.user, occurrence=self.occurrence
+                )
+                att2.delete()
+        finally:
+            collect_validators.connect(
+                CannotAttendFutureEventsValidator, sender=Attendance
             )
-            att2.delete()
+
+
+class TestAttendanceCancellation(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='TestyMcTesterson')
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
+        self.event = Event.objects.create(
+            name='Event', slug='event', creator=self.user
+        )
+        self.start = datetime.now() + timedelta(minutes=30)
+        self.finish = self.start + timedelta(minutes=30)
+        self.occurrence = self.event.add_occurrences(
+            self.calendar, self.start, self.finish)[0]
 
     def test_is_cancelled_property(self):
         att = Attendance.objects.create(

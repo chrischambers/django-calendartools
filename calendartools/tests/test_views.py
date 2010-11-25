@@ -14,6 +14,7 @@ from calendartools.forms import (
     ConfirmOccurrenceForm
 )
 from calendartools.validators import BaseValidator
+from calendartools.validators.defaults import CannotAttendFutureEventsValidator
 
 from nose.tools import *
 
@@ -309,22 +310,30 @@ class TestOccurrenceDetailView(TestCase):
 
     def test_attendance_context_only_populated_with_desired_statuses(self):
         attendance = Attendance(user=self.user, occurrence=self.occurrence)
-        for status in (Attendance.BOOKED, Attendance.ATTENDED):
-            attendance.status = status
-            attendance.save()
-            response = self.client.get(
-                reverse('occurrence-detail',
-                        args=(self.event.slug, self.occurrence.pk)), follow=True
+        try:
+            signals.collect_validators.disconnect(
+                CannotAttendFutureEventsValidator, sender=Attendance
             )
-            assert_equal(response.context['attendance'], attendance)
-        for status in (Attendance.INACTIVE, Attendance.CANCELLED):
-            attendance.status = status
-            attendance.save()
-            response = self.client.get(
-                reverse('occurrence-detail',
-                        args=(self.event.slug, self.occurrence.pk)), follow=True
+            for status in (Attendance.BOOKED, Attendance.ATTENDED):
+                attendance.status = status
+                attendance.save()
+                response = self.client.get(
+                    reverse('occurrence-detail',
+                            args=(self.event.slug, self.occurrence.pk)), follow=True
+                )
+                assert_equal(response.context['attendance'], attendance)
+            for status in (Attendance.INACTIVE, Attendance.CANCELLED):
+                attendance.status = status
+                attendance.save()
+                response = self.client.get(
+                    reverse('occurrence-detail',
+                            args=(self.event.slug, self.occurrence.pk)), follow=True
+                )
+                assert_not_equal(response.context['attendance'], attendance)
+        finally:
+            signals.collect_validators.connect(
+                CannotAttendFutureEventsValidator, sender=Attendance
             )
-            assert_not_equal(response.context['attendance'], attendance)
 
     def test_occurrence_detail(self):
         response = self.client.get(
