@@ -265,7 +265,9 @@ class Attendance(PluggableValidationMixin, AuditedModel):
         choices=STATUS_CHOICES,
         default=BOOKED,
         help_text=_("Toggle attendance records inactive rather "
-                    "than deleting them.")
+                    "than deleting them. Once an Attendance record "
+                    "is cancelled, you should create a new one rather "
+                    "than modifying it.")
     )
 
 
@@ -284,8 +286,8 @@ class Attendance(PluggableValidationMixin, AuditedModel):
         super(Attendance, self).clean()
         if self.status != self.CANCELLED and self.is_cancelled:
             raise ValidationError(
-                'Attendance records cannot be uncancelled. '
-                'Create a new attendance record.'
+                'Attendance records cannot be uncancelled - '
+                'please create a new attendance record.'
             )
 
     @property
