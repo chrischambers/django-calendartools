@@ -293,13 +293,13 @@ class Attendance(PluggableValidationMixin, AuditedModel):
         try:
             self.cancellation
             return True
-        except AttendanceCancellation.DoesNotExist:
+        except Cancellation.DoesNotExist:
             return False
 
     def save(self, *args, **kwargs):
         value = super(Attendance, self).save(*args, **kwargs)
         if self.status == self.CANCELLED and not self.is_cancelled:
-            AttendanceCancellation.objects.create(attendance=self)
+            Cancellation.objects.create(attendance=self)
         return value
 
     # @models.permalink
@@ -307,14 +307,22 @@ class Attendance(PluggableValidationMixin, AuditedModel):
     #     return ('attendance_record', [], {})
 
 
-class AttendanceCancellation(AuditedModel):
+class Cancellation(AuditedModel):
     attendance = models.OneToOneField(Attendance, verbose_name=_('attendance'),
         related_name='cancellation'
     )
     reason = models.TextField(_('cancellation reason'), blank=True)
 
+    class Meta(object):
+        verbose_name = _('Attendance Cancellation')
+        verbose_name_plural = _('Attendance Cancellations')
+        get_latest_by = 'datetime_created'
+
+    def __unicode__(self):
+        return u"%s" % (self.attendance)
+
     def save(self, *args, **kwargs):
-        value = super(AttendanceCancellation, self).save(*args, **kwargs)
+        value = super(Cancellation, self).save(*args, **kwargs)
         if self.attendance.status != self.attendance.CANCELLED:
             self.attendance.status = self.attendance.CANCELLED
             self.attendance.save()

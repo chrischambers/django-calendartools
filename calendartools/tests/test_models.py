@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from calendartools.models import (
-    Calendar, Event, Occurrence, Attendance, AttendanceCancellation
+    Calendar, Event, Occurrence, Attendance, Cancellation
 )
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools import defaults
@@ -354,14 +354,14 @@ class TestAttendance(TestCase):
         assert att.is_cancelled
 
     def test_cancellation_creates_attendance_cancelled_record(self):
-        assert_equal(AttendanceCancellation.objects.count(), 0)
+        assert_equal(Cancellation.objects.count(), 0)
         att = Attendance.objects.create(
             user=self.user,
             occurrence=self.occurrence,
             status=Attendance.CANCELLED
         )
-        assert_equal(AttendanceCancellation.objects.count(), 1)
-        assert_equal(att.cancellation, AttendanceCancellation.objects.get())
+        assert_equal(Cancellation.objects.count(), 1)
+        assert_equal(att.cancellation, Cancellation.objects.get())
         assert_equal(
             att.datetime_created.date(),
             att.cancellation.datetime_created.date()
@@ -385,5 +385,5 @@ class TestAttendance(TestCase):
             occurrence=self.occurrence,
         )
         assert_equal(att.status, att.BOOKED)
-        cancellation = AttendanceCancellation.objects.create(attendance=att)
+        cancellation = Cancellation.objects.create(attendance=att)
         assert_equal(att.status, att.CANCELLED)

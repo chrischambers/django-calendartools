@@ -1,6 +1,6 @@
 from django.contrib import admin
 from calendartools.models import (
-    Calendar, Event, Occurrence, Attendance, AttendanceCancellation
+    Calendar, Event, Occurrence, Attendance, Cancellation
 )
 
 
@@ -18,8 +18,8 @@ class EventAdmin(CalendarAdmin):
     pass
 
 
-class AttendanceCancellationInline(admin.TabularInline):
-    model = AttendanceCancellation
+class CancellationInline(admin.TabularInline):
+    model = Cancellation
     readonly_fields = ('creator', 'editor', 'datetime_created', 'datetime_modified')
 
 
@@ -39,7 +39,7 @@ class AttendanceAdmin(admin.ModelAdmin):
     list_display = ['user', 'occurrence', 'status', 'datetime_created']
     list_editable = ['status']
     date_hierarchy = "datetime_created"
-    inlines = [AttendanceCancellationInline]
+    inlines = [CancellationInline]
 
 admin.site.register(Calendar, CalendarAdmin)
 admin.site.register(Event, EventAdmin)
