@@ -207,6 +207,7 @@ class Occurrence(PluggableValidationMixin, EventBase):
 
     validation_signal = collect_occurrence_validators
 
+
     class Meta(object):
         verbose_name = _('Occurrence')
         verbose_name_plural = _('Occurrences')
@@ -225,6 +226,8 @@ class Occurrence(PluggableValidationMixin, EventBase):
         })
 
     def clean(self):
+        if (self.start and not self.finish):
+            self.finish = self.start + defaults.DEFAULT_OCCURRENCE_DURATION
         if not self.start or not self.finish:
             return # to be dealt with by built-in validators
         super(Occurrence, self).clean()

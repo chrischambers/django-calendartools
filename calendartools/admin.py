@@ -1,4 +1,5 @@
 from django.contrib import admin
+from calendartools import forms
 from calendartools.models import Calendar, Event, Occurrence, Attendance
 
 
@@ -17,6 +18,7 @@ class EventAdmin(CalendarAdmin):
 
 
 class OccurrenceAdmin(admin.ModelAdmin):
+    form = forms.AdminOccurrenceForm
     raw_id_fields = ['creator', 'editor']
     readonly_fields = ('creator', 'editor', 'datetime_created', 'datetime_modified')
     list_display = ['calendar', 'event', 'start', 'finish', 'status',

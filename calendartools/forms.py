@@ -12,7 +12,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.forms.extras.widgets import SelectDateWidget
 
-from calendartools.models import Event, Calendar, Attendance
+from calendartools.models import Calendar, Event, Occurrence, Attendance
 from calendartools.constants import (
     WEEKDAY_SHORT, WEEKDAY_LONG,
     MONTH_SHORT, ORDINAL,
@@ -21,7 +21,7 @@ from calendartools.constants import (
 from calendartools.fields import MultipleIntegerField
 from calendartools.defaults import (
     MINUTES_INTERVAL, SECONDS_INTERVAL, default_timeslot_offset_options,
-    MAX_OCCURRENCE_CREATION_COUNT
+    MAX_OCCURRENCE_CREATION_COUNT, DEFAULT_OCCURRENCE_DURATION
 )
 
 log = logging.getLogger('calendartools.forms')
@@ -31,9 +31,25 @@ greater_than_1 = MinValueValidator(1)
 less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
 
+class AdminOccurrenceForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AdminOccurrenceForm, self).__init__(*args, **kwargs)
+
+        if DEFAULT_OCCURRENCE_DURATION:
+            self.fields['finish'].required = False
+            self.fields['finish'].help_text = _(
+                'if left blank, will default to the start time + %s.' %
+                DEFAULT_OCCURRENCE_DURATION
+            )
+
+    class Meta(object):
+        model = Occurrence
+
+
 class AttendanceForm(forms.ModelForm):
     # Necessary to hide all the other fields:
     noop = forms.CharField(required=False, widget=forms.widgets.HiddenInput())
+
 
     class Meta(object):
         model = Attendance
