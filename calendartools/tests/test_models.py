@@ -2,7 +2,9 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from calendartools.models import Calendar, Event, Occurrence, Attendance
+from calendartools.models import (
+    Calendar, Event, Occurrence, Attendance, AttendanceCancellation
+)
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools import defaults
 from calendartools.signals import collect_occurrence_validators
@@ -340,3 +342,48 @@ class TestAttendance(TestCase):
                 user=self.user, occurrence=self.occurrence
             )
             att2.delete()
+
+    def test_is_cancelled_property(self):
+        att = Attendance.objects.create(
+            user=self.user,
+            occurrence=self.occurrence,
+        )
+        assert not att.is_cancelled
+        att.status = att.CANCELLED
+        att.save()
+        assert att.is_cancelled
+
+    def test_cancellation_creates_attendance_cancelled_record(self):
+        assert_equal(AttendanceCancellation.objects.count(), 0)
+        att = Attendance.objects.create(
+            user=self.user,
+            occurrence=self.occurrence,
+            status=Attendance.CANCELLED
+        )
+        assert_equal(AttendanceCancellation.objects.count(), 1)
+        assert_equal(att.cancellation, AttendanceCancellation.objects.get())
+        assert_equal(
+            att.datetime_created.date(),
+            att.cancellation.datetime_created.date()
+        )
+
+    def test_attendance_record_cannot_be_uncancelled(self):
+        att = Attendance.objects.create(
+            user=self.user,
+            occurrence=self.occurrence,
+            status=Attendance.CANCELLED
+        )
+        status_choices = [i[0] for i in Attendance.STATUS_CHOICES if
+                          i[0] != Attendance.CANCELLED]
+        for status in status_choices:
+            att.status = status
+            assert_raises(ValidationError, att.save)
+
+    def test_creation_of_attendance_cancellation_record_cancels_attendance(self):
+        att = Attendance.objects.create(
+            user=self.user,
+            occurrence=self.occurrence,
+        )
+        assert_equal(att.status, att.BOOKED)
+        cancellation = AttendanceCancellation.objects.create(attendance=att)
+        assert_equal(att.status, att.CANCELLED)

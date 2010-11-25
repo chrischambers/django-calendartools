@@ -1,5 +1,6 @@
 from dateutil import rrule
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
@@ -273,12 +274,14 @@ class Attendance(PluggableValidationMixin, AuditedModel):
         help_text=_("Toggle attendance records inactive rather "
                     "than deleting them.")
     )
+
+
     validation_signal = collect_attendance_validators
 
 
     class Meta(object):
-        verbose_name = _('Attendance')
-        verbose_name_plural = _('Attendance')
+        verbose_name = _('Attendance Record')
+        verbose_name_plural = _('Attendance Records')
         get_latest_by = 'datetime_created'
 
     def __unicode__(self):
@@ -287,9 +290,45 @@ class Attendance(PluggableValidationMixin, AuditedModel):
             self.occurrence.start.strftime('%Y/%m/%d - %H:%M:%S')
         )
 
+    def clean(self):
+        super(Attendance, self).clean()
+        if self.status != self.CANCELLED and self.is_cancelled:
+            raise ValidationError(
+                'Attendance records cannot be uncancelled. '
+                'Create a new attendance record.'
+            )
+
+    @property
+    def is_cancelled(self):
+        try:
+            self.cancellation
+            return True
+        except AttendanceCancellation.DoesNotExist:
+            return False
+
+    def save(self, *args, **kwargs):
+        value = super(Attendance, self).save(*args, **kwargs)
+        if self.status == self.CANCELLED and not self.is_cancelled:
+            AttendanceCancellation.objects.create(attendance=self)
+        return value
+
     # @models.permalink
     # def get_absolute_url(self):
     #     return ('attendance_record', [], {})
+
+
+class AttendanceCancellation(AuditedModel):
+    attendance = models.OneToOneField(Attendance, verbose_name=_('attendance'),
+        related_name='cancellation'
+    )
+    reason = models.TextField(_('cancellation reason'), blank=True)
+
+    def save(self, *args, **kwargs):
+        value = super(AttendanceCancellation, self).save(*args, **kwargs)
+        if self.attendance.status != self.attendance.CANCELLED:
+            self.attendance.status = self.attendance.CANCELLED
+            self.attendance.save()
+        return value
 
 activate_default_validators()
 
