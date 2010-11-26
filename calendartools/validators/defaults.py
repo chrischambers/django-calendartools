@@ -70,7 +70,7 @@ class CannotCancelAttendedEventsValidator(BaseUserAttendanceValidator):
             and self.attendance.pk):
             Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
             try:
-                previous_status = Attendance.objects.values_list(
+                previous_status = Attendance._default_manager.values_list(
                     'status', flat=True).get(pk=self.attendance.pk)
                 if previous_status == self.attendance.ATTENDED:
                     raise ValidationError(
@@ -86,7 +86,7 @@ class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator)
 
     def validate(self):
         Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
-        already_attending = Attendance.objects.filter(
+        already_attending = Attendance._default_manager.filter(
             user=self.attendance.user,
             occurrence=self.attendance.occurrence,
             status__in=[Attendance.BOOKED, Attendance.ATTENDED]
