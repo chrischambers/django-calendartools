@@ -19,6 +19,7 @@ from calendartools.periods import (
     first_day_of_week
 )
 
+
 class TestSimpleProxy(TestCase):
     def setUp(self):
         self.datetime = datetime.now()
@@ -50,12 +51,18 @@ class TestSimpleProxy(TestCase):
 
 class TestDateTimeProxies(TestCase):
     def setUp(self):
+        self.orig_first_dow = settings.FIRST_DAY_OF_WEEK
+        settings.FIRST_DAY_OF_WEEK = 1 # Monday
+
         self.datetime = datetime(1982, 8, 17)
         self.year     = Year(self.datetime)
         self.month    = Month(self.datetime)
         self.week     = Week(self.datetime)
         self.day      = Day(self.datetime)
         self.hour     = Hour(datetime.combine(self.datetime.date(), time(6, 30, 5)))
+
+    def tearDown(self):
+        settings.FIRST_DAY_OF_WEEK = self.orig_first_dow
 
     def test_default_datetimeproxy_conversion(self):
         mapping = (
@@ -392,12 +399,15 @@ class TestDateTimeProxies(TestCase):
 
 class TestDateAwareProperties(TestCase):
     def setUp(self):
+        self.orig_first_dow = settings.FIRST_DAY_OF_WEEK
+        settings.FIRST_DAY_OF_WEEK = 1 # Monday
+
         now = datetime.now()
         self.objects = [Period, Year, Month, Week, Day, Hour]
         self.objects = [obj(now) for obj in self.objects]
 
     def tearDown(self):
-        defaults.CALENDAR_FIRST_WEEKDAY = calendar.MONDAY
+        settings.FIRST_DAY_OF_WEEK = self.orig_first_dow
 
     def test_day_names_property(self):
         for obj in self.objects:

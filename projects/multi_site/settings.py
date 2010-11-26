@@ -21,7 +21,7 @@ TEMPLATE_LOADERS = (
 )
 USE_L10N = True
 USE_I18N = True
-FIRST_DAY_OF_WEEK = 1 # Monday
+# FIRST_DAY_OF_WEEK = 1 # Monday
 FORMAT_MODULE_PATH = 'calendartools.formats'
 
 MIDDLEWARE_CLASSES = (
