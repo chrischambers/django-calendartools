@@ -412,7 +412,7 @@ class TestMultipleOccurrenceFormModelValidation(TestCase):
         signals.collect_validators.connect(self.validator, sender=Occurrence)
         self.data = {
             '_add':                   True,
-            'calendar':               self.calendar.id,
+            'calendar':               self.calendar.pk,
             'day':                    self.tomorrow,
             'start_time_delta':       '28800',
             'end_time_delta':         '29700',

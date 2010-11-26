@@ -15,7 +15,7 @@ class BaseUserAttendanceValidator(BaseValidator):
 
 class CannotBookFinishedEventsValidator(BaseUserAttendanceValidator):
     def validate(self):
-        if (not self.attendance.id and
+        if (not self.attendance.pk and
             self.attendance.occurrence.finish < datetime.now()):
             raise ValidationError(
                 'Cannot book/attend events which have occurred in the past.'
@@ -58,8 +58,8 @@ class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator)
             occurrence=self.attendance.occurrence,
             status__in=[Attendance.BOOKED, Attendance.ATTENDED]
         )
-        if self.attendance.id:
-            already_attending = already_attending.exclude(id=self.attendance.id)
+        if self.attendance.pk:
+            already_attending = already_attending.exclude(pk=self.attendance.pk)
 
         if already_attending.exists():
             raise ValidationError(

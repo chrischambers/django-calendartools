@@ -23,7 +23,7 @@ class FinishGTStartValidator(BaseOccurrenceValidator):
 
 class FutureOccurrencesOnlyValidator(BaseOccurrenceValidator):
     def validate(self):
-        if not self.occurrence.id and self.occurrence.start < datetime.now():
+        if not self.occurrence.pk and self.occurrence.start < datetime.now():
             raise ValidationError(
                 'Event occurrences cannot be created in the past.'
             )
