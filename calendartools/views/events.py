@@ -123,7 +123,7 @@ def occurrence_detail(request, slug, pk, *args, **kwargs):
         'attendance': attendance,
         'occurrence': occurrence,
     }
-    if attendance:
+    if attendance and attendance.status != attendance.ATTENDED:
         data['form'] = form
 
     return render_to_response("calendar/occurrence_detail.html", data,

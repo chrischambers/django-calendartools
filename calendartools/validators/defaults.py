@@ -64,6 +64,23 @@ class CannotAttendFutureEventsValidator(BaseUserAttendanceValidator):
             )
 
 
+class CannotCancelAttendedEventsValidator(BaseUserAttendanceValidator):
+    def validate(self):
+        if (self.attendance.status == self.attendance.CANCELLED
+            and self.attendance.pk):
+            Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
+            try:
+                previous_status = Attendance.objects.values_list(
+                    'status', flat=True).get(pk=self.attendance.pk)
+                if previous_status == self.attendance.ATTENDED:
+                    raise ValidationError(
+                        'Cannot cancel attendance for events which have '
+                        'already been attended.'
+                    )
+            except Attendance.DoesNotExist:
+                pass
+
+
 class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator):
     priority = 50
 
@@ -113,6 +130,10 @@ def activate_default_attendance_validators():
     )
     collect_validators.connect(
         OnlyOneActiveAttendanceForOccurrenceValidator,
+        sender=Attendance
+    )
+    collect_validators.connect(
+        CannotCancelAttendedEventsValidator,
         sender=Attendance
     )
 

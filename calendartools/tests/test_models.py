@@ -418,3 +418,20 @@ class TestAttendanceCancellation(TestCase):
         assert_equal(att.status, att.BOOKED)
         cancellation = Cancellation.objects.create(attendance=att)
         assert_equal(att.status, att.CANCELLED)
+
+    def test_attended_attendance_records_cannot_be_cancelled(self):
+        try:
+            collect_validators.disconnect(
+                CannotAttendFutureEventsValidator, sender=Attendance
+            )
+            att = Attendance.objects.create(
+                user=self.user,
+                occurrence=self.occurrence,
+                status=Attendance.ATTENDED
+            )
+            att.status = att.CANCELLED
+            assert_raises(ValidationError, att.save)
+        finally:
+            collect_validators.connect(
+                CannotAttendFutureEventsValidator, sender=Attendance
+            )

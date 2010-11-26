@@ -325,15 +325,57 @@ class TestOccurrenceDetailView(TestCase):
             for status in (Attendance.INACTIVE, Attendance.CANCELLED):
                 attendance.status = status
                 attendance.save()
-                response = self.client.get(
-                    reverse('occurrence-detail',
-                            args=(self.event.slug, self.occurrence.pk)), follow=True
+                response = self.client.get(reverse('occurrence-detail',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
                 )
                 assert_not_equal(response.context['attendance'], attendance)
         finally:
             signals.collect_validators.connect(
                 CannotAttendFutureEventsValidator, sender=Attendance
             )
+
+    def test_attended_status_does_not_display_form(self):
+        try:
+            signals.collect_validators.disconnect(
+                CannotAttendFutureEventsValidator, sender=Attendance
+            )
+            attendance = Attendance.objects.create(
+                user=self.user,
+                occurrence=self.occurrence,
+                status=Attendance.ATTENDED
+            )
+            response = self.client.get(reverse('occurrence-detail',
+                args=(self.event.slug, self.occurrence.pk)), follow=True
+            )
+            assert_not_in('form', response.context[-1])
+        finally:
+            signals.collect_validators.connect(
+                CannotAttendFutureEventsValidator, sender=Attendance
+            )
+
+    def test_book_attendance(self):
+        assert not Attendance.objects.exists()
+        response = self.client.post(reverse('occurrence-detail',
+            args=(self.event.slug, self.occurrence.pk)), data={}, follow=True
+        )
+        attendance = Attendance.objects.get()
+        assert_equal(attendance.user, self.user)
+        assert_equal(attendance.occurrence, self.occurrence)
+        assert_equal(attendance.status, Attendance.BOOKED)
+
+    def test_cancel_attendance(self):
+        assert not Attendance.objects.exists()
+        response = self.client.post(reverse('occurrence-detail',
+            args=(self.event.slug, self.occurrence.pk)), data={}, follow=True
+        )
+        assert_equal(Attendance.objects.count(), 1)
+        attendance = Attendance.objects.get()
+        assert_equal(attendance.status, Attendance.BOOKED)
+        response = self.client.post(reverse('occurrence-detail',
+            args=(self.event.slug, self.occurrence.pk)), data={}, follow=True
+        )
+        attendance = Attendance.objects.get()
+        assert_equal(attendance.status, Attendance.CANCELLED)
 
     def test_occurrence_detail(self):
         response = self.client.get(
@@ -627,6 +669,7 @@ class TestOccurrenceDetailRedirect(TestCase):
             args=(self.event.slug, self.occurrence.pk)),
             status_code=301
         )
+
 
 class TestCalendarVisibility(TestCase):
     def setUp(self):
