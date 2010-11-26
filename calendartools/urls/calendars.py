@@ -16,7 +16,4 @@ urlpatterns = patterns('',
         views.WeekView.as_view(), name='week-calendar'),
     url(r'^(?P<slug>[-A-Za-z0-9_]*)/(?P<year>\d{4})/(?P<month>\w{3})/(?P<day>[0-3]?\d)/$',
         views.DayView.as_view(), name='day-calendar'),
-
-    (r'^(?P<slug>[-A-Za-z0-9_]*)/(?P<year>\d{4})/(?P<month>\w{3})/(?P<day>[0-3]?\d)/(?P<event_slug>[-_0-9A-Za-z]*)/(?P<pk>\d+)/$',
-        views.occurrence_detail_redirect),
 )

@@ -47,6 +47,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
     'django.core.context_processors.media',
     'django.core.context_processors.request',
+    'django.contrib.messages.context_processors.messages',
     'calendartools.context_processors.current_datetime',
     'calendartools.context_processors.current_site',
 )
@@ -108,4 +109,4 @@ logging.basicConfig(
     datefmt='%a, %d %b %Y %H:%M:%S'
 )
 log = logging.getLogger('calendartools.forms')
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.WARN)

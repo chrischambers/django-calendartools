@@ -117,9 +117,3 @@ def today_view(request, slug, *args, **kwargs):
     view = DayView(request=request, slug=slug, year=str(today.year),
                    month=str(today.strftime('%b').lower()), day=str(today.day), **kwargs)
     return view.get(request, slug=slug, year=today.year, day=today.day)
-
-def occurrence_detail_redirect(request, slug, year, month, day, event_slug,
-                               pk):
-    return simple.redirect_to(
-        request, reverse('occurrence-detail', args=(event_slug, pk)),
-        permanent=True)

@@ -290,12 +290,12 @@ class TestOccurrenceDetailView(TestCase):
             description="This is the description.",
             creator=self.user
         )
-        now = datetime.utcnow()
+        start = datetime.now() + timedelta(1)
         self.occurrence = Occurrence.objects.create(
             calendar=self.calendar,
             event=self.event,
-            start=now,
-            finish=now + timedelta(hours=2)
+            start=start,
+            finish=start + timedelta(hours=2)
         )
         self.assertTrue(self.client.login(
             username=self.user.username, password='password')
@@ -642,35 +642,6 @@ class TestConfirmOccurrenceView(TestCase):
 
         finally:
             signals.collect_validators.disconnect(self.validator, sender=Occurrence)
-
-
-class TestOccurrenceDetailRedirect(TestCase):
-    def setUp(self):
-        self.user = User.objects.create(username='TestyMcTesterson')
-        self.calendar = Calendar.objects.create(name='basic', slug='basic')
-        self.event = Event.objects.create(
-            name='Event', slug='foobar', creator=self.user
-        )
-        now = datetime.utcnow()
-        self.occurrence = Occurrence.objects.create(
-            calendar=self.calendar,
-            event=self.event,
-            start=now,
-            finish=now + timedelta(hours=2)
-        )
-
-    def test_occurrence_detail_redirect(self):
-        """ ../2010/jan/1/event-slug/1/ ==> ../event-slug/1/"""
-        start = self.occurrence.start
-        url = '/%s/%s/%s/%s/%s/%s/' % (
-            self.calendar.slug, start.year, start.strftime('%b').lower(),
-            start.day, self.event.slug, self.occurrence.pk
-        )
-        response = self.client.get(url, follow=True)
-        self.assertRedirects(response, reverse('occurrence-detail',
-            args=(self.event.slug, self.occurrence.pk)),
-            status_code=301
-        )
 
 
 class TestCalendarVisibility(TestCase):
