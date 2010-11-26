@@ -18,19 +18,3 @@ class BaseValidator(object):
     def validate(self):
         """Raises ValidationError if validation is unsuccessful."""
         raise NotImplementedError
-
-
-class BaseOccurrenceValidator(BaseValidator):
-    def __init__(self, sender, instance, **kwargs):
-        super(BaseOccurrenceValidator, self).__init__(
-            sender, instance, **kwargs
-        )
-        self.occurrence = self.instance
-
-
-class BaseUserAttendanceValidator(BaseValidator):
-    def __init__(self, sender, instance, **kwargs):
-        super(BaseUserAttendanceValidator, self).__init__(
-            sender, instance, **kwargs
-        )
-        self.attendance = self.instance

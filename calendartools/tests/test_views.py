@@ -14,7 +14,9 @@ from calendartools.forms import (
     ConfirmOccurrenceForm
 )
 from calendartools.validators import BaseValidator
-from calendartools.validators.defaults import CannotAttendFutureEventsValidator
+from calendartools.validators.defaults.attendance import (
+    CannotAttendFutureEventsValidator
+)
 
 from nose.tools import *
 

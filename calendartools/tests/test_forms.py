@@ -9,10 +9,14 @@ from django.test import TestCase
 from nose.tools import *
 
 from calendartools import constants, defaults, signals
-from calendartools.tests.event.models import Calendar, Event, Occurrence, Attendance
+from calendartools.tests.event.models import (
+    Calendar, Event, Occurrence, Attendance
+)
 from calendartools.forms import MultipleOccurrenceForm, AttendanceForm
 from calendartools.validators import BaseValidator
-from calendartools.validators.defaults import CannotAttendFutureEventsValidator
+from calendartools.validators.defaults.attendance import (
+    CannotAttendFutureEventsValidator
+)
 
 
 class TestAttendanceForm(TestCase):
