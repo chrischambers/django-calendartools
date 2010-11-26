@@ -62,7 +62,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 
     'django_extensions',
-    'calendartools',
+    'event',
 )
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

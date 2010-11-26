@@ -50,7 +50,7 @@ class Attendance(AttendanceBase):
     )
 
 
-    class Meta(OccurrenceBase.Meta):
+    class Meta(AttendanceBase.Meta):
         app_label = defaults.CALENDAR_APP_LABEL
 
 
@@ -58,6 +58,10 @@ class Cancellation(CancellationBase):
     attendance = models.OneToOneField(Attendance, verbose_name=_('attendance'),
         related_name='cancellation'
     )
+
+
+    class Meta(AttendanceBase.Meta):
+        app_label = defaults.CALENDAR_APP_LABEL
 
 activate_default_validators()
 
