@@ -2,12 +2,17 @@ from datetime import datetime
 from django.db.models import Max, Min
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from calendartools.models import Calendar, Occurrence
+from calendartools import defaults
 from calendartools.views.generic.base import TemplateResponseMixin
 from calendartools.views.generic.list import BaseListView
 from calendartools.views.generic.dates import (
     DateMixin, _date_from_string
 )
+
+from django.db.models.loading import get_model
+
+Calendar = get_model(defaults.CALENDAR_APP_LABEL, 'Calendar')
+Occurrence = get_model(defaults.CALENDAR_APP_LABEL, 'Occurrence')
 
 class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
     filter_names = ['period']

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from calendartools.models import (
+from calendartools.tests.event.models import (
     Calendar, Event, Occurrence, Attendance, Cancellation
 )
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
@@ -13,7 +13,7 @@ from calendartools.validators.defaults import CannotAttendFutureEventsValidator
 from nose.tools import *
 
 
-class TestEventBase(TestCase):
+class TestStatusBase(TestCase):
     def setUp(self):
         self.creator = User.objects.create(username='TestyMcTesterson')
         self.calendar = Calendar.objects.create(name='Basic', slug='basic')

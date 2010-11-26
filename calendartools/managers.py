@@ -38,34 +38,34 @@ class CommonQuerySet(QuerySet):
 
 class CalendarQuerySet(CommonQuerySet):
     def visible(self, user=None):
-        from calendartools.models import Calendar
+        from calendartools.modelbase import StatusBase
         if user and defaults.view_hidden_calendars_check(user=user):
-            return self.filter(status__gte=Calendar.HIDDEN)
+            return self.filter(status__gte=StatusBase.HIDDEN)
         else:
-            return self.filter(status__gte=Calendar.CANCELLED)
+            return self.filter(status__gte=StatusBase.CANCELLED)
 
 
 class EventQuerySet(CommonQuerySet):
     def visible(self, user=None):
-        from calendartools.models import Event
+        from calendartools.modelbase import StatusBase
         if user and defaults.view_hidden_events_check(user=user):
-            return self.filter(status__gte=Event.HIDDEN)
+            return self.filter(status__gte=StatusBase.HIDDEN)
         else:
-            return self.filter(status__gte=Event.CANCELLED)
+            return self.filter(status__gte=StatusBase.CANCELLED)
 
 
 class OccurrenceQuerySet(CommonQuerySet):
     def visible(self, user=None):
-        from calendartools.models import Calendar, Event, Occurrence
+        from calendartools.modelbase import StatusBase
         qset = self.select_related('event', 'calendar')
         if user and defaults.view_hidden_occurrences_check(user=user):
-            return (qset.filter(status__gte=Occurrence.HIDDEN) &
-                    qset.filter(event__status__gte=Event.HIDDEN) &
-                    qset.filter(calendar__status__gte=Calendar.HIDDEN))
+            return (qset.filter(status__gte=StatusBase.HIDDEN) &
+                    qset.filter(event__status__gte=StatusBase.HIDDEN) &
+                    qset.filter(calendar__status__gte=StatusBase.HIDDEN))
         else:
-            return (qset.filter(status__gte=Occurrence.CANCELLED) &
-                    qset.filter(event__status__gte=Event.CANCELLED) &
-                    qset.filter(calendar__status__gte=Calendar.CANCELLED))
+            return (qset.filter(status__gte=StatusBase.CANCELLED) &
+                    qset.filter(event__status__gte=StatusBase.CANCELLED) &
+                    qset.filter(calendar__status__gte=StatusBase.CANCELLED))
 
 
 class CalendarManager(DRYManager):

@@ -6,8 +6,8 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from calendartools.models import Calendar, Event, Occurrence, Attendance
-from calendartools import signals, views
+from calendartools.tests.event.models import Calendar, Event, Occurrence, Attendance
+from calendartools import defaults, signals, views
 from calendartools.forms import (
     EventForm,
     MultipleOccurrenceForm,
@@ -93,11 +93,11 @@ class TestEventDetailView(TestCase):
             creator=self.user
         )
         self.change_event_perm = Permission.objects.get(
-            content_type__app_label='calendartools',
+            content_type__app_label=defaults.CALENDAR_APP_LABEL,
             codename='change_event'
         )
         self.add_occurrence_perm = Permission.objects.get(
-            content_type__app_label='calendartools',
+            content_type__app_label=defaults.CALENDAR_APP_LABEL,
             codename='add_occurrence'
         )
         self.start = datetime.utcnow() + timedelta(hours=2)
@@ -459,7 +459,7 @@ class TestConfirmOccurrenceView(TestCase):
         )
         self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.add_occurrence_perm = Permission.objects.get(
-            content_type__app_label='calendartools',
+            content_type__app_label=defaults.CALENDAR_APP_LABEL,
             codename='add_occurrence'
         )
         self.user.user_permissions.add(self.add_occurrence_perm)

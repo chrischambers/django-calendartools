@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.db.models.loading import get_model
 from django.core.exceptions import ValidationError
 from calendartools import defaults
 from calendartools.signals import collect_validators
@@ -67,7 +68,7 @@ class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator)
     priority = 50
 
     def validate(self):
-        from calendartools.models import Attendance
+        Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
         already_attending = Attendance.objects.filter(
             user=self.attendance.user,
             occurrence=self.attendance.occurrence,
@@ -82,7 +83,7 @@ class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator)
             )
 
 def activate_default_occurrence_validators():
-    from calendartools.models import Occurrence
+    Occurrence = get_model(defaults.CALENDAR_APP_LABEL, 'Occurrence')
     collect_validators.connect(
         FinishGTStartValidator,
         sender=Occurrence
@@ -101,7 +102,7 @@ def activate_default_occurrence_validators():
     )
 
 def activate_default_attendance_validators():
-    from calendartools.models import Attendance
+    Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
     collect_validators.connect(
         CannotBookFinishedEventsValidator,
         sender=Attendance

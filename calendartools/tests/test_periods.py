@@ -13,7 +13,7 @@ from django.test import TestCase
 from nose.tools import *
 
 from calendartools import defaults
-from calendartools.models import Calendar, Event, Occurrence
+from calendartools.tests.event.models import Calendar, Event, Occurrence
 from calendartools.periods import (
     SimpleProxy, Period, Year, Month, Week, Day, Hour, TripleMonth,
     first_day_of_week

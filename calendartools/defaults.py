@@ -6,6 +6,8 @@ from calendartools.utils import time_delta_total_seconds
 # %} templatetag is translated.
 NO_URL_TRANSLATION = True
 
+CALENDAR_APP_LABEL = getattr(settings, 'CALENDAR_APP_LABEL', 'event')
+
 # A "strftime" string for formatting start and end time selectors in forms
 TIMESLOT_TIME_FORMAT = '%I:%M %p'
 
@@ -62,10 +64,10 @@ view_hidden_occurrences_check = view_hidden_events_check
 view_hidden_calendars_check = view_hidden_events_check
 
 def add_occurrence_permission_check(request):
-    return request.user.has_perm('calendartools.add_occurrence')
+    return request.user.has_perm('%s.add_occurrence' % CALENDAR_APP_LABEL)
 
 def change_event_permission_check(request):
-    return request.user.has_perm('calendartools.change_event')
+    return request.user.has_perm('%s.change_event' % CALENDAR_APP_LABEL)
 
 # ----------------------------------------------------------------------------
 MINUTES_INTERVAL = getattr(

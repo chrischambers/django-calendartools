@@ -9,12 +9,16 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic import simple, list_detail
 
-from calendartools.models import Calendar
+from calendartools import defaults
 from calendartools.periods import Year, TripleMonth, Month, Week, Day
 from calendartools.views.base import CalendarViewBase
 from calendartools.views.generic.dates import (
     YearMixin, MonthMixin, WeekMixin, DayMixin
 )
+from django.db.models.loading import get_model
+
+Calendar = get_model(defaults.CALENDAR_APP_LABEL, 'Calendar')
+Occurrence = get_model(defaults.CALENDAR_APP_LABEL, 'Occurrence')
 
 def calendar_list(request, *args, **kwargs):
     kwargs.update({

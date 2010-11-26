@@ -9,7 +9,7 @@ from django.test import TestCase
 from nose.tools import *
 
 from calendartools import constants, defaults, signals
-from calendartools.models import Calendar, Event, Occurrence, Attendance
+from calendartools.tests.event.models import Calendar, Event, Occurrence, Attendance
 from calendartools.forms import MultipleOccurrenceForm, AttendanceForm
 from calendartools.validators import BaseValidator
 from calendartools.validators.defaults import CannotAttendFutureEventsValidator
@@ -386,7 +386,7 @@ class TestMultipleOccurrenceFormModelValidation(TestCase):
         )
         self.calendar = Calendar.objects.create(name='Basic', slug='basic')
         self.add_occurrence_perm = Permission.objects.get(
-            content_type__app_label='calendartools',
+            content_type__app_label=defaults.CALENDAR_APP_LABEL,
             codename='add_occurrence'
         )
         self.user.user_permissions.add(self.add_occurrence_perm)

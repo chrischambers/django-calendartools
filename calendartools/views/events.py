@@ -5,8 +5,12 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.generic import list_detail
 
-from calendartools.models import Event, Occurrence, Attendance
 from calendartools import forms, defaults, decorators
+from django.db.models.loading import get_model
+
+Event = get_model(defaults.CALENDAR_APP_LABEL, 'Event')
+Occurrence = get_model(defaults.CALENDAR_APP_LABEL, 'Occurrence')
+Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
 
 def event_list(request, *args, **kwargs):
     kwargs.update({

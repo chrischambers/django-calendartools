@@ -5,7 +5,6 @@ from calendartools.views.calendars import (
     YearView, TriMonthView, MonthView, WeekView, DayView
 )
 
-
 class YearAgenda(YearView):
     template_name = 'calendar/agenda/year.html'
     paginate_by = defaults.MAX_AGENDA_ITEMS_PER_PAGE

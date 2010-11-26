@@ -12,7 +12,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import ugettext_lazy as _
 from django.forms.extras.widgets import SelectDateWidget
 
-from calendartools.models import Calendar, Event, Occurrence, Attendance
 from calendartools.constants import (
     WEEKDAY_SHORT, WEEKDAY_LONG,
     MONTH_SHORT, ORDINAL,
@@ -21,7 +20,7 @@ from calendartools.constants import (
 from calendartools.fields import MultipleIntegerField
 from calendartools.defaults import (
     MINUTES_INTERVAL, SECONDS_INTERVAL, default_timeslot_offset_options,
-    MAX_OCCURRENCE_CREATION_COUNT, DEFAULT_OCCURRENCE_DURATION
+    MAX_OCCURRENCE_CREATION_COUNT, CALENDAR_APP_LABEL
 )
 
 log = logging.getLogger('calendartools.forms')
@@ -30,6 +29,7 @@ log = logging.getLogger('calendartools.forms')
 greater_than_1 = MinValueValidator(1)
 less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
+from django.db.models.loading import get_model
 
 class AttendanceForm(forms.ModelForm):
     # Necessary to hide all the other fields:
@@ -37,12 +37,12 @@ class AttendanceForm(forms.ModelForm):
 
 
     class Meta(object):
-        model = Attendance
+        model = get_model(CALENDAR_APP_LABEL, 'Attendance')
         fields = ['noop']
 
     def clean(self):
-        if self.instance.pk and self.instance.status == Attendance.BOOKED:
-            self.instance.status = Attendance.CANCELLED
+        if self.instance.pk and self.instance.status == self.instance.BOOKED:
+            self.instance.status = self.instance.CANCELLED
         return self.cleaned_data
 
 
@@ -54,7 +54,7 @@ class EventForm(forms.ModelForm):
 
 
     class Meta(object):
-        model = Event
+        model = get_model(CALENDAR_APP_LABEL, 'Event')
         fields = ('name', 'description',)
 
 
@@ -112,7 +112,7 @@ class MultipleOccurrenceForm(OccurrenceBaseForm):
     year_month_ordinal
     year_month_ordinal_day
     """
-    calendar = forms.ModelChoiceField(Calendar.objects.visible())
+    calendar = forms.ModelChoiceField(get_model(CALENDAR_APP_LABEL, 'Calendar').objects.visible())
     day = forms.DateField(
         label=_(u'Date'),
         initial=date.today,
@@ -214,8 +214,8 @@ class MultipleOccurrenceForm(OccurrenceBaseForm):
         self.user = getattr(self.request, 'user', None)
         super(MultipleOccurrenceForm, self).__init__(*args, **kws)
 
-        self.fields['calendar'].choices = Calendar.objects.visible(
-            self.user).values_list('id', 'name')
+        self.fields['calendar'].choices = get_model(CALENDAR_APP_LABEL, 'Calendar'
+            ).objects.visible(self.user).values_list('id', 'name')
 
         dtstart = self.initial.get('dtstart', None)
         if dtstart:

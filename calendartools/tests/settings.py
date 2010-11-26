@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django_extensions',
     'calendartools',
+    'event',
 )
 
 TEMPLATE_LOADERS = (
