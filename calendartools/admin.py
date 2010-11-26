@@ -39,3 +39,13 @@ class AttendanceAdmin(admin.ModelAdmin):
     list_editable = ['status']
     date_hierarchy = "datetime_created"
     inlines = [CancellationInline]
+
+Calendar = get_model(defaults.CALENDAR_APP_LABEL, 'Calendar')
+Event = get_model(defaults.CALENDAR_APP_LABEL, 'Event')
+Occurrence = get_model(defaults.CALENDAR_APP_LABEL, 'Occurrence')
+Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
+
+admin.site.register(Calendar, CalendarAdmin)
+admin.site.register(Event, EventAdmin)
+admin.site.register(Occurrence, OccurrenceAdmin)
+admin.site.register(Attendance, AttendanceAdmin)
