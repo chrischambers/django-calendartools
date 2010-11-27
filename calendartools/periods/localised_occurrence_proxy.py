@@ -3,15 +3,40 @@ from django.conf import settings
 from timezones.utils import localtime_for_timezone
 import pytz
 
+try:
+    from functools import partial
+except ImportError: # Python 2.3, 2.4 fallback.
+    from django.utils.functional import curry as partial
+
 
 class LocalizedOccurrenceProxy(SimpleProxy):
     def __init__(self, obj, timezone, *args, **kwargs):
         super(LocalizedOccurrenceProxy, self).__init__(obj, *args, **kwargs)
         self.timezone = timezone
-        self.occurrence = obj
         # rationalise to actual pytz.timezone
-        # self.create_localised_datetime_proxy_attrs('start', 'finish')
-        # self.create_real_properties('start', 'finish')
+
+    def _get_datetime_attr(self, attrname):
+        dt = getattr(self._obj, attrname)
+        return localtime_for_timezone(dt, self.timezone)
+
+    def _set_datetime_attr(self, value, attrname):
+        if value.tzinfo is not None:
+            value = value.astimezone(self.default_timezone).replace(tzinfo=None)
+        setattr(self._obj, attrname, value)
+
+    def _datetime_attr_doc(self, attrname):
+        return getattr(self._obj, attrname).__doc__
+
+    start = property(
+        fget=partial(_get_datetime_attr, attrname='start'),
+        fset=partial(_set_datetime_attr, attrname='start'),
+        doc= partial(_datetime_attr_doc, attrname='start')
+    )
+    finish = property(
+        fget=partial(_get_datetime_attr, attrname='finish'),
+        fset=partial(_set_datetime_attr, attrname='finish'),
+        doc= partial(_datetime_attr_doc, attrname='finish')
+    )
 
     @property
     def real_start(self):
@@ -21,57 +46,6 @@ class LocalizedOccurrenceProxy(SimpleProxy):
     def real_finish(self):
         return self._obj.finish
 
-    def _get_start(self):
-        dt = self._obj.start
-        return localtime_for_timezone(dt, self.timezone)
-
-    def _set_start(self, value):
-        # value = localtime_for_timezone(value, self.default_timezone)
-        ## convert to settings.TIME_ZONE
-        if value.tzinfo is not None:
-            value = value.astimezone(self.default_timezone).replace(tzinfo=None)
-        self._obj.start = value
-
-    start = property(_get_start, _set_start)
-
-    def _get_finish(self):
-        dt = self._obj.finish
-        return localtime_for_timezone(dt, self.timezone)
-
-    def _set_finish(self, value):
-        # value = localtime_for_timezone(value, self.default_timezone)
-        ## convert to settings.TIME_ZONE
-        if value.tzinfo is not None:
-            value = value.astimezone(self.default_timezone).replace(tzinfo=None)
-        self._obj.finish = value
-
-    finish = property(fget=_get_finish, fset=_set_finish)
-    # def create_real_properties(self, *args):
-    #     for attr in args:
-    #         def real_property():
-    #             doc = getattr(self.occurrence, attr).__doc__
-    #             def fget(self):
-    #                 return getattr(self.occurrence, attr)
-    #             def fset(self, value):
-    #                 setattr(self.occurrence, attr, value)
-    #             return {'doc': doc, 'fget': fget, 'fset': fset}
-    #         setattr(self.__class__, 'real_%s' % attr, property(**real_property()))
-
     @property
     def default_timezone(self):
         return pytz.timezone(settings.TIME_ZONE)
-
-    # def create_localised_datetime_proxy_attrs(self, *args):
-    #     for attr in args:
-    #         def real_property():
-    #             doc = getattr(self.occurrence, attr).__doc__
-    #             def fget(self):
-    #                 dt = getattr(self.occurrence, attr)
-    #                 dt.replace(tzinfo=self.default_timezone)
-    #                 dt = localtime_for_timezone(dt, self.timezone)
-    #                 return dt
-    #             def fset(self, value):
-    #                 value = localtime_for_timezone(value, self.default_timezone)
-    #                 setattr(self.occurrence, attr, value)
-    #             return {'doc': doc, 'fget': fget, 'fset': fset}
-    #         setattr(self.__class__, attr, property(**real_property()))
