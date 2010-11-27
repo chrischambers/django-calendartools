@@ -28,11 +28,9 @@ class LocalizedOccurrenceProxy(SimpleProxy):
     def _set_start(self, value):
         # value = localtime_for_timezone(value, self.default_timezone)
         ## convert to settings.TIME_ZONE
-        if value.tzinfo is None:
-            value = self.default_timezone.localize(value)
-        else:
-            value = value.astimezone(self.default_timezone)
-        self._obj.start = value.replace(tzinfo=None)
+        if value.tzinfo is not None:
+            value = value.astimezone(self.default_timezone).replace(tzinfo=None)
+        self._obj.start = value
 
     start = property(_get_start, _set_start)
 
@@ -43,11 +41,9 @@ class LocalizedOccurrenceProxy(SimpleProxy):
     def _set_finish(self, value):
         # value = localtime_for_timezone(value, self.default_timezone)
         ## convert to settings.TIME_ZONE
-        if value.tzinfo is None:
-            value = self.default_timezone.localize(value)
-        else:
-            value = value.astimezone(self.default_timezone)
-        self._obj.finish = value.replace(tzinfo=None)
+        if value.tzinfo is not None:
+            value = value.astimezone(self.default_timezone).replace(tzinfo=None)
+        self._obj.finish = value
 
     finish = property(fget=_get_finish, fset=_set_finish)
     # def create_real_properties(self, *args):
