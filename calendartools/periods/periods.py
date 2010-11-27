@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import (
-    rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY
+    rrule, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY
 )
 
 from django.utils import formats
@@ -317,44 +317,3 @@ class Year(Period):
         for month in self.months:
             for dt in rrule(DAILY, dtstart=month.start, until=month.finish):
                 yield Day(dt, occurrences=self.occurrences)
-
-
-# Unused:
-# -------
-
-
-class Calendar(object):
-    month_names = MONTHS.values()
-    month_names_abbr = MONTHS_3.values()
-
-    def __init__(self, start, finish, occurrences=None, *args, **kwargs):
-        self.day_names, self.day_names_abbr = get_weekday_properties()
-        self.start  = start
-        self.finish = finish
-        self.occurrences = occurrences or []
-        super(Calendar, self).__init__(*args, **kwargs)
-
-    def __iter__(self):
-        return self.years
-
-    @property
-    def years(self):
-        start = datetime(self.start.year, 1, 1)
-        if not hasattr(self, '_years'):
-            self._years = rrule(YEARLY, dtstart=start, until=self.finish, cache=True)
-        return (Year(dt) for dt in self._years)
-
-    @property
-    def months(self):
-        start = datetime(self.start.year, self.start.month, 1)
-        if not hasattr(self, '_months'):
-            self._months = rrule(MONTHLY, dtstart=start, until=self.finish, cache=True)
-        return (Month(dt) for dt in self._months)
-
-    @property
-    def days(self):
-        start = datetime(self.start.year, self.start.month, self.start.day)
-        if not hasattr(self, '_days'):
-            self._days = rrule(DAILY, dtstart=start, until=self.finish, cache=True)
-        return self._days
-        return (Day(dt) for dt in self._days)
