@@ -66,41 +66,21 @@ class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator)
                 'User already has an active attendance record for this event.'
             )
 
+DEFAULT_VALIDATORS = [
+    CannotBookFinishedEventsValidator,
+    CannotAttendFutureEventsValidator,
+    OnlyOneActiveAttendanceForOccurrenceValidator,
+    CannotCancelAttendedEventsValidator,
+]
 
 def activate_default_attendance_validators():
     Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
-    signals.collect_validators.connect(
-        CannotBookFinishedEventsValidator,
-        sender=Attendance
-    )
-    signals.collect_validators.connect(
-        CannotAttendFutureEventsValidator,
-        sender=Attendance
-    )
-    signals.collect_validators.connect(
-        OnlyOneActiveAttendanceForOccurrenceValidator,
-        sender=Attendance
-    )
-    signals.collect_validators.connect(
-        CannotCancelAttendedEventsValidator,
-        sender=Attendance
-    )
+
+    for validator in DEFAULT_VALIDATORS:
+        signals.collect_validators.connect(validator, sender=Attendance)
 
 def deactivate_default_attendance_validators():
     Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
-    signals.collect_validators.disconnect(
-        CannotBookFinishedEventsValidator,
-        sender=Attendance
-    )
-    signals.collect_validators.disconnect(
-        CannotAttendFutureEventsValidator,
-        sender=Attendance
-    )
-    signals.collect_validators.disconnect(
-        OnlyOneActiveAttendanceForOccurrenceValidator,
-        sender=Attendance
-    )
-    signals.collect_validators.disconnect(
-        CannotCancelAttendedEventsValidator,
-        sender=Attendance
-    )
+
+    for validator in DEFAULT_VALIDATORS:
+        signals.collect_validators.disconnect(validator, sender=Attendance)
