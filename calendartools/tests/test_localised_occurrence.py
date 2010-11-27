@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from nose.tools import *
 
-
 from timezones.utils import localtime_for_timezone
 from calendartools.tests.event.models import Calendar, Event, Occurrence
 from calendartools.periods.localised_occurrence_proxy import (
@@ -39,7 +38,23 @@ class TestLocalisedOccurrenceProxy(TestCase):
     def tearDown(self):
         activate_default_occurrence_validators()
 
-    def test_default_timezone(self):
+    def test_timezone_property(self):
+        expected = pytz.timezone('America/Chicago')
+        assert_equal(self.localised.timezone, expected)
+
+        # Should handle actual timezone object as well as string name:
+        localised2 = LocalizedOccurrenceProxy(
+            self.occurrence, timezone='Non-Existent Timezone'
+        )
+        assert_equal(localised2.timezone, expected)
+
+        # Should fallback to settings.TIME_ZONE when given garbage:
+        localised3 = LocalizedOccurrenceProxy(
+            self.occurrence, timezone='Non-Existent Timezone'
+        )
+        assert_equal(localised3.timezone, pytz.timezone(settings.TIME_ZONE))
+
+    def test_default_timezone_property(self):
         original_timezone = settings.TIME_ZONE
         try:
             settings.TIME_ZONE = 'UTC'

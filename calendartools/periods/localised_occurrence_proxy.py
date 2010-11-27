@@ -12,8 +12,14 @@ except ImportError: # Python 2.3, 2.4 fallback.
 class LocalizedOccurrenceProxy(SimpleProxy):
     def __init__(self, obj, timezone, *args, **kwargs):
         super(LocalizedOccurrenceProxy, self).__init__(obj, *args, **kwargs)
-        self.timezone = timezone
-        # rationalise to actual pytz.timezone
+        self.timezone = self.coerce_timezone_attr_to_timezone(timezone)
+
+    def coerce_timezone_attr_to_timezone(self, timezone):
+        try:
+            return pytz.timezone(timezone)
+        except pytz.UnknownTimeZoneError:
+            # fall-back to settings.TIME_ZONE
+            return pytz.timezone(settings.TIME_ZONE)
 
     def _get_datetime_attr(self, attrname):
         dt = getattr(self._obj, attrname)
