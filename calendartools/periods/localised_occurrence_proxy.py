@@ -1,6 +1,6 @@
 from calendartools.periods.proxybase import SimpleProxy
 from django.conf import settings
-from timezones.utils import adjust_datetime_to_timezone
+from timezones.utils import localtime_for_timezone
 import pytz
 
 
@@ -23,7 +23,7 @@ class LocalizedOccurrenceProxy(SimpleProxy):
 
     def _get_start(self):
         dt = self._obj.start
-        return adjust_datetime_to_timezone(dt, self.default_timezone, self.timezone)
+        return localtime_for_timezone(dt, self.timezone)
 
     def _set_start(self, value):
         # value = localtime_for_timezone(value, self.default_timezone)
@@ -38,7 +38,7 @@ class LocalizedOccurrenceProxy(SimpleProxy):
 
     def _get_finish(self):
         dt = self._obj.finish
-        return adjust_datetime_to_timezone(dt, self.default_timezone, self.timezone)
+        return localtime_for_timezone(dt, self.timezone)
 
     def _set_finish(self, value):
         # value = localtime_for_timezone(value, self.default_timezone)
