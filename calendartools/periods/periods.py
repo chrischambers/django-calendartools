@@ -6,7 +6,6 @@ from dateutil.rrule import (
     rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY
 )
 
-from django.conf import settings
 from django.utils import formats
 from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
@@ -60,7 +59,7 @@ class Period(LocalisedSimpleProxy):
     def process_occurrences(self, occurrences, key=None):
         if not key:
             key = lambda o: o.start
-        if self.timezone != settings.TIME_ZONE:
+        if self.timezone:
             occurrences = [LocalizedOccurrenceProxy(o, timezone=self.timezone)
                            for o in occurrences]
         return [i for i in occurrences if key(i) in self]

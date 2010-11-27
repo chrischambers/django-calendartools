@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from nose.tools import *
 
-from timezones.utils import localtime_for_timezone
+from timezones.utils import localtime_for_timezone, adjust_datetime_to_timezone
 from calendartools.tests.event.models import Calendar, Event, Occurrence
 from calendartools.periods.localised_occurrence_proxy import (
     LocalizedOccurrenceProxy
@@ -44,15 +44,15 @@ class TestLocalisedOccurrenceProxy(TestCase):
 
         # Should handle actual timezone object as well as string name:
         localised2 = LocalizedOccurrenceProxy(
-            self.occurrence, timezone='Non-Existent Timezone'
+            self.occurrence, timezone=expected
         )
         assert_equal(localised2.timezone, expected)
 
-        # Should fallback to settings.TIME_ZONE when given garbage:
+        # Garbage input results in a timezone of None:
         localised3 = LocalizedOccurrenceProxy(
             self.occurrence, timezone='Non-Existent Timezone'
         )
-        assert_equal(localised3.timezone, pytz.timezone(settings.TIME_ZONE))
+        assert localised3.timezone is None
 
     def test_default_timezone_property(self):
         original_timezone = settings.TIME_ZONE
@@ -64,6 +64,21 @@ class TestLocalisedOccurrenceProxy(TestCase):
             assert_equal(self.localised.default_timezone, expected)
         finally:
             settings.TIME_ZONE = original_timezone
+
+    def test_localised_occurrence_proxy_wrapping_proxy_works_properly(self):
+        timezone = 'Antarctica/McMurdo'
+        localised = LocalizedOccurrenceProxy(
+            self.localised, timezone=timezone
+        )
+        assert_equal(localised.real_start, self.occurrence.start)
+        assert_equal(localised.real_finish, self.occurrence.finish)
+        for attr in ('start', 'finish'):
+            expected = adjust_datetime_to_timezone(
+                getattr(self.occurrence, attr),
+                settings.TIME_ZONE,
+                timezone
+            )
+            assert_equal(getattr(localised, attr), expected)
 
     def test_real_start_property_populated(self):
         assert hasattr(self.localised, 'real_start')

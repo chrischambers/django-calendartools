@@ -660,7 +660,7 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
             self.start, occurrences=occurrences, timezone=timezone
         )
         assert_equal(localised_year.timezone, pytz.timezone(timezone))
-        assert_equal(self.year.timezone, pytz.timezone(settings.TIME_ZONE))
+        assert self.year.timezone is None
 
         for o in localised_year.occurrences:
             assert isinstance(o, LocalizedOccurrenceProxy)
