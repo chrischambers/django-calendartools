@@ -85,3 +85,22 @@ def activate_default_attendance_validators():
         CannotCancelAttendedEventsValidator,
         sender=Attendance
     )
+
+def deactivate_default_attendance_validators():
+    Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
+    signals.collect_validators.disconnect(
+        CannotBookFinishedEventsValidator,
+        sender=Attendance
+    )
+    signals.collect_validators.disconnect(
+        CannotAttendFutureEventsValidator,
+        sender=Attendance
+    )
+    signals.collect_validators.disconnect(
+        OnlyOneActiveAttendanceForOccurrenceValidator,
+        sender=Attendance
+    )
+    signals.collect_validators.disconnect(
+        CannotCancelAttendedEventsValidator,
+        sender=Attendance
+    )

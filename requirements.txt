@@ -5,3 +5,5 @@ NoseDjango==0.8.1
 nose==0.11.4
 python-dateutil==1.5
 vobject==0.8.1c
+django-timezones==0.1.4
+pytz==2010o

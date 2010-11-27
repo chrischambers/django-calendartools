@@ -69,3 +69,22 @@ def activate_default_occurrence_validators():
         MinOccurrenceLengthValidator,
         sender=Occurrence
     )
+
+def deactivate_default_occurrence_validators():
+    Occurrence = get_model(defaults.CALENDAR_APP_LABEL, 'Occurrence')
+    signals.collect_validators.disconnect(
+        FinishGTStartValidator,
+        sender=Occurrence
+    )
+    signals.collect_validators.disconnect(
+        FutureOccurrencesOnlyValidator,
+        sender=Occurrence
+    )
+    signals.collect_validators.disconnect(
+        MaxOccurrenceLengthValidator,
+        sender=Occurrence
+    )
+    signals.collect_validators.disconnect(
+        MinOccurrenceLengthValidator,
+        sender=Occurrence
+    )
