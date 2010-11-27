@@ -22,6 +22,7 @@ from calendartools.defaults import (
     MINUTES_INTERVAL, SECONDS_INTERVAL, default_timeslot_offset_options,
     MAX_OCCURRENCE_CREATION_COUNT, CALENDAR_APP_LABEL
 )
+from timezones.forms import TimeZoneField
 
 log = logging.getLogger('calendartools.forms')
 
@@ -30,6 +31,7 @@ greater_than_1 = MinValueValidator(1)
 less_than_max  = MaxValueValidator(MAX_OCCURRENCE_CREATION_COUNT - 1)
 
 from django.db.models.loading import get_model
+
 
 class AttendanceForm(forms.ModelForm):
     # Necessary to hide all the other fields:
@@ -428,3 +430,8 @@ class ConfirmOccurrenceForm(OccurrenceBaseForm):
 
         self.validate_occurrences()
         return self.occurrences
+
+
+class TimeZoneForm(forms.Form):
+
+    timezone = TimeZoneField()

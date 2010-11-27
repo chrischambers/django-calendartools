@@ -1,7 +1,10 @@
+from datetime import tzinfo
+import pytz
+from django.conf import settings
+
 class SimpleProxy(object):
     def __init__(self, obj, *args, **kwargs):
         self._obj = obj
-        super(SimpleProxy, self).__init__(*args, **kwargs)
 
     def __cmp__(self, other):
         return cmp(self._obj, other)
@@ -35,3 +38,19 @@ class SimpleProxy(object):
                     self._obj, self, attr
                 )
                 raise AttributeError, e
+
+
+class LocalisedSimpleProxy(SimpleProxy):
+    def __init__(self, obj, *args, **kwargs):
+        super(LocalisedSimpleProxy, self).__init__(obj, *args, **kwargs)
+        timezone = kwargs.pop('timezone', '')
+        self.timezone = self.coerce_timezone_attr_to_timezone(timezone)
+
+    def coerce_timezone_attr_to_timezone(self, timezone):
+        if isinstance(timezone, tzinfo):
+            return timezone
+        try:
+            return pytz.timezone(timezone)
+        except pytz.UnknownTimeZoneError:
+            # fall-back to settings.TIME_ZONE
+            return pytz.timezone(settings.TIME_ZONE)

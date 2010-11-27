@@ -1,8 +1,10 @@
+import pytz
 from datetime import datetime
+from django.conf import settings
 from django.db.models import Max, Min
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from calendartools import defaults
+from calendartools import defaults, forms
 from calendartools.views.generic.base import TemplateResponseMixin
 from calendartools.views.generic.list import BaseListView
 from calendartools.views.generic.dates import (
@@ -15,13 +17,14 @@ Calendar = get_model(defaults.CALENDAR_APP_LABEL, 'Calendar')
 Occurrence = get_model(defaults.CALENDAR_APP_LABEL, 'Occurrence')
 
 class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
-    filter_names = ['period']
+    filter_names = ['period', 'timezone']
     allow_future = True
     allow_empty  = True
     date_field   = 'start'
     date_attrs   = ['year', 'year_format', 'month', 'month_format', 'day',
                    'day_format']
     context_object_name = 'occurrences'
+    timezone = pytz.timezone(settings.TIME_ZONE)
 
     @property
     def queryset(self):
@@ -56,9 +59,9 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
         kwargs = self._get_kwargs_for_date_from_string()
         return _date_from_string(**kwargs)
 
-    def create_period_object(self, dt, occurrences):
+    def create_period_object(self, dt, occurrences, timezone):
         occurrences = occurrences or []
-        return self.period(dt, occurrences=occurrences)
+        return self.period(dt, occurrences=occurrences, timezone=timezone)
 
     def parse_filter_params(self):
         filter_params = {}
@@ -73,6 +76,14 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
             attr = getattr(self, 'apply_%s_filter' % key)
             if attr and callable(attr):
                 queryset = attr(queryset, self.filter_params[key])
+        return queryset
+
+    def apply_timezone_filter(self, queryset, timezone):
+        try:
+            self.timezone = pytz.timezone(timezone)
+        except pytz.UnknownTimeZoneError:
+            # fall-back to settings.TIME_ZONE
+            self.timezone = pytz.timezone(settings.TIME_ZONE)
         return queryset
 
     def apply_period_filter(self, queryset, period):
@@ -129,11 +140,14 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
             'object_list': occurrences,
         })
         self.period_object = self.create_period_object(
-            self.date, context['object_list']
+            self.date, context['object_list'], timezone=self.timezone
         )
         context.update(self.calendar_bounds)
         context[self.period_name] = self.period_object
 
         if kwargs.get('small'):
             context['size'] = 'small'
+        context['timezone_form'] = forms.TimeZoneForm(
+            initial={'timezone': self.timezone}
+        )
         return self.render_to_response(context)

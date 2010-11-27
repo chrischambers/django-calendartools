@@ -3,11 +3,10 @@ from datetime import date
 
 from dateutil.relativedelta import relativedelta
 
-from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.views.generic import simple, list_detail
+from django.views.generic import list_detail
 
 from calendartools import defaults
 from calendartools.periods import Year, TripleMonth, Month, Week, Day
@@ -75,8 +74,9 @@ class TriMonthView(MonthView):
         context.update({'size': 'small'})
         return context
 
-    def create_period_object(self, dt, occurrences):
-        return self.period(dt - relativedelta(months=1), occurrences=occurrences)
+    def create_period_object(self, dt, occurrences, **kwargs):
+        return self.period(dt - relativedelta(months=1),
+                           occurrences=occurrences, **kwargs)
 
 
 class WeekView(CalendarViewBase, YearMixin, WeekMixin):

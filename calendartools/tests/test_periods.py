@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 import calendar
+import pytz
 from datetime import datetime, date, time, timedelta
 from dateutil.rrule import rrule, MONTHLY, WEEKLY, HOURLY, DAILY
 
@@ -17,6 +18,12 @@ from calendartools.tests.event.models import Calendar, Event, Occurrence
 from calendartools.periods import (
     SimpleProxy, Period, Year, Month, Week, Day, Hour, TripleMonth,
     first_day_of_week
+)
+from timezones.utils import adjust_datetime_to_timezone
+from calendartools.periods.localised_occurrence_proxy import LocalizedOccurrenceProxy
+from calendartools.validators.defaults.occurrence import (
+    activate_default_occurrence_validators,
+    deactivate_default_occurrence_validators
 )
 
 
@@ -612,7 +619,7 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
             description="This is the description.",
             creator=self.user
         )
-        self.start = datetime.utcnow() + timedelta(hours=2)
+        self.start = datetime.now() + timedelta(1)
         Occurrence.objects.create(
             calendar=self.calendar,
             event=self.event,
@@ -646,7 +653,77 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
                             else:
                                 assert_equal(len(hour.occurrences), 2)
 
+    def test_occurrences_localised_correctly(self):
+        timezone = 'Antarctica/McMurdo'
+        occurrences = Occurrence.objects.all()
+        localised_year = Year(
+            self.start, occurrences=occurrences, timezone=timezone
+        )
+        assert_equal(localised_year.timezone, pytz.timezone(timezone))
+        assert_equal(self.year.timezone, pytz.timezone(settings.TIME_ZONE))
 
+        for o in localised_year.occurrences:
+            assert isinstance(o, LocalizedOccurrenceProxy)
+        for localised_month, month in zip(localised_year, self.year):
+            for localised_o, o in zip(localised_month.occurrences, occurrences):
+                assert_equal(localised_o.real_start, o.start.replace(tzinfo=None))
+                assert_equal(localised_o.real_finish, o.finish.replace(tzinfo=None))
+                for attr in ('start', 'finish'):
+                    expected = adjust_datetime_to_timezone(
+                        getattr(o, attr), settings.TIME_ZONE, timezone
+                    )
+                    assert_equal(getattr(localised_o, attr), expected)
+
+
+class TestDateTimeProxiesWithLocalisedOccurrences(TestCase):
+    def setUp(self):
+        deactivate_default_occurrence_validators()
+        self.user = User.objects.create_user(
+            'TestyMcTesterson',
+            'Testy@test.com',
+            'password'
+        )
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
+        self.event = Event.objects.create(
+            name='The Test Event',
+            slug='event-version-1',
+            description="This is the description.",
+            creator=self.user
+        )
+        self.start = datetime(1982, 8, 16)
+        self.end_of_week = self.start + timedelta(7) - timedelta.resolution
+
+        mapping = [
+            (self.start, self.start + timedelta(hours=2)),
+            (self.end_of_week, self.end_of_week + timedelta(hours=2)),
+        ]
+        for start, finish in mapping:
+            Occurrence.objects.create(
+                calendar=self.calendar,
+                event=self.event,
+                start=start,
+                finish=finish
+            )
+        self.week = Week(self.start, occurrences=Occurrence.objects.all())
+
+    def tearDown(self):
+        activate_default_occurrence_validators()
+
+    def test_membership(self):
+        assert_equal(len(self.week.occurrences), 2)
+
+    def test_localisation(self):
+        occurrences = Occurrence.objects.all()
+        timezones = [
+            'Antarctica/McMurdo', # GMT + 1300
+            'Pacific/Midway',     # GMT - 1100
+        ]
+
+        for timezone in timezones:
+            localised_week = Week(
+                self.start, occurrences=occurrences, timezone=timezone
+            )
+            assert_equal(len(localised_week.occurrences), 1)
 
 # Unused:
 # -------

@@ -6,12 +6,14 @@ from dateutil.rrule import (
     rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY
 )
 
+from django.conf import settings
 from django.utils import formats
 from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
-from calendartools.periods.proxybase import SimpleProxy
+from calendartools.periods.proxybase import LocalisedSimpleProxy
 from calendartools import defaults
 from calendartools.utils import standardise_first_dow
+from calendartools.periods.localised_occurrence_proxy import LocalizedOccurrenceProxy
 
 __all__ = ['Period', 'Hour', 'Day', 'Week', 'Month', 'TripleMonth', 'Year',
            'first_day_of_week']
@@ -39,11 +41,10 @@ def first_day_of_week(dt):
             relativedelta(weekday=first_dow, days=-6))
 
 
-class Period(SimpleProxy):
+class Period(LocalisedSimpleProxy):
     month_names = MONTHS.values()
     month_names_abbr = MONTHS_3.values()
     format = 'DATETIME_FORMAT'
-
 
     def __init__(self, obj, *args, **kwargs):
         self.day_names, self.day_names_abbr = get_weekday_properties()
@@ -59,6 +60,9 @@ class Period(SimpleProxy):
     def process_occurrences(self, occurrences, key=None):
         if not key:
             key = lambda o: o.start
+        if self.timezone != settings.TIME_ZONE:
+            occurrences = [LocalizedOccurrenceProxy(o, timezone=self.timezone)
+                           for o in occurrences]
         return [i for i in occurrences if key(i) in self]
 
     def convert(self, dt):
