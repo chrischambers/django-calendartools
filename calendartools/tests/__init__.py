@@ -4,7 +4,7 @@ from test_fields import *
 from test_forms import *
 from test_models import *
 from test_managers import *
+from test_modelproxy import *
 from test_periods import *
 from test_templatetags import *
 from test_views import *
-from test_utils import *

@@ -21,7 +21,7 @@ from calendartools.periods import (
     SimpleProxy, Period, Year, Month, Week, Day, Hour, TripleMonth,
     first_day_of_week
 )
-from calendartools.utils import LocalizedOccurrenceProxy
+from calendartools.modelproxy import LocalizedOccurrenceProxy
 from calendartools.validators.defaults.occurrence import (
     activate_default_occurrence_validators,
     deactivate_default_occurrence_validators

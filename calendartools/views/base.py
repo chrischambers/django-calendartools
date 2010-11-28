@@ -17,6 +17,7 @@ from timezones.utils import adjust_datetime_to_timezone
 Calendar = get_model(defaults.CALENDAR_APP_LABEL, 'Calendar')
 Occurrence = get_model(defaults.CALENDAR_APP_LABEL, 'Occurrence')
 
+
 class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
     filter_names = ['period', 'timezone']
     allow_future = True
