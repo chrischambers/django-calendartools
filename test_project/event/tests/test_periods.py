@@ -16,7 +16,7 @@ from nose.tools import *
 from timezones.utils import adjust_datetime_to_timezone
 
 from calendartools import defaults
-from calendartools.tests.event.models import Calendar, Event, Occurrence
+from event.models import Calendar, Event, Occurrence
 from calendartools.periods import (
     SimpleProxy, Period, Year, Month, Week, Day, Hour, TripleMonth,
     first_day_of_week

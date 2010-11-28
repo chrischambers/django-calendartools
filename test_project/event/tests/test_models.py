@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from calendartools.tests.event.models import (
+from event.models import (
     Calendar, Event, Occurrence, Attendance, Cancellation
 )
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded

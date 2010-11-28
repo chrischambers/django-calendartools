@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from calendartools.tests.event.models import (
+from event.models import (
     Calendar, Event, Occurrence, Attendance
 )
 from calendartools import defaults, signals, views
@@ -242,7 +242,7 @@ class TestEventDetailView(TestCase):
 
 
 class TestEventDetailView2(TestCase):
-    urls = 'calendartools.tests.test_urls.event_detail_no_list_occurrences'
+    urls = 'event.tests.test_urls.event_detail_no_list_occurrences'
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -789,7 +789,7 @@ class TestCalendarVisibility(TestCase):
 
 
 class TestCalendarViews(TestCase):
-    urls = 'calendartools.tests.test_urls.calendar_view_tests'
+    urls = 'event.tests.test_urls.calendar_view_tests'
 
     def setUp(self):
         self.user = User.objects.create_user(

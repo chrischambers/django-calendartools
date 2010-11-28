@@ -9,7 +9,7 @@ from django.test import TestCase
 from nose.tools import *
 
 from calendartools import constants, defaults, signals
-from calendartools.tests.event.models import (
+from event.models import (
     Calendar, Event, Occurrence, Attendance
 )
 from calendartools.forms import MultipleOccurrenceForm, AttendanceForm

@@ -9,7 +9,7 @@ from nose.tools import *
 
 from timezones.utils import localtime_for_timezone, adjust_datetime_to_timezone
 
-from calendartools.tests.event.models import Calendar, Event, Occurrence
+from event.models import Calendar, Event, Occurrence
 from calendartools.modelproxy import LocalizedOccurrenceProxy
 from calendartools.validators.defaults.occurrence import (
     activate_default_occurrence_validators,
