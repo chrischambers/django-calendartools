@@ -131,6 +131,12 @@ class TestOccurrence(TestCase):
             name='Event', slug='event', creator=self.creator
         )
         self.start = datetime.now() + timedelta(minutes=30)
+        self.occurrence = Occurrence.objects.create(
+            calendar=self.calendar,
+            event=self.event,
+            start=self.start,
+            finish=self.start + timedelta(microseconds=1)
+        )
 
     def test_finish_must_be_greater_than_start(self):
         for finish in [self.start, self.start - timedelta(microseconds=1)]:
@@ -140,12 +146,6 @@ class TestOccurrence(TestCase):
                 calendar=self.calendar, event=self.event,
                 start=self.start, finish=finish
             )
-        Occurrence.objects.create(
-            calendar=self.calendar,
-            event=self.event,
-            start=self.start,
-            finish=self.start + timedelta(microseconds=1)
-        )
 
     def test_created_occurrences_must_occur_in_future(self):
         start = datetime.now()
@@ -163,22 +163,15 @@ class TestOccurrence(TestCase):
         assert_raises(ValidationError, occurrence.save)
 
     def test_updated_occurrences_need_not_occur_in_future(self):
-        occurrence = Occurrence.objects.create(
-            calendar=self.calendar,
-            event=self.event,
-            start=self.start,
-            finish=self.start + timedelta(hours=2)
-        )
-        occurrence.start = datetime.now() - timedelta.resolution
-        occurrence.finish = occurrence.start + timedelta(hours=2)
+        self.occurrence.start = datetime.now() - timedelta.resolution
+        self.occurrence.finish = self.occurrence.start + timedelta(hours=2)
         try:
-            occurrence.save()
+            self.occurrence.save()
         except ValidationError, e:
             self.fail(
                 'Editing Occurrence triggers must-occur-in-future validation:'
                 '\n%s' % e
             )
-
 
     def test_pluggable_validators_priority(self):
         class AngryValidator(BaseValidator):
@@ -210,48 +203,30 @@ class TestOccurrence(TestCase):
             collect_validators.disconnect(AngryValidator, sender=Occurrence)
 
     def test_is_cancelled_property(self):
-        occurrence = Occurrence.objects.create(
-            calendar=self.calendar,
-            event=self.event,
-            start=self.start,
-            finish=self.start + timedelta(microseconds=1)
-        )
-        assert not occurrence.is_cancelled
-        occurrence.status = occurrence.CANCELLED
-        occurrence.save()
-        occurrence = Occurrence.objects.get(pk=occurrence.pk)
-        assert occurrence.is_cancelled
-        occurrence.status = occurrence.PUBLISHED
-        occurrence.save()
-        assert not occurrence.is_cancelled
+        assert not self.occurrence.is_cancelled
+        self.occurrence.status = self.occurrence.CANCELLED
+        self.occurrence.save()
+        self.occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
+        assert self.occurrence.is_cancelled
+        self.occurrence.status = self.occurrence.PUBLISHED
+        self.occurrence.save()
+        assert not self.occurrence.is_cancelled
         self.event.status = self.event.CANCELLED
         self.event.save()
-        occurrence = Occurrence.objects.get(pk=occurrence.pk)
-        assert occurrence.is_cancelled
+        self.occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
+        assert self.occurrence.is_cancelled
         self.event.status = self.event.PUBLISHED
         self.event.save()
         self.calendar.status = Calendar.CANCELLED
         self.calendar.save()
-        occurrence = Occurrence.objects.get(pk=occurrence.pk)
-        assert occurrence.is_cancelled
+        self.occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
+        assert self.occurrence.is_cancelled
 
     def test_name_property(self):
-        occurrence = Occurrence.objects.create(
-            calendar=self.calendar,
-            event=self.event,
-            start=self.start,
-            finish=self.start + timedelta(microseconds=1)
-        )
-        assert_equal(occurrence.name, self.event.name)
+        assert_equal(self.occurrence.name, self.event.name)
 
     def test_description_property(self):
-        occurrence = Occurrence.objects.create(
-            calendar=self.calendar,
-            event=self.event,
-            start=self.start,
-            finish=self.start + timedelta(microseconds=1)
-        )
-        assert_equal(occurrence.description, self.event.description)
+        assert_equal(self.occurrence.description, self.event.description)
 
 
 class TestOccurrenceDuration(TestCase):
