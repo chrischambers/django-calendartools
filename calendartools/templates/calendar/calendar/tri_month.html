@@ -18,13 +18,13 @@
   {% for month in tri_month %}
   <li>
     <a title="{% trans "View" %} {{ month.name }}"
-       href="{% url tri-month-agenda calendar.slug month.year month.abbr %}">
+       href="{% url tri-month-calendar calendar.slug month.year month.abbr %}">
        {{ month|date:"F" }}
      </a>
   </li>
   <li>
     <a title="{% trans "View" %} {{ month.year }}"
-       href="{% url year-agenda calendar.slug month.year %}">
+       href="{% url year-calendar calendar.slug month.year %}">
        {{ month|date:"Y" }}{% if not forloop.last %},&nbsp;{% endif %}
     </a>
   </li>
