@@ -1,5 +1,5 @@
 import time
-from datetime import date
+from datetime import date, timedelta
 
 from dateutil.relativedelta import relativedelta
 
@@ -59,24 +59,14 @@ class TriMonthView(MonthView):
     period = TripleMonth
     template_name = "calendar/calendar/tri_month.html"
 
-    def get_dated_queryset(self, order='asc', **lookup):
-        d = self.date
-        date_field = self.get_date_field()
-        qs = self.get_queryset().filter(**lookup)
-
-        date_range = (d - relativedelta(months=1), d + relativedelta(months=2))
-        filter_kwargs = {'%s__range' % date_field: date_range}
-        order = '' if order == 'asc' else '-'
-        return qs.filter(**filter_kwargs).order_by("%s%s" % (order, date_field))
+    @property
+    def date(self):
+        return super(TriMonthView, self).date - relativedelta(months=+1)
 
     def get_context_data(self, **kwargs):
         context = super(TriMonthView, self).get_context_data(**kwargs)
         context.update({'size': 'small'})
         return context
-
-    def create_period_object(self, dt, occurrences, **kwargs):
-        return self.period(dt - relativedelta(months=1),
-                           occurrences=occurrences, **kwargs)
 
 
 class WeekView(CalendarViewBase, YearMixin, WeekMixin):
@@ -95,16 +85,6 @@ class WeekView(CalendarViewBase, YearMixin, WeekMixin):
             return date(*tt[:3])
         except ValueError:
             raise Http404
-
-    def get_dated_queryset(self, order='asc', **lookup):
-        d = self.date
-        date_field = self.get_date_field()
-        qs = self.get_queryset().filter(**lookup)
-
-        date_range = (d, d + relativedelta(days=7))
-        filter_kwargs = {'%s__range' % date_field: date_range}
-        order = '' if order == 'asc' else '-'
-        return qs.filter(**filter_kwargs).order_by("%s%s" % (order, date_field))
 
 
 class DayView(CalendarViewBase, YearMixin, MonthMixin, DayMixin):

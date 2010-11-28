@@ -12,6 +12,7 @@ from calendartools.views.generic.dates import (
 )
 
 from django.db.models.loading import get_model
+from timezones.utils import adjust_datetime_to_timezone
 
 Calendar = get_model(defaults.CALENDAR_APP_LABEL, 'Calendar')
 Occurrence = get_model(defaults.CALENDAR_APP_LABEL, 'Occurrence')
@@ -24,7 +25,10 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
     date_attrs   = ['year', 'year_format', 'month', 'month_format', 'day',
                    'day_format']
     context_object_name = 'occurrences'
-    timezone = pytz.timezone(settings.TIME_ZONE)
+
+    def __init__(self, *args, **kwargs):
+        super(CalendarViewBase, self).__init__(*args, **kwargs)
+        self.timezone = pytz.timezone(settings.TIME_ZONE)
 
     @property
     def queryset(self):
@@ -120,10 +124,15 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
         date_field = self.get_date_field()
         qs = self.get_queryset().filter(**lookup)
 
-        filter_kwargs = {}
-        for attr in ['year', 'month', 'day']:
-            if hasattr(self, attr):
-                filter_kwargs['%s__%s' % (date_field, attr)] = getattr(d, attr)
+        period = self.period(d)
+        # extend the boundaries slightly, to accommodate different timezones:
+        # date_range = (period.start - timedelta(1), period.finish + timedelta(1))
+        date_range = (period.start, period.finish)
+        date_range = [adjust_datetime_to_timezone(
+                     i, settings.TIME_ZONE, self.timezone) for i in date_range]
+        # Not sure why this is necessary yet...
+        date_range = [i.replace(tzinfo=None) for i in date_range]
+        filter_kwargs = {'%s__range' % date_field: date_range}
         order = '' if order == 'asc' else '-'
         return qs.filter(**filter_kwargs).order_by("%s%s" % (order, date_field))
 

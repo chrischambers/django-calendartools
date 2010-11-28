@@ -6,7 +6,9 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from calendartools.tests.event.models import Calendar, Event, Occurrence, Attendance
+from calendartools.tests.event.models import (
+    Calendar, Event, Occurrence, Attendance
+)
 from calendartools import defaults, signals, views
 from calendartools.forms import (
     EventForm,
@@ -858,12 +860,14 @@ class TestCalendarViews(TestCase):
     def test_date(self):
         o = views.calendars.YearView(slug='foo', year='2010')
         assert_equal(o.date, date(2010, 1, 1))
+        # Special case: the TriMonthView displays as though the middle month is
+        # the main focus, but its actual start period runs from the first month:
         o = views.calendars.TriMonthView(slug='foo', year='2010', month='nov')
-        assert_equal(o.date, date(2010, 11, 1))
+        assert_equal(o.date, date(2010, 10, 1))
         o = views.calendars.MonthView(slug='foo', year='2010', month='nov')
         assert_equal(o.date, date(2010, 11, 1))
         o = views.calendars.WeekView(slug='foo', year='2010', week='1')
-        assert_equal(o.date, date(2010, 1, 4)) # monday
+        assert_equal(o.date, date(2010, 1, 4)) # Monday
         o = views.calendars.DayView(slug='foo', year='2010', month='aug', day='17')
         assert_equal(o.date, date(2010, 8, 17))
 
