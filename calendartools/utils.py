@@ -46,13 +46,13 @@ def standardise_first_dow(first_day_of_week=None):
     the 'standardised' version from the django setting.
     >>> from django.conf import settings
     >>> settings.FIRST_DAY_OF_WEEK = 0 # Sunday
-    >>> determine_standardised_first_day_of_week()
+    >>> standardise_first_dow()
     6
     >>> settings.FIRST_DAY_OF_WEEK = 1 # Monday
-    >>> determine_standardised_first_day_of_week()
+    >>> standardise_first_dow()
     0
     >>> settings.FIRST_DAY_OF_WEEK = 6 # Saturday
-    >>> determine_standardised_first_day_of_week()
+    >>> standardise_first_dow()
     5
     """
     if not first_day_of_week:
