@@ -13,14 +13,15 @@ from django.utils import translation
 from django.test import TestCase
 from nose.tools import *
 
+from timezones.utils import adjust_datetime_to_timezone
+
 from calendartools import defaults
 from calendartools.tests.event.models import Calendar, Event, Occurrence
 from calendartools.periods import (
     SimpleProxy, Period, Year, Month, Week, Day, Hour, TripleMonth,
     first_day_of_week
 )
-from timezones.utils import adjust_datetime_to_timezone
-from calendartools.periods.localised_occurrence_proxy import LocalizedOccurrenceProxy
+from calendartools.utils import LocalizedOccurrenceProxy
 from calendartools.validators.defaults.occurrence import (
     activate_default_occurrence_validators,
     deactivate_default_occurrence_validators
@@ -441,7 +442,7 @@ class TestDateAwareProperties(TestCase):
             assert_equal(obj.month_names_abbr[11], 'dec')
 
 
-class TestLocalisation(TestCase):
+class TestLocalization(TestCase):
     def setUp(self):
         self.datetime = datetime(1982, 8, 17)
         self.period   = Period(self.datetime)
@@ -455,71 +456,71 @@ class TestLocalisation(TestCase):
     def tearDown(self):
         translation.activate(self.original_language)
 
-    def _test_localisation(self, obj, mapping):
+    def _test_localization(self, obj, mapping):
         for language, expected in mapping:
             translation.activate(language)
             assert_equal(unicode(obj), expected)
 
-    def test_period_localisation(self):
+    def test_period_localization(self):
         mapping = (
             ('en', u'Aug. 17, 1982, midnight'),
             ('fr', u'17 août 1982 00:00:00'),
             ('de', u'17. August 1982 00:00:00'),
             ('zh-cn', u'八月 17, 1982, 午夜'),
         )
-        self._test_localisation(self.period, mapping)
+        self._test_localization(self.period, mapping)
 
-    def test_year_localisation(self):
+    def test_year_localization(self):
         mapping = (
             ('en', u'Jan. 1, 1982'),
             ('fr', u'1 janvier 1982'),
             ('de', u'1. Januar 1982'),
             ('zh-cn', u'一月 1, 1982'),
         )
-        self._test_localisation(self.year, mapping)
+        self._test_localization(self.year, mapping)
 
-    def test_month_localisation(self):
+    def test_month_localization(self):
         mapping = (
             ('en', u'Aug. 1, 1982'),
             ('fr', u'1 août 1982'),
             ('de', u'1. August 1982'),
             ('zh-cn', u'八月 1, 1982'),
         )
-        self._test_localisation(self.month, mapping)
+        self._test_localization(self.month, mapping)
 
-    def test_week_localisation(self):
+    def test_week_localization(self):
         mapping = (
             ('en', u'Aug. 16, 1982'),
             ('fr', u'16 août 1982'),
             ('de', u'16. August 1982'),
             ('zh-cn', u'八月 16, 1982'),
         )
-        self._test_localisation(self.week, mapping)
+        self._test_localization(self.week, mapping)
 
-    def test_day_localisation(self):
+    def test_day_localization(self):
         mapping = (
             ('en', u'Aug. 17, 1982'),
             ('fr', u'17 août 1982'),
             ('de', u'17. August 1982'),
             ('zh-cn', u'八月 17, 1982'),
         )
-        self._test_localisation(self.day, mapping)
+        self._test_localization(self.day, mapping)
 
-    def test_hour_localisation(self):
+    def test_hour_localization(self):
         mapping =  (
             ('en', u'midnight'),
             ('fr', u'00:00:00'),
             ('de', u'00:00:00'),
             ('zh-cn', u'午夜'),
         )
-        self._test_localisation(Hour(datetime(1982, 8, 17)), mapping)
+        self._test_localization(Hour(datetime(1982, 8, 17)), mapping)
         mapping = (
             ('en', u'6 a.m.'),
             ('fr', u'06:00:00'),
             ('de', u'06:00:00'),
             ('zh-cn', u'6 a.m.'),
         )
-        self._test_localisation(self.hour, mapping)
+        self._test_localization(self.hour, mapping)
 
 
 class TestFirstDayOfWeek(TestCase):
@@ -653,29 +654,29 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
                             else:
                                 assert_equal(len(hour.occurrences), 2)
 
-    def test_occurrences_localised_correctly(self):
+    def test_occurrences_localized_correctly(self):
         timezone = 'Antarctica/McMurdo'
         occurrences = Occurrence.objects.all()
-        localised_year = Year(
+        localized_year = Year(
             self.start, occurrences=occurrences, timezone=timezone
         )
-        assert_equal(localised_year.timezone, pytz.timezone(timezone))
+        assert_equal(localized_year.timezone, pytz.timezone(timezone))
         assert self.year.timezone is None
 
-        for o in localised_year.occurrences:
+        for o in localized_year.occurrences:
             assert isinstance(o, LocalizedOccurrenceProxy)
-        for localised_month, month in zip(localised_year, self.year):
-            for localised_o, o in zip(localised_month.occurrences, occurrences):
-                assert_equal(localised_o.real_start, o.start.replace(tzinfo=None))
-                assert_equal(localised_o.real_finish, o.finish.replace(tzinfo=None))
+        for localized_month, month in zip(localized_year, self.year):
+            for localized_o, o in zip(localized_month.occurrences, occurrences):
+                assert_equal(localized_o.real_start, o.start.replace(tzinfo=None))
+                assert_equal(localized_o.real_finish, o.finish.replace(tzinfo=None))
                 for attr in ('start', 'finish'):
                     expected = adjust_datetime_to_timezone(
                         getattr(o, attr), settings.TIME_ZONE, timezone
                     )
-                    assert_equal(getattr(localised_o, attr), expected)
+                    assert_equal(getattr(localized_o, attr), expected)
 
 
-class TestDateTimeProxiesWithLocalisedOccurrences(TestCase):
+class TestDateTimeProxiesWithLocalizedOccurrences(TestCase):
     def setUp(self):
         deactivate_default_occurrence_validators()
         self.user = User.objects.create_user(
@@ -712,7 +713,7 @@ class TestDateTimeProxiesWithLocalisedOccurrences(TestCase):
     def test_membership(self):
         assert_equal(len(self.week.occurrences), 2)
 
-    def test_localisation(self):
+    def test_localization(self):
         occurrences = Occurrence.objects.all()
         timezones = [
             'Antarctica/McMurdo', # GMT + 1300
@@ -720,7 +721,7 @@ class TestDateTimeProxiesWithLocalisedOccurrences(TestCase):
         ]
 
         for timezone in timezones:
-            localised_week = Week(
+            localized_week = Week(
                 self.start, occurrences=occurrences, timezone=timezone
             )
-            assert_equal(len(localised_week.occurrences), 1)
+            assert_equal(len(localized_week.occurrences), 1)

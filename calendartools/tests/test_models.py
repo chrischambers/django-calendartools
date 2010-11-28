@@ -8,9 +8,7 @@ from calendartools.tests.event.models import (
 )
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools import defaults
-from calendartools.periods.localised_occurrence_proxy import (
-    LocalizedOccurrenceProxy
-)
+from calendartools.utils import LocalizedOccurrenceProxy
 from calendartools.signals import collect_validators
 from calendartools.validators import BaseValidator
 from calendartools.validators.defaults.attendance import (

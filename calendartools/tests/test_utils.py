@@ -8,17 +8,15 @@ from django.test import TestCase
 from nose.tools import *
 
 from timezones.utils import localtime_for_timezone, adjust_datetime_to_timezone
+
 from calendartools.tests.event.models import Calendar, Event, Occurrence
-from calendartools.periods.localised_occurrence_proxy import (
-    LocalizedOccurrenceProxy
-)
+from calendartools.utils import LocalizedOccurrenceProxy
 from calendartools.validators.defaults.occurrence import (
     activate_default_occurrence_validators,
     deactivate_default_occurrence_validators
 )
 
-class TestLocalisedOccurrenceProxy(TestCase):
-
+class TestLocalizedOccurrenceProxy(TestCase):
     def setUp(self):
         self.user = User.objects.create(username='TestyMcTesterson')
         self.calendar = Calendar.objects.create(name='Basic', slug='basic')
@@ -30,7 +28,7 @@ class TestLocalisedOccurrenceProxy(TestCase):
         self.occurrence = self.event.add_occurrences(
             self.calendar, self.start, self.finish)[0]
         self.timezone = 'America/Chicago'
-        self.localised = LocalizedOccurrenceProxy(
+        self.localized = LocalizedOccurrenceProxy(
             self.occurrence, timezone=self.timezone
         )
         deactivate_default_occurrence_validators()
@@ -40,19 +38,19 @@ class TestLocalisedOccurrenceProxy(TestCase):
 
     def test_timezone_property(self):
         expected = pytz.timezone('America/Chicago')
-        assert_equal(self.localised.timezone, expected)
+        assert_equal(self.localized.timezone, expected)
 
         # Should handle actual timezone object as well as string name:
-        localised2 = LocalizedOccurrenceProxy(
+        localized2 = LocalizedOccurrenceProxy(
             self.occurrence, timezone=expected
         )
-        assert_equal(localised2.timezone, expected)
+        assert_equal(localized2.timezone, expected)
 
         # Garbage input results in a timezone of None:
-        localised3 = LocalizedOccurrenceProxy(
+        localized3 = LocalizedOccurrenceProxy(
             self.occurrence, timezone='Non-Existent Timezone'
         )
-        assert localised3.timezone is None
+        assert localized3.timezone is None
 
     def test_default_timezone_property(self):
         original_timezone = settings.TIME_ZONE
@@ -61,36 +59,36 @@ class TestLocalisedOccurrenceProxy(TestCase):
             expected = pytz.timezone('UTC')
             settings.TIME_ZONE = self.timezone
             expected = pytz.timezone(self.timezone)
-            assert_equal(self.localised.default_timezone, expected)
+            assert_equal(self.localized.default_timezone, expected)
         finally:
             settings.TIME_ZONE = original_timezone
 
-    def test_localised_occurrence_proxy_wrapping_proxy_works_properly(self):
+    def test_localized_occurrence_proxy_wrapping_proxy_works_properly(self):
         timezone = 'Antarctica/McMurdo'
-        localised = LocalizedOccurrenceProxy(
-            self.localised, timezone=timezone
+        localized = LocalizedOccurrenceProxy(
+            self.localized, timezone=timezone
         )
-        assert_equal(localised.real_start, self.occurrence.start)
-        assert_equal(localised.real_finish, self.occurrence.finish)
+        assert_equal(localized.real_start, self.occurrence.start)
+        assert_equal(localized.real_finish, self.occurrence.finish)
         for attr in ('start', 'finish'):
             expected = adjust_datetime_to_timezone(
                 getattr(self.occurrence, attr),
                 settings.TIME_ZONE,
                 timezone
             )
-            assert_equal(getattr(localised, attr), expected)
+            assert_equal(getattr(localized, attr), expected)
 
     def test_real_datetime_property_populated(self):
-        assert hasattr(self.localised, 'real_start')
-        assert hasattr(self.localised, 'real_finish')
-        assert_equal(self.localised.real_start, self.occurrence.start)
-        assert_equal(self.localised.real_finish, self.occurrence.finish)
+        assert hasattr(self.localized, 'real_start')
+        assert hasattr(self.localized, 'real_finish')
+        assert_equal(self.localized.real_start, self.occurrence.start)
+        assert_equal(self.localized.real_finish, self.occurrence.finish)
 
-    def test_datetime_properties_localised_to_specified_timezone(self):
+    def test_datetime_properties_localized_to_specified_timezone(self):
         expected = localtime_for_timezone(self.start, self.timezone)
-        assert_equal(self.localised.start, expected)
+        assert_equal(self.localized.start, expected)
         expected = localtime_for_timezone(self.finish, self.timezone)
-        assert_equal(self.localised.finish, expected)
+        assert_equal(self.localized.finish, expected)
 
     def test_assign_to_datetime_properties_updates_real_datetime_properties(self):
         new_date = self.start + timedelta(days=5)
@@ -104,8 +102,8 @@ class TestLocalisedOccurrenceProxy(TestCase):
         expected = new_date
         for attr in ('start', 'finish'):
             for dt in dts:
-                setattr(self.localised, attr, dt)
-                assert_equal(getattr(self.localised, 'real_%s' % attr), expected)
-                self.localised.save()
+                setattr(self.localized, attr, dt)
+                assert_equal(getattr(self.localized, 'real_%s' % attr), expected)
+                self.localized.save()
                 occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
                 assert_equal(getattr(occurrence, attr), expected)

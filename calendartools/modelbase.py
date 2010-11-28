@@ -11,9 +11,7 @@ from threaded_multihost.fields import CreatorField, EditorField
 from calendartools import defaults
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools.signals import collect_validators
-from calendartools.periods.localised_occurrence_proxy import (
-    LocalizedOccurrenceProxy
-)
+from calendartools.utils import LocalizedOccurrenceProxy
 
 try:
     from functools import partial

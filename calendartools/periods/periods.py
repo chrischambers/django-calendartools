@@ -9,7 +9,7 @@ from dateutil.rrule import (
 from django.utils import formats
 from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
-from calendartools.periods.proxybase import LocalisedSimpleProxy
+from calendartools.periods.proxybase import LocalizedSimpleProxy
 from calendartools import defaults
 from calendartools.utils import standardise_first_dow
 
@@ -39,7 +39,7 @@ def first_day_of_week(dt):
             relativedelta(weekday=first_dow, days=-6))
 
 
-class Period(LocalisedSimpleProxy):
+class Period(LocalizedSimpleProxy):
     month_names = MONTHS.values()
     month_names_abbr = MONTHS_3.values()
     format = 'DATETIME_FORMAT'

@@ -40,9 +40,9 @@ class SimpleProxy(object):
                 raise AttributeError, e
 
 
-class LocalisedSimpleProxy(SimpleProxy):
+class LocalizedSimpleProxy(SimpleProxy):
     def __init__(self, obj, *args, **kwargs):
-        super(LocalisedSimpleProxy, self).__init__(obj, *args, **kwargs)
+        super(LocalizedSimpleProxy, self).__init__(obj, *args, **kwargs)
         timezone = kwargs.pop('timezone', None)
         self.timezone = self.coerce_timezone_attr_to_timezone(timezone)
 

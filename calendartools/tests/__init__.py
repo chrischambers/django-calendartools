@@ -7,4 +7,4 @@ from test_managers import *
 from test_periods import *
 from test_templatetags import *
 from test_views import *
-from test_localised_occurrence import *
+from test_utils import *
