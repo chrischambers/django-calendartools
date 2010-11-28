@@ -25,7 +25,11 @@ def timedelta_to_total_seconds(timedelta):
     >>> timedelta_to_total_seconds(timedelta(hours=1, seconds=10))
     3610
     '''
-    return int(timedelta.total_seconds())
+    # Python 2.7 only!
+    # return int(timedelta.total_seconds())
+    hours_in_day, minutes_in_hour, seconds_in_minute = 24, 60, 60
+    return ((timedelta.days * hours_in_day *
+             minutes_in_hour * seconds_in_minute) + timedelta.seconds)
 
 import calendar
 DAY_MAP = [
