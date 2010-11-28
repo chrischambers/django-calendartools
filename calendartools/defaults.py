@@ -1,6 +1,6 @@
 from datetime import datetime, date, time, timedelta
 from django.conf import settings
-from calendartools.utils import time_delta_total_seconds
+from calendartools.utils import timedelta_to_total_seconds
 
 # Enables a templatetag override which ensures that nothing within the {% url
 # %} templatetag is translated.
@@ -73,7 +73,7 @@ def change_event_permission_check(request):
 MINUTES_INTERVAL = getattr(
     settings, 'TIMESLOT_INTERVAL', TIMESLOT_INTERVAL).seconds // 60
 
-SECONDS_INTERVAL = time_delta_total_seconds(getattr(
+SECONDS_INTERVAL = timedelta_to_total_seconds(getattr(
     settings, 'DEFAULT_OCCURRENCE_DURATION', DEFAULT_OCCURRENCE_DURATION)
 )
 
@@ -128,8 +128,8 @@ def timeslot_offset_options(interval=None, start_time=None, end_delta=None,
     dtend = dtstart + end_delta
     options = []
 
-    delta = time_delta_total_seconds(dtstart - dt)
-    seconds = time_delta_total_seconds(interval)
+    delta = timedelta_to_total_seconds(dtstart - dt)
+    seconds = timedelta_to_total_seconds(interval)
     while dtstart <= dtend:
         options.append((delta, dtstart.strftime(fmt)))
         dtstart += interval

@@ -8,24 +8,24 @@ try:
 except ImportError: # Python 2.3, 2.4 fallback.
     from django.utils.functional import curry as partial
 
-def time_delta_total_seconds(time_delta):
+def timedelta_to_total_seconds(timedelta):
     '''
     Calculate the total number of seconds represented by a
     ``datetime.timedelta`` object.
 
     >>> from datetime import timedelta
-    >>> time_delta_total_seconds(timedelta(0))
+    >>> timedelta_to_total_seconds(timedelta(0))
     0
-    >>> time_delta_total_seconds(timedelta(1))
+    >>> timedelta_to_total_seconds(timedelta(1))
     86400
-    >>> time_delta_total_seconds(timedelta(days=1, seconds=10))
+    >>> timedelta_to_total_seconds(timedelta(days=1, seconds=10))
     86410
-    >>> time_delta_total_seconds(timedelta(days=1, hours=1))
+    >>> timedelta_to_total_seconds(timedelta(days=1, hours=1))
     90000
-    >>> time_delta_total_seconds(timedelta(hours=1, seconds=10))
+    >>> timedelta_to_total_seconds(timedelta(hours=1, seconds=10))
     3610
     '''
-    return int(time_delta.total_seconds())
+    return int(timedelta.total_seconds())
 
 import calendar
 DAY_MAP = [
