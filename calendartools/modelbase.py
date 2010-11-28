@@ -11,6 +11,9 @@ from threaded_multihost.fields import CreatorField, EditorField
 from calendartools import defaults
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools.signals import collect_validators
+from calendartools.periods.localised_occurrence_proxy import (
+    LocalizedOccurrenceProxy
+)
 
 try:
     from functools import partial
@@ -230,6 +233,9 @@ class OccurrenceBase(PluggableValidationMixin, StatusBase):
         return (self.status == self.CANCELLED or
                 self.calendar.status == self.calendar.CANCELLED or
                 self.event.status == self.event.CANCELLED)
+
+    def localize(self, timezone):
+        return LocalizedOccurrenceProxy(self, timezone=timezone)
 
     # Veneers:
     #---------

@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -7,6 +8,9 @@ from calendartools.tests.event.models import (
 )
 from calendartools.exceptions import MaxOccurrenceCreationsExceeded
 from calendartools import defaults
+from calendartools.periods.localised_occurrence_proxy import (
+    LocalizedOccurrenceProxy
+)
 from calendartools.signals import collect_validators
 from calendartools.validators import BaseValidator
 from calendartools.validators.defaults.attendance import (
@@ -227,6 +231,23 @@ class TestOccurrence(TestCase):
 
     def test_description_property(self):
         assert_equal(self.occurrence.description, self.event.description)
+
+    def test_localize_property(self):
+        timezones = [
+            'UTC',
+            pytz.timezone('UTC'),
+            'America/Chicago',
+            'Asia/Shanghai',
+            'Europe/London',
+            'Australia/Sydney',
+            'Antarctica/McMurdo'
+        ]
+        for timezone in timezones:
+            localized = self.occurrence.localize(timezone)
+            assert isinstance(localized, LocalizedOccurrenceProxy)
+            if isinstance(timezone, str):
+                timezone = pytz.timezone(timezone)
+            assert_equal(localized.timezone, timezone)
 
 
 class TestOccurrenceDuration(TestCase):

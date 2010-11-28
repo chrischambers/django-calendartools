@@ -12,7 +12,6 @@ from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 from calendartools.periods.proxybase import LocalisedSimpleProxy
 from calendartools import defaults
 from calendartools.utils import standardise_first_dow
-from calendartools.periods.localised_occurrence_proxy import LocalizedOccurrenceProxy
 
 __all__ = ['Period', 'Hour', 'Day', 'Week', 'Month', 'TripleMonth', 'Year',
            'first_day_of_week']
@@ -60,9 +59,9 @@ class Period(LocalisedSimpleProxy):
         if not key:
             key = lambda o: o.start
         if self.timezone:
-            occurrences = [LocalizedOccurrenceProxy(o, timezone=self.timezone)
-                           for o in occurrences]
-        return [i for i in occurrences if key(i) in self]
+            occurrences = [o.localize(timezone=self.timezone)
+                           if hasattr(o, 'localize') else o for o in occurrences]
+        return [o for o in occurrences if key(o) in self]
 
     def convert(self, dt):
         """Returns naive datetime representation of date/datetime, with no

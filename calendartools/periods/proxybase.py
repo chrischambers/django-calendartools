@@ -1,6 +1,7 @@
 from datetime import tzinfo
 import pytz
 
+
 class SimpleProxy(object):
     def __init__(self, obj, *args, **kwargs):
         self._obj = obj
