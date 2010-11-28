@@ -80,23 +80,19 @@ class TestLocalisedOccurrenceProxy(TestCase):
             )
             assert_equal(getattr(localised, attr), expected)
 
-    def test_real_start_property_populated(self):
+    def test_real_datetime_property_populated(self):
         assert hasattr(self.localised, 'real_start')
-        assert_equal(self.localised.real_start, self.occurrence.start)
-
-    def test_real_finish_property_populated(self):
         assert hasattr(self.localised, 'real_finish')
+        assert_equal(self.localised.real_start, self.occurrence.start)
         assert_equal(self.localised.real_finish, self.occurrence.finish)
 
-    def test_start_property_localised_to_specified_timezone(self):
+    def test_datetime_properties_localised_to_specified_timezone(self):
         expected = localtime_for_timezone(self.start, self.timezone)
         assert_equal(self.localised.start, expected)
-
-    def test_finish_property_localised_to_specified_timezone(self):
         expected = localtime_for_timezone(self.finish, self.timezone)
         assert_equal(self.localised.finish, expected)
 
-    def test_assign_new_datetime_to_start_property_updates_real_start(self):
+    def test_assign_to_datetime_properties_updates_real_datetime_properties(self):
         new_date = self.start + timedelta(days=5)
         dts = [
             localtime_for_timezone(new_date, 'UTC'),
@@ -106,26 +102,10 @@ class TestLocalisedOccurrenceProxy(TestCase):
             localtime_for_timezone(new_date, 'Australia/Sydney'),
         ]
         expected = new_date
-        for dt in dts:
-            self.localised.start = dt
-            assert_equal(self.localised.real_start, expected)
-            self.localised.save()
-            occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
-            assert_equal(occurrence.start, expected)
-
-    def test_assign_new_datetime_to_finish_property_updates_real_finish(self):
-        new_date = self.finish + timedelta(days=5)
-        dts = [
-            localtime_for_timezone(new_date, 'UTC'),
-            localtime_for_timezone(new_date, 'America/Chicago'),
-            localtime_for_timezone(new_date, 'Asia/Shanghai'),
-            localtime_for_timezone(new_date, 'Europe/London'),
-            localtime_for_timezone(new_date, 'Australia/Sydney'),
-        ]
-        expected = new_date
-        for dt in dts:
-            self.localised.finish = dt
-            assert_equal(self.localised.real_finish, expected)
-            self.localised.save()
-            occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
-            assert_equal(occurrence.finish, expected)
+        for attr in ('start', 'finish'):
+            for dt in dts:
+                setattr(self.localised, attr, dt)
+                assert_equal(getattr(self.localised, 'real_%s' % attr), expected)
+                self.localised.save()
+                occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
+                assert_equal(getattr(occurrence, attr), expected)
