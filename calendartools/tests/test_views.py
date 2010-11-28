@@ -115,10 +115,6 @@ class TestEventDetailView(TestCase):
             username=self.user.username, password='password')
         )
 
-    def tearDown(self):
-        super(TestEventDetailView, self).tearDown()
-        Occurrence.objects.all().delete()
-
     def test_event_detail_context(self):
         response = self.client.get(
             reverse('event-detail', args=(self.event.slug,)), follow=True
@@ -823,7 +819,7 @@ class TestCalendarViews(TestCase):
         self.assertTrue(self.client.login(
             username=self.user.username, password='password')
         )
-        self.urls = [
+        self.url_params = [
             ('year-calendar', {
                 'slug': self.calendar.slug,
                 'year': self.base_datetime.year
@@ -855,6 +851,8 @@ class TestCalendarViews(TestCase):
                 'day':   self.base_datetime.day
             }),
         ]
+        self.urls = [reverse(url, kwargs=kwargs) for
+                     (url, kwargs) in self.url_params]
         self.expected_occurrences = [6, 4, 3, 3, 2, 1]
 
     def test_date(self):
@@ -872,14 +870,14 @@ class TestCalendarViews(TestCase):
         assert_equal(o.date, date(2010, 8, 17))
 
     def test_occurrences_populated_correctly(self):
-        for amount, url_params in zip(self.expected_occurrences, self.urls):
-            url, params = url_params
-            response = self.client.get(reverse(url, kwargs=params), follow=True)
+        for amount, url in zip(self.expected_occurrences, self.urls):
+            response = self.client.get(url, follow=True)
             assert_equal(response.context[-1].get('occurrences').count(), amount)
 
     def test_allow_future(self):
         response = self.client.get(
-            reverse('year-calendar-no-future', kwargs=self.urls[0][1]), follow=True)
+            reverse('year-calendar-no-future',
+                    kwargs=self.url_params[0][1]), follow=True)
         assert_equal(response.context[-1].get('occurrences').count(), 0)
 
     def test_allow_empty(self):
@@ -888,25 +886,22 @@ class TestCalendarViews(TestCase):
         assert_equal(response.status_code, 404)
 
     def test_filters(self):
-        for url_params in self.urls:
-            urlname, params = url_params
+        for url_part in self.urls:
             for period in ['today', 'past']:
-                url = '%s?period=%s' % (reverse(urlname, kwargs=params), period)
+                url = '%s?period=%s' % (url_part, period)
                 response = self.client.get(url, follow=True)
                 assert_equal(response.context[-1].get('occurrences').count(), 0)
 
-        for amount, url_params in zip(self.expected_occurrences, self.urls):
-            url, params = url_params
-            url = '%s?period=future' % reverse(url, kwargs=params)
+        for amount, url in zip(self.expected_occurrences, self.urls):
+            url = '%s?period=future' % url
             response = self.client.get(url, follow=True)
             assert_equal(response.context[-1].get('occurrences').count(), amount)
 
     def test_size_context(self):
         small_urls = self.urls[:3]
-        for url_params in self.urls:
-            expected = 'small' if url_params in small_urls else None
-            url, params = url_params
-            response = self.client.get(reverse(url, kwargs=params), follow=True)
+        for url in self.urls:
+            expected = 'small' if url in small_urls else None
+            response = self.client.get(url, follow=True)
             assert_equal(response.context[-1].get('size'), expected)
 
 
