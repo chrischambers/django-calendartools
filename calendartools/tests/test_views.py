@@ -664,7 +664,7 @@ class TestCalendarVisibility(TestCase):
         self.assertTrue(self.client.login(
             username=self.user.username, password='password')
         )
-        self.urls = (
+        self.url_params = (
             ('agenda', {'slug': self.calendar.slug}),
             ('calendar-detail', {'slug': self.calendar.slug}),
 
@@ -719,6 +719,8 @@ class TestCalendarVisibility(TestCase):
                 'day':   10,
             }),
         )
+        self.urls = [reverse(url, kwargs=kwargs) for
+                     (url, kwargs) in self.url_params]
 
     def test_calendar_list_displays_cancelled_and_above(self):
         for state in (Calendar.INACTIVE, Calendar.HIDDEN):
@@ -748,25 +750,25 @@ class TestCalendarVisibility(TestCase):
     def test_normal_user_cannot_see_inactive_calendars(self):
         Calendar.objects.all().update(status=Calendar.INACTIVE)
         for url in self.urls:
-            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            response = self.client.get(url, follow=True)
             assert_equal(404, response.status_code)
 
     def test_normal_user_cannot_see_hidden_calendars(self):
         Calendar.objects.all().update(status=Calendar.HIDDEN)
         for url in self.urls:
-            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            response = self.client.get(url, follow=True)
             assert_equal(404, response.status_code)
 
     def test_normal_user_can_see_cancelled_calendars(self):
         Calendar.objects.all().update(status=Calendar.CANCELLED)
         for url in self.urls:
-            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            response = self.client.get(url, follow=True)
             assert_equal(200, response.status_code)
 
     def test_normal_user_can_see_published_calendars(self):
         Calendar.objects.all().update(status=Calendar.PUBLISHED)
         for url in self.urls:
-            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            response = self.client.get(url, follow=True)
             assert_equal(200, response.status_code)
 
     def test_superuser_can_see_hidden_calendars(self):
@@ -774,7 +776,7 @@ class TestCalendarVisibility(TestCase):
         self.user.save()
         Calendar.objects.all().update(status=Calendar.HIDDEN)
         for url in self.urls:
-            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            response = self.client.get(url, follow=True)
             assert_equal(200, response.status_code)
 
     def test_staff_user_can_see_hidden_calendars(self):
@@ -782,7 +784,7 @@ class TestCalendarVisibility(TestCase):
         self.user.save()
         Calendar.objects.all().update(status=Calendar.HIDDEN)
         for url in self.urls:
-            response = self.client.get(reverse(url[0], kwargs=url[1]), follow=True)
+            response = self.client.get(url, follow=True)
             assert_equal(200, response.status_code)
 
 
