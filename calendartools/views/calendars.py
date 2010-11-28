@@ -1,5 +1,5 @@
 import time
-from datetime import date, timedelta
+from datetime import date
 
 from dateutil.relativedelta import relativedelta
 
@@ -37,15 +37,11 @@ class YearView(CalendarViewBase, YearMixin):
     period_name = 'year'
     period = Year
     template_name = "calendar/calendar/year.html"
+    extra_context = {'size': 'small'}
 
     @property
     def date(self):
         return date(int(self.get_year()), 1, 1)
-
-    def get_context_data(self, **kwargs):
-        context = super(YearView, self).get_context_data(**kwargs)
-        context.update({'size': 'small'})
-        return context
 
 
 class MonthView(CalendarViewBase, YearMixin, MonthMixin):
@@ -58,15 +54,11 @@ class TriMonthView(MonthView):
     period_name = 'tri_month'
     period = TripleMonth
     template_name = "calendar/calendar/tri_month.html"
+    extra_context = {'size': 'small'}
 
     @property
     def date(self):
         return super(TriMonthView, self).date - relativedelta(months=+1)
-
-    def get_context_data(self, **kwargs):
-        context = super(TriMonthView, self).get_context_data(**kwargs)
-        context.update({'size': 'small'})
-        return context
 
 
 class WeekView(CalendarViewBase, YearMixin, WeekMixin):

@@ -29,6 +29,8 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
     def __init__(self, *args, **kwargs):
         super(CalendarViewBase, self).__init__(*args, **kwargs)
         self.timezone = pytz.timezone(settings.TIME_ZONE)
+        self.extra_context = getattr(self, 'extra_context', {})
+        self.extra_context.update(kwargs.pop('extra_context', {}))
 
     @property
     def queryset(self):
@@ -135,6 +137,12 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
         filter_kwargs = {'%s__range' % date_field: date_range}
         order = '' if order == 'asc' else '-'
         return qs.filter(**filter_kwargs).order_by("%s%s" % (order, date_field))
+
+    def get_context_data(self, **kwargs):
+        context = super(CalendarViewBase, self).get_context_data(**kwargs)
+        for key, value in self.extra_context.items():
+            context[key] = callable(value) and value() or value
+        return context
 
     def get(self, request, *args, **kwargs):
         self.slug = kwargs.pop('slug', None)

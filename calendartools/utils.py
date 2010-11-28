@@ -65,6 +65,7 @@ class LocalizedOccurrenceProxy(LocalizedSimpleProxy):
     a seamless experience, especially for template authors.
     """
     def __init__(self, obj, *args, **kwargs):
+        # Don't wrap a wrapper.
         if isinstance(obj, self.__class__):
             obj = obj._obj
         super(LocalizedOccurrenceProxy, self).__init__(obj, *args, **kwargs)
