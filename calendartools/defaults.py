@@ -53,7 +53,7 @@ MAX_OCCURRENCE_CREATION_COUNT = getattr(settings, 'MAX_OCCURRENCE_CREATION_COUNT
 # specified.
 MAX_AGENDA_ITEMS_PER_PAGE = getattr(settings, 'MAX_AGENDA_ITEMS_PER_PAGE', 0)
 
-def view_hidden_events_check(request=None, user=None):
+def default_view_hidden_events_check(request=None, user=None):
     user = request and request.user or user
     if not user:
         raise ValueError(
@@ -61,14 +61,35 @@ def view_hidden_events_check(request=None, user=None):
         )
     return user.is_superuser or user.is_staff
 
-view_hidden_occurrences_check = view_hidden_events_check
-view_hidden_calendars_check = view_hidden_events_check
+view_hidden_events_check = getattr(
+    settings, 'VIEW_HIDDEN_EVENTS_CHECK', None
+)
+view_hidden_occurrences_check = getattr(
+    settings, 'VIEW_HIDDEN_OCCURRENCES_CHECK', None
+)
+view_hidden_calendars_check = getattr(
+    settings, 'VIEW_HIDDEN_CALENDARS_CHECK', None
+)
+if not view_hidden_events_check:
+    view_hidden_events_check = default_view_hidden_events_check
+if not view_hidden_occurrences_check:
+    view_hidden_occurrences_check = default_view_hidden_events_check
+if not view_hidden_calendars_check:
+    view_hidden_calendars_check = default_view_hidden_events_check
 
-def add_occurrence_permission_check(request):
-    return request.user.has_perm('%s.add_occurrence' % CALENDAR_APP_LABEL)
+add_occurrence_permission_check = getattr(
+    settings, 'ADD_OCCURRENCE_PERMISSION_CHECK', None
+)
+if not add_occurrence_permission_check:
+    def add_occurrence_permission_check(request):
+        return request.user.has_perm('%s.add_occurrence' % CALENDAR_APP_LABEL)
 
-def change_event_permission_check(request):
-    return request.user.has_perm('%s.change_event' % CALENDAR_APP_LABEL)
+change_event_permission_check = getattr(
+    settings, 'CHANGE_EVENT_PERMISSION_CHECK', None
+)
+if not change_event_permission_check:
+    def change_event_permission_check(request):
+        return request.user.has_perm('%s.change_event' % CALENDAR_APP_LABEL)
 
 # ----------------------------------------------------------------------------
 MINUTES_INTERVAL = getattr(
@@ -138,5 +159,9 @@ def timeslot_offset_options(interval=None, start_time=None, end_delta=None,
 
     return options
 
-default_timeslot_options = timeslot_options()
-default_timeslot_offset_options = timeslot_offset_options()
+default_timeslot_options = getattr(settings, 'TIMESLOT_OPTIONS', None)
+if not default_timeslot_options:
+    default_timeslot_options = timeslot_options()
+default_timeslot_offset_options = getattr(settings, 'TIMESLOT_OFFSET_OPTIONS', None)
+if not default_timeslot_offset_options:
+    default_timeslot_offset_options = timeslot_offset_options()
