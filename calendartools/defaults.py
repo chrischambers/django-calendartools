@@ -9,16 +9,16 @@ NO_URL_TRANSLATION = True
 CALENDAR_APP_LABEL = getattr(settings, 'CALENDAR_APP_LABEL', 'event')
 
 # A "strftime" string for formatting start and end time selectors in forms
-TIMESLOT_TIME_FORMAT = '%I:%M %p'
+TIMESLOT_TIME_FORMAT = getattr(settings, 'TIMESLOT_TIME_FORMAT', '%I:%M %p')
 
 # Used for creating start and end time form selectors as well as time slot grids.
 # Value should be datetime.timedelta value representing the incremental
 # differences between temporal options
-TIMESLOT_INTERVAL = timedelta(minutes=15)
+TIMESLOT_INTERVAL = getattr(settings, 'TIMESLOT_INTERVAL', timedelta(minutes=15))
 
 # A datetime.time value indicting the starting time for time slot grids and form
 # selectors
-TIMESLOT_START_TIME = time(9)
+TIMESLOT_START_TIME = getattr(settings, 'TIMESLOT_START_TIME', time(9))
 
 # A datetime.timedelta value indicating the offset value from
 # TIMESLOT_START_TIME for creating time slot grids and form selectors. The
@@ -27,11 +27,12 @@ TIMESLOT_START_TIME = time(9)
 # a ending value 1:30am (01:30), in which case a value of
 # datetime.timedelta(hours=10.5) could be specified to indicate that the 1:30
 # represents the following date's time and not the current date.
-TIMESLOT_END_TIME_DURATION = timedelta(hours=+8)
+TIMESLOT_END_TIME_DURATION = getattr(settings, 'TIMESLOT_END_TIME_DURATION',
+                                     timedelta(hours=+8))
 
 # Indicates a minimum value for the number grid columns to be shown in the time
 # slot table.
-TIMESLOT_MIN_COLUMNS = 4
+TIMESLOT_MIN_COLUMNS = getattr(settings, 'TIMESLOT_MIN_COLUMNS', 4)
 
 # Indicate the default length in time for a new occurrence, specifed by using
 # a datetime.timedelta object
@@ -46,7 +47,7 @@ MAX_OCCURRENCE_DURATION = getattr(settings, 'MAX_OCCURRENCE_DURATION', None)
 # than specified. This is to mitigate the damage caused by unforeseen bugs
 # which may result in ``rrule.rrule`` producing an iterable of unlimited
 # length.
-MAX_OCCURRENCE_CREATION_COUNT = 100
+MAX_OCCURRENCE_CREATION_COUNT = getattr(settings, 'MAX_OCCURRENCE_CREATION_COUNT', 100)
 
 # When set to a value > 0, the agenda views will be paginated by the value
 # specified.
