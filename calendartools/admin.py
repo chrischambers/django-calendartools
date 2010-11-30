@@ -7,6 +7,7 @@ class AuditedAdmin(admin.ModelAdmin):
     readonly_fields = ('creator', 'editor', 'datetime_created', 'datetime_modified')
     date_hierarchy = "datetime_created"
 
+
 class CalendarAdmin(AuditedAdmin):
     prepopulated_fields = {"slug": ("name",)}
     list_display = ['name', 'slug', 'description', 'status', 'datetime_created']

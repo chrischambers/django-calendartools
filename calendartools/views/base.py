@@ -128,12 +128,9 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
         qs = self.get_queryset().filter(**lookup)
 
         period = self.period(d)
-        # extend the boundaries slightly, to accommodate different timezones:
-        # date_range = (period.start - timedelta(1), period.finish + timedelta(1))
         date_range = (period.start, period.finish)
         date_range = [adjust_datetime_to_timezone(
                      i, settings.TIME_ZONE, self.timezone) for i in date_range]
-        # Not sure why this is necessary yet...
         date_range = [i.replace(tzinfo=None) for i in date_range]
         filter_kwargs = {'%s__range' % date_field: date_range}
         order = '' if order == 'asc' else '-'
