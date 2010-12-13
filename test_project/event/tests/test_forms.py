@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+from dateutil.relativedelta import relativedelta
 from dateutil import rrule
 
 from django import forms
@@ -346,9 +347,8 @@ class TestMultipleOccurrenceFormValidation(TestCase):
             [[i] for i in range(1,13)] +
             [[1,2], [11,12], [1,2,3,4,5,6], [7,8,9,10,11,12]]
         )
-        first_day_of_next_month = self.today.replace(
-            month=self.today.month+1, day=1
-        )
+        next_month = self.today + relativedelta(months=1)
+        first_day_of_next_month = next_month.replace(day=1)
         # Necessary because of potential slow-down: see test below.
         self.data.update({
             'day':                    first_day_of_next_month,
