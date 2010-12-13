@@ -5,15 +5,15 @@ from calendartools import defaults, signals
 from calendartools.validators.base import BaseValidator
 
 
-class BaseUserAttendanceValidator(BaseValidator):
+class BaseAttendanceValidator(BaseValidator):
     def __init__(self, sender, instance, **kwargs):
-        super(BaseUserAttendanceValidator, self).__init__(
+        super(BaseAttendanceValidator, self).__init__(
             sender, instance, **kwargs
         )
         self.attendance = self.instance
 
 
-class CannotBookFinishedEventsValidator(BaseUserAttendanceValidator):
+class CannotBookFinishedEventsValidator(BaseAttendanceValidator):
     def validate(self):
         if (not self.attendance.pk and
             self.attendance.occurrence.finish < datetime.now()):
@@ -22,7 +22,7 @@ class CannotBookFinishedEventsValidator(BaseUserAttendanceValidator):
             )
 
 
-class CannotAttendFutureEventsValidator(BaseUserAttendanceValidator):
+class CannotAttendFutureEventsValidator(BaseAttendanceValidator):
     def validate(self):
         if (self.attendance.status == self.attendance.ATTENDED and
             self.attendance.occurrence.start > datetime.now()):
@@ -31,7 +31,7 @@ class CannotAttendFutureEventsValidator(BaseUserAttendanceValidator):
             )
 
 
-class CannotCancelAttendedEventsValidator(BaseUserAttendanceValidator):
+class CannotCancelAttendedEventsValidator(BaseAttendanceValidator):
     def validate(self):
         if (self.attendance.status == self.attendance.CANCELLED
             and self.attendance.pk):
@@ -48,7 +48,7 @@ class CannotCancelAttendedEventsValidator(BaseUserAttendanceValidator):
                 pass
 
 
-class OnlyOneActiveAttendanceForOccurrenceValidator(BaseUserAttendanceValidator):
+class OnlyOneActiveAttendanceForOccurrenceValidator(BaseAttendanceValidator):
     priority = 50
 
     def validate(self):
