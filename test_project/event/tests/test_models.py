@@ -224,12 +224,6 @@ class TestOccurrence(TestCase):
         self.occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
         assert self.occurrence.is_cancelled
 
-    def test_name_property(self):
-        assert_equal(self.occurrence.name, self.event.name)
-
-    def test_description_property(self):
-        assert_equal(self.occurrence.description, self.event.description)
-
     def test_localize_property(self):
         timezones = [
             'UTC',

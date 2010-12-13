@@ -235,16 +235,6 @@ class OccurrenceBase(PluggableValidationMixin, StatusBase):
     def localize(self, timezone):
         return LocalizedOccurrenceProxy(self, timezone=timezone)
 
-    # Veneers:
-    #---------
-    @property
-    def name(self):
-        return self.event.name
-
-    @property
-    def description(self):
-        return self.event.description
-
 
 class AttendanceBase(PluggableValidationMixin, AuditedModel):
     INACTIVE, BOOKED, ATTENDED, CANCELLED = 1, 2, 3, 4
