@@ -92,7 +92,7 @@ def event_create(request, *args, **kwargs):
 def occurrence_detail(request, slug, pk, *args, **kwargs):
     occurrence = get_object_or_404(
         Occurrence.objects.visible(request.user).filter(
-            event__slug=slug).select_related('event'),
+            event__slug=slug).select_related('event', 'calendar'),
             pk=pk
     )
     user = request.user
