@@ -59,9 +59,7 @@ class TestSimpleProxy(TestCase):
 
 class TestDateTimeProxies(TestCase):
     def setUp(self):
-        self.orig_first_dow = settings.FIRST_DAY_OF_WEEK
-        settings.FIRST_DAY_OF_WEEK = 1 # Monday
-
+        translation.activate('en_GB')
         self.datetime = datetime(1982, 8, 17)
         self.year     = Year(self.datetime)
         self.month    = Month(self.datetime)
@@ -70,7 +68,7 @@ class TestDateTimeProxies(TestCase):
         self.hour     = Hour(datetime.combine(self.datetime.date(), time(6, 30, 5)))
 
     def tearDown(self):
-        settings.FIRST_DAY_OF_WEEK = self.orig_first_dow
+        translation.deactivate()
 
     def test_default_datetimeproxy_conversion(self):
         mapping = (
@@ -407,15 +405,13 @@ class TestDateTimeProxies(TestCase):
 
 class TestDateAwareProperties(TestCase):
     def setUp(self):
-        self.orig_first_dow = settings.FIRST_DAY_OF_WEEK
-        settings.FIRST_DAY_OF_WEEK = 1 # Monday
-
+        translation.activate('en_GB')
         now = datetime.now()
         self.objects = [Period, Year, Month, Week, Day, Hour]
         self.objects = [obj(now) for obj in self.objects]
 
     def tearDown(self):
-        settings.FIRST_DAY_OF_WEEK = self.orig_first_dow
+        translation.deactivate()
 
     def test_day_names_property(self):
         for obj in self.objects:
@@ -578,6 +574,7 @@ class TestTripleMonth(TestCase):
 
 class TestWeek(TestCase):
     def setUp(self):
+        translation.activate('en_GB')
         self.datetime = datetime(1982, 8, 17)
         self.week = Week(self.datetime)
         self.expected = [
@@ -585,23 +582,23 @@ class TestWeek(TestCase):
         ]
 
     def tearDown(self):
-        settings.FIRST_DAY_OF_WEEK = 1 # Monday
+        translation.deactivate()
 
     def test_first_day_of_week(self):
         assert_equal(first_day_of_week(self.datetime), self.expected[0])
-        settings.FIRST_DAY_OF_WEEK = 0 # Sunday
+        translation.deactivate()
         assert_equal(first_day_of_week(self.datetime),
                     self.expected[0] - timedelta(1))
 
     def test_first_day(self):
         assert_equal(self.week.first_day, self.expected[0])
-        settings.FIRST_DAY_OF_WEEK = 0 # Sunday
+        translation.deactivate()
         self.week = Week(self.datetime)
         assert_equal(self.week.first_day, self.expected[0] - timedelta(1))
 
     def test_last_day(self):
         assert_equal(self.week.last_day, self.expected[1])
-        settings.FIRST_DAY_OF_WEEK = 0 # Sunday
+        translation.deactivate()
         self.week = Week(self.datetime)
         assert_equal(self.week.last_day, self.expected[1] - timedelta(1))
 
@@ -679,6 +676,7 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
 class TestDateTimeProxiesWithLocalizedOccurrences(TestCase):
     def setUp(self):
         deactivate_default_occurrence_validators()
+        translation.activate('en_GB')
         self.user = User.objects.create_user(
             'TestyMcTesterson',
             'Testy@test.com',
@@ -709,6 +707,7 @@ class TestDateTimeProxiesWithLocalizedOccurrences(TestCase):
 
     def tearDown(self):
         activate_default_occurrence_validators()
+        translation.deactivate()
 
     def test_membership(self):
         assert_equal(len(self.week.occurrences), 2)

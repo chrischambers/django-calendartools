@@ -51,7 +51,7 @@ def standardise_first_dow(first_day_of_week=None):
     >>> standardise_first_dow()
     5
     """
-    if not first_day_of_week:
+    if first_day_of_week is None:
         first_day_of_week = settings.FIRST_DAY_OF_WEEK
     return DAY_MAP[first_day_of_week]
 

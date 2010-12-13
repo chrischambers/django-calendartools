@@ -1,3 +1,4 @@
+import calendar
 import time
 from datetime import date
 
@@ -6,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
+from django.utils import formats
 from django.views.generic import list_detail
 
 from calendartools import defaults
@@ -14,6 +16,7 @@ from calendartools.views.base import CalendarViewBase
 from calendartools.views.generic.dates import (
     YearMixin, MonthMixin, WeekMixin, DayMixin
 )
+from calendartools.utils import standardise_first_dow
 from django.db.models.loading import get_model
 
 Calendar = get_model(defaults.CALENDAR_APP_LABEL, 'Calendar')
@@ -64,16 +67,20 @@ class TriMonthView(MonthView):
 class WeekView(CalendarViewBase, YearMixin, WeekMixin):
     period_name = 'week'
     period = Week
-    week_format = '%W'
-
     template_name = "calendar/calendar/week.html"
+
+    @property
+    def week_format(self):
+        first_dow = standardise_first_dow(formats.get_format('FIRST_DAY_OF_WEEK'))
+        return '%W' if first_dow == calendar.MONDAY else '%U'
 
     @property
     def date(self):
         year = self.get_year()
         week = self.get_week()
+        week_format = self.get_week_format()
         try:
-            tt = time.strptime('%s-%s-1' % (year, week), '%Y-%U-%w')
+            tt = time.strptime('%s-%s-1' % (year, week), '%%Y-%s-%%w' % (week_format))
             return date(*tt[:3])
         except ValueError:
             raise Http404
