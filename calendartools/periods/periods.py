@@ -182,6 +182,18 @@ class Day(Period):
         class DayInterval(Period):
             interval = defaults.TIMESLOT_INTERVAL
 
+            def get_day(self):
+                return Day(self, occurrences=self.occurrences)
+
+            def get_week(self):
+                return Week(self, occurrences=self.occurrences)
+
+            def get_month(self):
+                return Month(self, occurrences=self.occurrences)
+
+            def get_year(self):
+                return Year(self, occurrences=self.occurrences)
+
         intervals = []
         start = datetime.combine(self.start.date(), defaults.TIMESLOT_START_TIME)
         finish = start + defaults.TIMESLOT_END_TIME_DURATION
