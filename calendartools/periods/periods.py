@@ -7,6 +7,7 @@ from dateutil.rrule import (
 )
 
 from django.utils import formats
+from django.utils.translation import ugettext_lazy as _
 from django.utils.dates import MONTHS, MONTHS_3, WEEKDAYS, WEEKDAYS_ABBR
 
 from calendartools.periods.proxybase import LocalizedSimpleProxy
@@ -113,6 +114,8 @@ class Period(LocalizedSimpleProxy):
 class Hour(Period):
     interval = relativedelta(hours=+1)
     convert = lambda self, dt: datetime(dt.year, dt.month, dt.day, dt.hour)
+    period_name = _('hour')
+    period_adverb = _('hourly')
     format = 'TIME_FORMAT'
 
     def __iter__(self):
@@ -140,6 +143,8 @@ class Hour(Period):
 class Day(Period):
     interval = relativedelta(days=+1)
     convert = lambda self, dt: datetime(dt.year, dt.month, dt.day)
+    period_name = _('day')
+    period_adverb = _('daily')
     format = 'DATE_FORMAT'
 
     def __iter__(self):
@@ -189,6 +194,8 @@ class Day(Period):
 class Week(Period):
     interval = relativedelta(weeks=+1)
     convert = lambda self, dt: first_day_of_week(dt)
+    period_name = _('week')
+    period_adverb = _('weekly')
     format = 'DATE_FORMAT'
 
     def __iter__(self):
@@ -226,6 +233,8 @@ class Week(Period):
 class Month(Period):
     interval = relativedelta(months=+1)
     convert = lambda self, dt: datetime(dt.year, dt.month, 1)
+    period_name = _('month')
+    period_adverb = _('monthly')
     format = 'DATE_FORMAT'
 
     def __iter__(self):
@@ -268,6 +277,8 @@ class Month(Period):
 
 class TripleMonth(Month):
     interval = relativedelta(months=+3)
+    period_name = _('triple month')
+    period_adverb = _('tri-monthly')
 
     def __iter__(self):
         return self.months
@@ -296,6 +307,8 @@ class TripleMonth(Month):
 class Year(Period):
     interval = relativedelta(years=+1)
     convert = lambda self, dt: datetime(dt.year, 1, 1)
+    period_name = _('year')
+    period_adverb = _('yearly')
     format = 'DATE_FORMAT'
 
     def __iter__(self):
