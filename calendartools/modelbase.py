@@ -93,7 +93,7 @@ class CalendarBase(StatusBase):
 
 class EventBase(StatusBase):
     name = models.CharField(_('name'), max_length=255)
-    slug = models.SlugField(_('slug'), unique=True)
+    slug = models.SlugField(_('slug'), unique=True, max_length=255)
     description = models.TextField(_('description'), blank=True)
     status = models.SmallIntegerField(_('status'),
         choices=StatusBase.STATUS_CHOICES,
