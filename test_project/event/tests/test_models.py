@@ -30,14 +30,14 @@ class TestStatusBase(TestCase):
             self.calendar, self.start, self.finish)[0]
 
     def test_status_slug(self):
-        mapping = {1: 'inactive', 2: 'hidden', 3: 'cancelled', 4: 'published'}
-        for num in mapping:
-            self.calendar.status = num
-            self.event.status = num
-            self.occurrence.status = num
-            assert_equal(self.calendar.status_slug, mapping[num])
-            assert_equal(self.event.status_slug, mapping[num])
-            assert_equal(self.occurrence.status_slug, mapping[num])
+        states = ['inactive', 'hidden', 'cancelled', 'published']
+        for state in states:
+            self.calendar.status = state
+            self.event.status = state
+            self.occurrence.status = state
+            assert_equal(self.calendar.status_slug, state)
+            assert_equal(self.event.status_slug, state)
+            assert_equal(self.occurrence.status_slug, state)
 
 
 class TestEvent(TestCase):
@@ -116,10 +116,10 @@ class TestEvent(TestCase):
             start=self.start,
             finish=self.start + timedelta(microseconds=1)
         )
-        occurrence.status = occurrence.CANCELLED
+        occurrence.status = occurrence.STATUS.cancelled
         occurrence.save()
         assert not self.event.is_cancelled
-        self.event.status = self.event.CANCELLED
+        self.event.status = self.event.STATUS.cancelled
         self.event.save()
         self.event = Event.objects.get(pk=self.event.pk)
         assert self.event.is_cancelled
@@ -206,20 +206,20 @@ class TestOccurrence(TestCase):
 
     def test_is_cancelled_property(self):
         assert not self.occurrence.is_cancelled
-        self.occurrence.status = self.occurrence.CANCELLED
+        self.occurrence.status = self.occurrence.STATUS.cancelled
         self.occurrence.save()
         self.occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
         assert self.occurrence.is_cancelled
-        self.occurrence.status = self.occurrence.PUBLISHED
+        self.occurrence.status = self.occurrence.STATUS.published
         self.occurrence.save()
         assert not self.occurrence.is_cancelled
-        self.event.status = self.event.CANCELLED
+        self.event.status = self.event.STATUS.cancelled
         self.event.save()
         self.occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
         assert self.occurrence.is_cancelled
-        self.event.status = self.event.PUBLISHED
+        self.event.status = self.event.STATUS.published
         self.event.save()
-        self.calendar.status = Calendar.CANCELLED
+        self.calendar.status = Calendar.STATUS.cancelled
         self.calendar.save()
         self.occurrence = Occurrence.objects.get(pk=self.occurrence.pk)
         assert self.occurrence.is_cancelled
@@ -308,7 +308,7 @@ class TestAttendance(TestCase):
         att = Attendance.objects.create(
             user=self.user, occurrence=self.occurrence
         )
-        assert_equal(att.status, Attendance.BOOKED)
+        assert_equal(att.status, Attendance.STATUS.booked)
 
     def test_cannot_book_finished_occurrences(self):
         self.occurrence.start = self.occurrence.start - timedelta(1)
@@ -324,7 +324,7 @@ class TestAttendance(TestCase):
             Attendance.objects.create,
             user=self.user,
             occurrence=self.occurrence,
-            status=Attendance.ATTENDED
+            status=Attendance.STATUS.attended
         )
 
     def test_only_one_active_attendance_record_for_user_occurrence(self):
@@ -333,13 +333,13 @@ class TestAttendance(TestCase):
                 CannotAttendFutureEventsValidator, sender=Attendance
             )
             att = Attendance(user=self.user, occurrence=self.occurrence)
-            for status in [Attendance.BOOKED, Attendance.ATTENDED]:
-                att.status = att.ATTENDED
+            for status in [Attendance.STATUS.booked, Attendance.STATUS.attended]:
+                att.status = att.STATUS.attended
                 att.save()
                 self.assertRaises(ValidationError, Attendance.objects.create,
                     user=self.user, occurrence=self.occurrence
                 )
-            for status in [Attendance.INACTIVE, Attendance.CANCELLED]:
+            for status in [Attendance.STATUS.inactive, Attendance.STATUS.cancelled]:
                 att.status = status
                 att.save()
                 att2 = Attendance.objects.create(
@@ -370,7 +370,7 @@ class TestAttendanceCancellation(TestCase):
             occurrence=self.occurrence,
         )
         assert not att.is_cancelled
-        att.status = att.CANCELLED
+        att.status = att.STATUS.cancelled
         att.save()
         assert att.is_cancelled
 
@@ -379,7 +379,7 @@ class TestAttendanceCancellation(TestCase):
         att = Attendance.objects.create(
             user=self.user,
             occurrence=self.occurrence,
-            status=Attendance.CANCELLED
+            status=Attendance.STATUS.cancelled
         )
         assert_equal(Cancellation.objects.count(), 1)
         assert_equal(att.cancellation, Cancellation.objects.get())
@@ -392,10 +392,10 @@ class TestAttendanceCancellation(TestCase):
         att = Attendance.objects.create(
             user=self.user,
             occurrence=self.occurrence,
-            status=Attendance.CANCELLED
+            status=Attendance.STATUS.cancelled
         )
-        status_choices = [i[0] for i in Attendance.STATUS_CHOICES if
-                          i[0] != Attendance.CANCELLED]
+        status_choices = [i[0] for i in Attendance.STATUS if
+                          i[0] != Attendance.STATUS.cancelled]
         for status in status_choices:
             att.status = status
             assert_raises(ValidationError, att.save)
@@ -405,9 +405,9 @@ class TestAttendanceCancellation(TestCase):
             user=self.user,
             occurrence=self.occurrence,
         )
-        assert_equal(att.status, att.BOOKED)
+        assert_equal(att.status, att.STATUS.booked)
         cancellation = Cancellation.objects.create(attendance=att)
-        assert_equal(att.status, att.CANCELLED)
+        assert_equal(att.status, att.STATUS.cancelled)
 
     def test_attended_attendance_records_cannot_be_cancelled(self):
         try:
@@ -417,9 +417,9 @@ class TestAttendanceCancellation(TestCase):
             att = Attendance.objects.create(
                 user=self.user,
                 occurrence=self.occurrence,
-                status=Attendance.ATTENDED
+                status=Attendance.STATUS.attended
             )
-            att.status = att.CANCELLED
+            att.status = att.STATUS.cancelled
             assert_raises(ValidationError, att.save)
         finally:
             collect_validators.connect(

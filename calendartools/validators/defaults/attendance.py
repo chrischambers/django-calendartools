@@ -24,7 +24,7 @@ class CannotBookFinishedEventsValidator(BaseAttendanceValidator):
 
 class CannotAttendFutureEventsValidator(BaseAttendanceValidator):
     def validate(self):
-        if (self.attendance.status == self.attendance.ATTENDED and
+        if (self.attendance.status == self.attendance.STATUS.attended and
             self.attendance.occurrence.start > datetime.now()):
             raise ValidationError(
                 'Cannot attend events which have not yet occurred.'
@@ -33,13 +33,13 @@ class CannotAttendFutureEventsValidator(BaseAttendanceValidator):
 
 class CannotCancelAttendedEventsValidator(BaseAttendanceValidator):
     def validate(self):
-        if (self.attendance.status == self.attendance.CANCELLED
+        if (self.attendance.status == self.attendance.STATUS.cancelled
             and self.attendance.pk):
             Attendance = get_model(defaults.CALENDAR_APP_LABEL, 'Attendance')
             try:
                 previous_status = Attendance._default_manager.values_list(
                     'status', flat=True).get(pk=self.attendance.pk)
-                if previous_status == self.attendance.ATTENDED:
+                if previous_status == self.attendance.STATUS.attended:
                     raise ValidationError(
                         'Cannot cancel attendance for events which have '
                         'already been attended.'
@@ -56,7 +56,7 @@ class OnlyOneActiveAttendanceForOccurrenceValidator(BaseAttendanceValidator):
         already_attending = Attendance._default_manager.filter(
             user=self.attendance.user,
             occurrence=self.attendance.occurrence,
-            status__in=[Attendance.BOOKED, Attendance.ATTENDED]
+            status__in=[Attendance.STATUS.booked, Attendance.STATUS.attended]
         )
         if self.attendance.pk:
             already_attending = already_attending.exclude(pk=self.attendance.pk)

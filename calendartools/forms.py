@@ -43,8 +43,8 @@ class AttendanceForm(forms.ModelForm):
         fields = ['noop']
 
     def clean(self):
-        if self.instance.pk and self.instance.status == self.instance.BOOKED:
-            self.instance.status = self.instance.CANCELLED
+        if self.instance.pk and self.instance.status == self.instance.STATUS.booked:
+            self.instance.status = self.instance.STATUS.cancelled
         return self.cleaned_data
 
 

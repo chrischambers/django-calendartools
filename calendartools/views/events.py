@@ -103,7 +103,7 @@ def occurrence_detail(request, slug, pk, *args, **kwargs):
             attendance = Attendance.objects.get(
                 user=user,
                 occurrence=occurrence,
-                status__in=[Attendance.BOOKED, Attendance.ATTENDED]
+                status__in=[Attendance.STATUS.booked, Attendance.STATUS.attended]
             )
         except Attendance.DoesNotExist:
             attendance = Attendance(user=user, occurrence=occurrence)
@@ -123,7 +123,7 @@ def occurrence_detail(request, slug, pk, *args, **kwargs):
         'attendance': attendance,
         'occurrence': occurrence,
     }
-    if attendance and attendance.status != attendance.ATTENDED:
+    if attendance and attendance.status != attendance.STATUS.attended:
         data['form'] = form
 
     return render_to_response("calendar/occurrence_detail.html", data,

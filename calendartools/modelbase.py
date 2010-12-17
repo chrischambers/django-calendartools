@@ -18,6 +18,9 @@ try:
 except ImportError: # Python 2.3, 2.4 fallback.
     from django.utils.functional import curry as partial
 
+from model_utils import Choices
+from model_utils.fields import StatusField
+
 
 class AuditedModel(models.Model):
     datetime_created  = CreationDateTimeField(_('Created'))
@@ -33,12 +36,11 @@ class AuditedModel(models.Model):
 
 class StatusBase(AuditedModel):
     """Encapsulates common elements for Calendar/Occurrence/Event models."""
-    INACTIVE, HIDDEN, CANCELLED, PUBLISHED = 1, 2, 3, 4
-    STATUS_CHOICES = (
-        (INACTIVE,  _('Inactive')),
-        (HIDDEN,    _('Hidden')),
-        (CANCELLED, _('Cancelled')),
-        (PUBLISHED, _('Published')),
+    STATUS = Choices(
+        ('published', _('Published')),
+        ('cancelled', _('Cancelled')),
+        ('hidden',    _('Hidden')),
+        ('inactive',  _('Inactive')),
     )
 
 
@@ -52,19 +54,14 @@ class StatusBase(AuditedModel):
         Slugs **almost** have the property of being valid css class names:
         this property allows us to style objects according to their status.
         """
-        for number, label in self.STATUS_CHOICES:
-            if self.status == number:
-                break
-        return slugify(label.lstrip('1234567890_-'))
+        return self.status
 
 
 class CalendarBase(StatusBase):
     name = models.CharField(_('name'), max_length=255)
     slug = models.SlugField(_('slug'), unique=True)
     description = models.TextField(_('description'), blank=True)
-    status = models.SmallIntegerField(_('status'),
-        choices=StatusBase.STATUS_CHOICES,
-        default=StatusBase.PUBLISHED,
+    status = StatusField(_('status'),
         help_text=_(
             "Toggle calendars inactive rather than deleting them. "
             "Changing a Calendar from 'published' to "
@@ -95,9 +92,7 @@ class EventBase(StatusBase):
     name = models.CharField(_('name'), max_length=255)
     slug = models.SlugField(_('slug'), unique=True, max_length=255)
     description = models.TextField(_('description'), blank=True)
-    status = models.SmallIntegerField(_('status'),
-        choices=StatusBase.STATUS_CHOICES,
-        default=StatusBase.PUBLISHED,
+    status = StatusField(_('status'),
         help_text=_(
             "Toggle events inactive rather than deleting them. "
             "Changing an Event from 'published' to inactive/hidden/cancelled "
@@ -166,7 +161,7 @@ class EventBase(StatusBase):
 
     @property
     def is_cancelled(self):
-        return self.status == self.CANCELLED
+        return self.status == self.STATUS.cancelled
 
 
 class PluggableValidationMixin(object):
@@ -193,9 +188,7 @@ class OccurrenceBase(PluggableValidationMixin, StatusBase):
         'if left blank, will default to the start time + %s.' %
         defaults.DEFAULT_OCCURRENCE_DURATION
     ))
-    status = models.SmallIntegerField(_('status'),
-        choices=StatusBase.STATUS_CHOICES,
-        default=StatusBase.PUBLISHED,
+    status = StatusField(_('status'),
         help_text=_('Toggle occurrences inactive rather than deleting them.')
     )
 
@@ -228,26 +221,22 @@ class OccurrenceBase(PluggableValidationMixin, StatusBase):
 
     @property
     def is_cancelled(self):
-        return (self.status == self.CANCELLED or
-                self.calendar.status == self.calendar.CANCELLED or
-                self.event.status == self.event.CANCELLED)
+        return (self.status == self.STATUS.cancelled or
+                self.calendar.status == self.calendar.STATUS.cancelled or
+                self.event.status == self.event.STATUS.cancelled)
 
     def localize(self, timezone):
         return LocalizedOccurrenceProxy(self, timezone=timezone)
 
 
 class AttendanceBase(PluggableValidationMixin, AuditedModel):
-    INACTIVE, BOOKED, ATTENDED, CANCELLED = 1, 2, 3, 4
-    STATUS_CHOICES = (
-        (INACTIVE,  _('Inactive')),
-        (BOOKED,    _('Booked')),
-        (ATTENDED,  _('Attended')),
-        (CANCELLED, _('Cancelled')),
+    STATUS = Choices(
+        ('booked',    _('Booked')),
+        ('attended',  _('Attended')),
+        ('cancelled', _('Cancelled')),
+        ('inactive',  _('Inactive')),
     )
-
-    status = models.SmallIntegerField(_('status'),
-        choices=STATUS_CHOICES,
-        default=BOOKED,
+    status = StatusField(_('status'),
         help_text=_("Toggle attendance records inactive rather "
                     "than deleting them. Once an Attendance record "
                     "is cancelled, you should create a new one rather "
@@ -270,7 +259,7 @@ class AttendanceBase(PluggableValidationMixin, AuditedModel):
 
     def clean(self):
         super(AttendanceBase, self).clean()
-        if self.status != self.CANCELLED and self.is_cancelled:
+        if self.status != self.STATUS.cancelled and self.is_cancelled:
             raise ValidationError(
                 'Attendance records cannot be uncancelled - '
                 'please create a new attendance record.'
@@ -286,7 +275,7 @@ class AttendanceBase(PluggableValidationMixin, AuditedModel):
 
     def save(self, *args, **kwargs):
         value = super(AttendanceBase, self).save(*args, **kwargs)
-        if self.status == self.CANCELLED and not self.is_cancelled:
+        if self.status == self.STATUS.cancelled and not self.is_cancelled:
             Cancellation = get_model(defaults.CALENDAR_APP_LABEL, 'Cancellation')
             Cancellation.objects.create(attendance=self)
         return value
@@ -307,7 +296,7 @@ class CancellationBase(AuditedModel):
 
     def save(self, *args, **kwargs):
         value = super(CancellationBase, self).save(*args, **kwargs)
-        if self.attendance.status != self.attendance.CANCELLED:
-            self.attendance.status = self.attendance.CANCELLED
+        if self.attendance.status != self.attendance.STATUS.cancelled:
+            self.attendance.status = self.attendance.STATUS.cancelled
             self.attendance.save()
         return value

@@ -11,7 +11,7 @@ class TestCommonManager(TestCase):
         self.calendar = Calendar.objects.create(name='Basic', slug='basic')
 
         self.events = []
-        for status, label in Event.STATUS_CHOICES:
+        for status, label in Event.STATUS:
             self.events.append(Event.objects.create(
                 name='Event',
                 slug='%s-event' % label.lower(),
@@ -23,9 +23,9 @@ class TestCommonManager(TestCase):
         self.finish = self.start + timedelta(hours=2)
 
         self.occurrences = []
-        for status, label in Occurrence.STATUS_CHOICES:
+        for status, label in Occurrence.STATUS:
             self.occurrences.append(Occurrence.objects.create(
-                event=self.events[-1], start=self.start, finish=self.finish,
+                event=self.events[0], start=self.start, finish=self.finish,
                 status=status, calendar=self.calendar
             ))
         self.model = Calendar
@@ -37,38 +37,38 @@ class TestCommonManager(TestCase):
         )
 
     def test_inactive_property(self):
-        self._test_status_properties('inactive', self.model.INACTIVE)
+        self._test_status_properties('inactive', self.model.STATUS.inactive)
 
     def test_hidden_property(self):
-        self._test_status_properties('hidden', self.model.HIDDEN)
+        self._test_status_properties('hidden', self.model.STATUS.hidden)
 
     def test_cancelled_property(self):
-        self._test_status_properties('cancelled', self.model.CANCELLED)
+        self._test_status_properties('cancelled', self.model.STATUS.cancelled)
 
     def test_published_property(self):
-        self._test_status_properties('published', self.model.PUBLISHED)
+        self._test_status_properties('published', self.model.STATUS.published)
 
     def test_visible_method(self):
         assert_equal(
             set(self.model.objects.visible()),
-            set(self.model.objects.filter(status__gte=self.model.CANCELLED))
+            set(self.model.objects.exclude(status__in=self.model.objects.hidden_statuses))
         )
         assert_equal(
             set(self.model.objects.visible(user=self.user)),
-            set(self.model.objects.filter(status__gte=self.model.CANCELLED))
+            set(self.model.objects.exclude(status__in=self.model.objects.hidden_statuses))
         )
         self.user.is_staff = True
         self.user.save()
         assert_equal(
             set(self.model.objects.visible(user=self.user)),
-            set(self.model.objects.filter(status__gte=self.model.HIDDEN))
+            set(self.model.objects.exclude(status__in=self.model.objects.hidden_statuses_for_admins))
         )
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
         assert_equal(
             set(self.model.objects.visible(user=self.user)),
-            set(self.model.objects.filter(status__gte=self.model.HIDDEN))
+            set(self.model.objects.exclude(status__in=self.model.objects.hidden_statuses_for_admins))
         )
 
 
@@ -90,7 +90,7 @@ class TestOccurrenceManager(TestCommonManager):
         self.event = self.occurrences[0].event
 
     def test_visible_with_hidden_event(self):
-        self.event.status = Event.HIDDEN
+        self.event.status = Event.STATUS.hidden
         self.event.save()
         assert_equal(
             set(Occurrence.objects.visible()),
@@ -104,18 +104,18 @@ class TestOccurrenceManager(TestCommonManager):
         self.user.save()
         assert_equal(
             set(Occurrence.objects.visible(self.user)),
-            set(Occurrence.objects.filter(status__gte=Occurrence.HIDDEN))
+            set(Occurrence.objects.exclude(status__in=Occurrence.objects.hidden_statuses_for_admins))
         )
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
         assert_equal(
             set(Occurrence.objects.visible(self.user)),
-            set(Occurrence.objects.filter(status__gte=Occurrence.HIDDEN))
+            set(Occurrence.objects.exclude(status__in=Occurrence.objects.hidden_statuses_for_admins))
         )
 
     def test_visible_with_inactive_event(self):
-        self.event.status = Event.INACTIVE
+        self.event.status = Event.STATUS.inactive
         self.event.save()
         assert_equal(
             set(Occurrence.objects.visible()),
@@ -140,7 +140,7 @@ class TestOccurrenceManager(TestCommonManager):
         )
 
     def test_visible_with_hidden_calendar(self):
-        self.calendar.status = Calendar.HIDDEN
+        self.calendar.status = Calendar.STATUS.hidden
         self.calendar.save()
         assert_equal(
             set(Occurrence.objects.visible()),
@@ -154,18 +154,18 @@ class TestOccurrenceManager(TestCommonManager):
         self.user.save()
         assert_equal(
             set(Occurrence.objects.visible(self.user)),
-            set(Occurrence.objects.filter(status__gte=Occurrence.HIDDEN))
+            set(Occurrence.objects.exclude(status__in=Occurrence.objects.hidden_statuses_for_admins))
         )
         self.user.is_superuser = True
         self.user.is_staff = False
         self.user.save()
         assert_equal(
             set(Occurrence.objects.visible(self.user)),
-            set(Occurrence.objects.filter(status__gte=Occurrence.HIDDEN))
+            set(Occurrence.objects.exclude(status__in=Occurrence.objects.hidden_statuses_for_admins))
         )
 
     def test_visible_with_inactive_calendar(self):
-        self.calendar.status = Calendar.INACTIVE
+        self.calendar.status = Calendar.STATUS.inactive
         self.calendar.save()
         assert_equal(
             set(Occurrence.objects.visible()),

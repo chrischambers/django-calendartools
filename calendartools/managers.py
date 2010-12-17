@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models.query import QuerySet
+from django.db.models.query import QuerySet, Q
 from calendartools import defaults
 
 
@@ -20,52 +20,59 @@ class DRYManager(models.Manager):
 
 class CommonQuerySet(QuerySet):
     @property
+    def hidden_statuses(self):
+        return [self.model.STATUS.inactive, self.model.STATUS.hidden]
+
+    @property
+    def hidden_statuses_for_admins(self):
+        return [self.model.STATUS.inactive]
+
+    @property
     def inactive(self):
-        return self.filter(status=self.model.INACTIVE)
+        return self.filter(status=self.model.STATUS.inactive)
 
     @property
     def hidden(self):
-        return self.filter(status=self.model.HIDDEN)
+        return self.filter(status=self.model.STATUS.hidden)
 
     @property
     def cancelled(self):
-        return self.filter(status=self.model.CANCELLED)
+        return self.filter(status=self.model.STATUS.cancelled)
 
     @property
     def published(self):
-        return self.filter(status=self.model.PUBLISHED)
+        return self.filter(status=self.model.STATUS.published)
+
+    def visible(self, user=None):
+        if user and defaults.view_hidden_calendars_check(user=user):
+            return self.exclude(status__in=self.hidden_statuses_for_admins)
+        else:
+            return self.exclude(status__in=self.hidden_statuses)
 
 
 class CalendarQuerySet(CommonQuerySet):
-    def visible(self, user=None):
-        from calendartools.modelbase import StatusBase
-        if user and defaults.view_hidden_calendars_check(user=user):
-            return self.filter(status__gte=StatusBase.HIDDEN)
-        else:
-            return self.filter(status__gte=StatusBase.CANCELLED)
+    pass
 
 
 class EventQuerySet(CommonQuerySet):
-    def visible(self, user=None):
-        from calendartools.modelbase import StatusBase
-        if user and defaults.view_hidden_events_check(user=user):
-            return self.filter(status__gte=StatusBase.HIDDEN)
-        else:
-            return self.filter(status__gte=StatusBase.CANCELLED)
+    pass
 
 
 class OccurrenceQuerySet(CommonQuerySet):
     def visible(self, user=None):
-        from calendartools.modelbase import StatusBase
         qset = self.select_related('event', 'calendar')
         if user and defaults.view_hidden_occurrences_check(user=user):
-            return (qset.filter(status__gte=StatusBase.HIDDEN) &
-                    qset.filter(event__status__gte=StatusBase.HIDDEN) &
-                    qset.filter(calendar__status__gte=StatusBase.HIDDEN))
+            return qset.exclude(
+                Q(status__in=self.hidden_statuses_for_admins) |
+                Q(event__status__in=self.hidden_statuses_for_admins) |
+                Q(calendar__status__in=self.hidden_statuses_for_admins)
+            )
         else:
-            return (qset.filter(status__gte=StatusBase.CANCELLED) &
-                    qset.filter(event__status__gte=StatusBase.CANCELLED) &
-                    qset.filter(calendar__status__gte=StatusBase.CANCELLED))
+            return qset.exclude(
+                Q(status__in=self.hidden_statuses) |
+                Q(event__status__in=self.hidden_statuses) |
+                Q(calendar__status__in=self.hidden_statuses)
+            )
 
 
 class CalendarManager(DRYManager):

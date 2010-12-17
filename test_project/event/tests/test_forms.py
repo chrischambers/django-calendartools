@@ -49,9 +49,9 @@ class TestAttendanceForm(TestCase):
             occurrence=self.occurrence,
         )
         form = AttendanceForm(instance=attendance, data={})
-        assert form.instance.status == Attendance.BOOKED
+        assert form.instance.status == Attendance.STATUS.booked
         assert form.is_valid()
-        assert form.instance.status == Attendance.CANCELLED
+        assert form.instance.status == Attendance.STATUS.cancelled
 
     def test_clean_method_performs_noop_if_status_attended(self):
         try:
@@ -61,12 +61,12 @@ class TestAttendanceForm(TestCase):
             attendance = Attendance.objects.create(
                 user=self.user,
                 occurrence=self.occurrence,
-                status=Attendance.ATTENDED
+                status=Attendance.STATUS.attended
             )
             form = AttendanceForm(instance=attendance, data={})
             assert form.is_valid()
             form.save()
-            assert form.instance.status == Attendance.ATTENDED
+            assert form.instance.status == Attendance.STATUS.attended
         finally:
             signals.collect_validators.connect(
                 CannotAttendFutureEventsValidator, sender=Attendance

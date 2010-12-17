@@ -53,14 +53,14 @@ class TestEventListView(TestCase):
         self.assertContains(response, self.event.name)
 
     def test_inactive_events_not_included(self):
-        self.event.status = self.event.INACTIVE
+        self.event.status = self.event.STATUS.inactive
         self.event.save()
         response = self.client.get(reverse('event-list'), follow=True)
         assert_equal(response.status_code, 200)
         assert not response.context['object_list']
 
     def test_hidden_events_not_included(self):
-        self.event.status = self.event.HIDDEN
+        self.event.status = self.event.STATUS.hidden
         self.event.save()
         response = self.client.get(reverse('event-list'), follow=True)
         assert_equal(response.status_code, 200)
@@ -72,7 +72,7 @@ class TestEventListView(TestCase):
         assert not response.context['object_list']
 
     def test_cancelled_events_included(self):
-        self.event.status = self.event.CANCELLED
+        self.event.status = self.event.STATUS.cancelled
         self.event.save()
         response = self.client.get(reverse('event-list'), follow=True)
         assert_equal(response.status_code, 200)
@@ -122,7 +122,7 @@ class TestEventDetailView(TestCase):
         assert_equal(response.context['event'], self.event)
 
     def test_inactive_event_detail_not_displayed(self):
-        self.event.status = self.event.INACTIVE
+        self.event.status = self.event.STATUS.inactive
         self.event.save()
         response = self.client.get(
             reverse('event-detail', args=(self.event.slug,)), follow=True
@@ -130,7 +130,7 @@ class TestEventDetailView(TestCase):
         assert_equal(response.status_code, 404)
 
     def test_hidden_event_detail_not_displayed(self):
-        self.event.status = self.event.HIDDEN
+        self.event.status = self.event.STATUS.hidden
         self.event.save()
         response = self.client.get(
             reverse('event-detail', args=(self.event.slug,)), follow=True
@@ -138,7 +138,7 @@ class TestEventDetailView(TestCase):
         assert_equal(response.status_code, 404)
 
     def test_hidden_event_detail_displayed_for_permitted_users(self):
-        self.event.status = self.event.HIDDEN
+        self.event.status = self.event.STATUS.hidden
         self.event.save()
         self.user.is_staff = True
         self.user.save()
@@ -150,7 +150,7 @@ class TestEventDetailView(TestCase):
         self.assertContains(response, self.event.name)
 
     def test_cancelled_event_detail_displayed(self):
-        self.event.status = self.event.CANCELLED
+        self.event.status = self.event.STATUS.cancelled
         self.event.save()
         response = self.client.get(
             reverse('event-detail', args=(self.event.slug,)), follow=True
@@ -224,7 +224,7 @@ class TestEventDetailView(TestCase):
         assert_equal(response.status_code, 200)
 
     def test_list_occurrences(self):
-        for status, label in Occurrence.STATUS_CHOICES:
+        for status, label in Occurrence.STATUS:
             Occurrence.objects.create(
                 calendar=self.calendar,
                 event=self.event,
@@ -260,7 +260,7 @@ class TestEventDetailView2(TestCase):
         self.start = datetime.utcnow() + timedelta(hours=2)
 
     def test_list_occurrences(self):
-        for status, label in Occurrence.STATUS_CHOICES:
+        for status, label in Occurrence.STATUS:
             Occurrence.objects.create(
                 calendar=self.calendar,
                 event=self.event,
@@ -314,7 +314,7 @@ class TestOccurrenceDetailView(TestCase):
             signals.collect_validators.disconnect(
                 CannotAttendFutureEventsValidator, sender=Attendance
             )
-            for status in (Attendance.BOOKED, Attendance.ATTENDED):
+            for status in (Attendance.STATUS.booked, Attendance.STATUS.attended):
                 attendance.status = status
                 attendance.save()
                 response = self.client.get(
@@ -322,7 +322,7 @@ class TestOccurrenceDetailView(TestCase):
                             args=(self.event.slug, self.occurrence.pk)), follow=True
                 )
                 assert_equal(response.context['attendance'], attendance)
-            for status in (Attendance.INACTIVE, Attendance.CANCELLED):
+            for status in (Attendance.STATUS.inactive, Attendance.STATUS.cancelled):
                 attendance.status = status
                 attendance.save()
                 response = self.client.get(reverse('occurrence-detail',
@@ -342,7 +342,7 @@ class TestOccurrenceDetailView(TestCase):
             attendance = Attendance.objects.create(
                 user=self.user,
                 occurrence=self.occurrence,
-                status=Attendance.ATTENDED
+                status=Attendance.STATUS.attended
             )
             response = self.client.get(reverse('occurrence-detail',
                 args=(self.event.slug, self.occurrence.pk)), follow=True
@@ -361,7 +361,7 @@ class TestOccurrenceDetailView(TestCase):
         attendance = Attendance.objects.get()
         assert_equal(attendance.user, self.user)
         assert_equal(attendance.occurrence, self.occurrence)
-        assert_equal(attendance.status, Attendance.BOOKED)
+        assert_equal(attendance.status, Attendance.STATUS.booked)
 
     def test_cancel_attendance(self):
         assert not Attendance.objects.exists()
@@ -370,12 +370,12 @@ class TestOccurrenceDetailView(TestCase):
         )
         assert_equal(Attendance.objects.count(), 1)
         attendance = Attendance.objects.get()
-        assert_equal(attendance.status, Attendance.BOOKED)
+        assert_equal(attendance.status, Attendance.STATUS.booked)
         response = self.client.post(reverse('occurrence-detail',
             args=(self.event.slug, self.occurrence.pk)), data={}, follow=True
         )
         attendance = Attendance.objects.get()
-        assert_equal(attendance.status, Attendance.CANCELLED)
+        assert_equal(attendance.status, Attendance.STATUS.cancelled)
 
     def test_occurrence_detail(self):
         response = self.client.get(
@@ -387,7 +387,7 @@ class TestOccurrenceDetailView(TestCase):
         self.assertContains(response, self.event.name)
 
     def test_inactive_occurrence_detail_not_displayed(self):
-        self.occurrence.status = self.occurrence.INACTIVE
+        self.occurrence.status = self.occurrence.STATUS.inactive
         self.occurrence.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -396,7 +396,7 @@ class TestOccurrenceDetailView(TestCase):
         assert_equal(response.status_code, 404)
 
     def test_hidden_occurrence_detail_not_displayed(self):
-        self.occurrence.status = self.occurrence.HIDDEN
+        self.occurrence.status = self.occurrence.STATUS.hidden
         self.occurrence.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -405,7 +405,7 @@ class TestOccurrenceDetailView(TestCase):
         assert_equal(response.status_code, 404)
 
     def test_hidden_occurrence_detail_displayed_for_permitted_users(self):
-        self.occurrence.status = self.occurrence.HIDDEN
+        self.occurrence.status = self.occurrence.STATUS.hidden
         self.occurrence.save()
         self.user.is_staff = True
         self.user.save()
@@ -418,7 +418,7 @@ class TestOccurrenceDetailView(TestCase):
         self.assertContains(response, self.event.name)
 
     def test_cancelled_occurrence_detail_displayed(self):
-        self.occurrence.status = self.occurrence.CANCELLED
+        self.occurrence.status = self.occurrence.STATUS.cancelled
         self.occurrence.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -438,7 +438,7 @@ class TestOccurrenceDetailView(TestCase):
         self.assertContains(response, self.event.name)
 
     def test_occurrence_with_inactive_event_not_displayed(self):
-        self.event.status = self.event.INACTIVE
+        self.event.status = self.event.STATUS.inactive
         self.event.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -447,7 +447,7 @@ class TestOccurrenceDetailView(TestCase):
         assert_equal(response.status_code, 404)
 
     def test_occurrence_with_hidden_event_not_displayed(self):
-        self.event.status = self.event.HIDDEN
+        self.event.status = self.event.STATUS.hidden
         self.event.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -456,7 +456,7 @@ class TestOccurrenceDetailView(TestCase):
         assert_equal(response.status_code, 404)
 
     def test_occurrence_with_hidden_event_displayed_for_permitted_users(self):
-        self.event.status = self.event.HIDDEN
+        self.event.status = self.event.STATUS.hidden
         self.event.save()
         self.user.is_staff = True
         self.user.save()
@@ -469,7 +469,7 @@ class TestOccurrenceDetailView(TestCase):
         self.assertContains(response, self.event.name)
 
     def test_occurrence_with_cancelled_event_displayed_as_cancelled(self):
-        self.event.status = self.event.CANCELLED
+        self.event.status = self.event.STATUS.cancelled
         self.event.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -481,7 +481,7 @@ class TestOccurrenceDetailView(TestCase):
         self.assertContains(response, "This event has been cancelled")
 
     def test_cancelled_occurrence_with_published_event_displayed(self):
-        self.occurrence.status = self.occurrence.CANCELLED
+        self.occurrence.status = self.occurrence.STATUS.cancelled
         self.occurrence.save()
         response = self.client.get(
             reverse('occurrence-detail',
@@ -723,18 +723,18 @@ class TestCalendarVisibility(TestCase):
                      (url, kwargs) in self.url_params]
 
     def test_calendar_list_displays_cancelled_and_above(self):
-        for state in (Calendar.INACTIVE, Calendar.HIDDEN):
+        for state in (Calendar.STATUS.inactive, Calendar.STATUS.hidden):
             Calendar.objects.all().update(status=state)
             response = self.client.get(reverse('calendar-list'), follow=True)
             assert_equal(len(response.context[-1].get('object_list')), 0)
 
-        for state in (Calendar.CANCELLED, Calendar.PUBLISHED):
+        for state in (Calendar.STATUS.cancelled, Calendar.STATUS.published):
             Calendar.objects.all().update(status=state)
             response = self.client.get(reverse('calendar-list'), follow=True)
             assert_equal(len(response.context[-1].get('object_list')), 2)
 
     def test_calendar_list_displays_hidden_for_staff(self):
-        Calendar.objects.all().update(status=Calendar.HIDDEN)
+        Calendar.objects.all().update(status=Calendar.STATUS.hidden)
 
         self.user.is_superuser = True
         self.user.save()
@@ -748,25 +748,25 @@ class TestCalendarVisibility(TestCase):
         assert_equal(len(response.context[-1].get('object_list')), 2)
 
     def test_normal_user_cannot_see_inactive_calendars(self):
-        Calendar.objects.all().update(status=Calendar.INACTIVE)
+        Calendar.objects.all().update(status=Calendar.STATUS.inactive)
         for url in self.urls:
             response = self.client.get(url, follow=True)
             assert_equal(404, response.status_code)
 
     def test_normal_user_cannot_see_hidden_calendars(self):
-        Calendar.objects.all().update(status=Calendar.HIDDEN)
+        Calendar.objects.all().update(status=Calendar.STATUS.hidden)
         for url in self.urls:
             response = self.client.get(url, follow=True)
             assert_equal(404, response.status_code)
 
     def test_normal_user_can_see_cancelled_calendars(self):
-        Calendar.objects.all().update(status=Calendar.CANCELLED)
+        Calendar.objects.all().update(status=Calendar.STATUS.cancelled)
         for url in self.urls:
             response = self.client.get(url, follow=True)
             assert_equal(200, response.status_code)
 
     def test_normal_user_can_see_published_calendars(self):
-        Calendar.objects.all().update(status=Calendar.PUBLISHED)
+        Calendar.objects.all().update(status=Calendar.STATUS.published)
         for url in self.urls:
             response = self.client.get(url, follow=True)
             assert_equal(200, response.status_code)
@@ -774,7 +774,7 @@ class TestCalendarVisibility(TestCase):
     def test_superuser_can_see_hidden_calendars(self):
         self.user.is_superuser = True
         self.user.save()
-        Calendar.objects.all().update(status=Calendar.HIDDEN)
+        Calendar.objects.all().update(status=Calendar.STATUS.hidden)
         for url in self.urls:
             response = self.client.get(url, follow=True)
             assert_equal(200, response.status_code)
@@ -782,7 +782,7 @@ class TestCalendarVisibility(TestCase):
     def test_staff_user_can_see_hidden_calendars(self):
         self.user.is_staff = True
         self.user.save()
-        Calendar.objects.all().update(status=Calendar.HIDDEN)
+        Calendar.objects.all().update(status=Calendar.STATUS.hidden)
         for url in self.urls:
             response = self.client.get(url, follow=True)
             assert_equal(200, response.status_code)

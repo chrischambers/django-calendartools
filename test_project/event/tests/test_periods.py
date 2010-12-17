@@ -628,7 +628,7 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
             calendar=self.calendar,
             event=self.event,
             start=self.start,
-            status=Occurrence.CANCELLED,
+            status=Occurrence.STATUS.cancelled,
             finish=self.start + timedelta(hours=2)
         )
 
