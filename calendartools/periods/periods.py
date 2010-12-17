@@ -148,7 +148,7 @@ class Day(Period):
     format = 'DATE_FORMAT'
 
     def __iter__(self):
-        return self.hours
+        return iter(self.hours)
 
     @property
     def name(self):
@@ -164,8 +164,8 @@ class Day(Period):
 
     @property
     def hours(self):
-        return (Hour(dt, occurrences=self.occurrences) for dt in
-                rrule(HOURLY, dtstart=self.start, until=self.finish))
+        return [Hour(dt, occurrences=self.occurrences) for dt in
+                rrule(HOURLY, dtstart=self.start, until=self.finish)]
 
     def get_week(self):
         return Week(self, occurrences=self.occurrences)
@@ -211,7 +211,7 @@ class Week(Period):
     format = 'DATE_FORMAT'
 
     def __iter__(self):
-        return self.days
+        return iter(self.days)
 
     @property
     def number(self):
@@ -219,9 +219,9 @@ class Week(Period):
 
     @property
     def days(self):
-        return (Day(dt, occurrences=self.occurrences) for dt in rrule(DAILY,
+        return [Day(dt, occurrences=self.occurrences) for dt in rrule(DAILY,
             dtstart=self.start, until=self.finish
-        ))
+        )]
 
     def get_month(self):
         return Month(self, occurrences=self.occurrences)
@@ -250,7 +250,7 @@ class Month(Period):
     format = 'DATE_FORMAT'
 
     def __iter__(self):
-        return self.weeks
+        return iter(self.weeks)
 
     @property
     def name(self):
@@ -266,15 +266,15 @@ class Month(Period):
 
     @property
     def weeks(self):
-        return (Week(dt, occurrences=self.occurrences) for dt in rrule(WEEKLY,
+        return [Week(dt, occurrences=self.occurrences) for dt in rrule(WEEKLY,
             dtstart=self.start, until=self.finish
-        ))
+        )]
 
     @property
     def days(self):
-        return (Day(dt, occurrences=self.occurrences) for dt in rrule(DAILY,
+        return [Day(dt, occurrences=self.occurrences) for dt in rrule(DAILY,
             dtstart=self.start, until=self.finish
-        ))
+        )]
 
     @property
     def calendar_display(self):
@@ -293,7 +293,7 @@ class TripleMonth(Month):
     period_adverb = _('tri-monthly')
 
     def __iter__(self):
-        return self.months
+        return iter(self.months)
 
     @property
     def first_month(self):
@@ -311,9 +311,9 @@ class TripleMonth(Month):
 
     @property
     def months(self):
-        return (Month(dt, occurrences=self.occurrences) for dt in
+        return [Month(dt, occurrences=self.occurrences) for dt in
                 rrule(MONTHLY, dtstart=self.start, until=self.finish
-        ))
+        )]
 
 
 class Year(Period):
@@ -324,7 +324,7 @@ class Year(Period):
     format = 'DATE_FORMAT'
 
     def __iter__(self):
-        return self.months
+        return iter(self.months)
 
     @property
     def number(self):
@@ -332,9 +332,9 @@ class Year(Period):
 
     @property
     def months(self):
-        return (Month(dt, occurrences=self.occurrences) for dt in
+        return [Month(dt, occurrences=self.occurrences) for dt in
                 rrule(MONTHLY, dtstart=self.start, until=self.finish
-        ))
+        )]
 
     @property
     def days(self):
