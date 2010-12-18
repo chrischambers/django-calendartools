@@ -43,10 +43,10 @@ class Occurrence(OccurrenceBase):
 
 class Attendance(AttendanceBase):
     user = models.ForeignKey(User, verbose_name=_('user'),
-        related_name='attendance'
+        related_name='attendances'
     )
     occurrence = models.ForeignKey(Occurrence, verbose_name=_('occurrence'),
-        related_name='attendees' # users_attended? user_attendance(s)?
+        related_name='attendances'
     )
 
 
