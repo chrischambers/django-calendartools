@@ -2,7 +2,6 @@ from dateutil import rrule
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db import models
 from django.db.models.loading import get_model
-from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import (
     CreationDateTimeField, ModificationDateTimeField
