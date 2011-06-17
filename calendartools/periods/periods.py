@@ -266,9 +266,21 @@ class Month(Period):
 
     @property
     def weeks(self):
-        return [Week(dt, occurrences=self.occurrences) for dt in rrule(WEEKLY,
+        weeks = [Week(dt, occurrences=self.occurrences) for dt in rrule(WEEKLY,
             dtstart=self.start, until=self.finish
         )]
+        following_week_start = weeks[-1].finish + timedelta.resolution
+        if following_week_start in self:
+            weeks.append(Week(following_week_start, occurrences=self.occurrences))
+        return weeks
+        """
+        res = []
+        week = Week(self.start, occurrences=self.occurrences)
+        while week in self: # first week not in self - fail!
+            res.append(week)
+            week = Week(week.start + timedelta(7), occurrences=self.occurrences)
+        return res
+        """
 
     @property
     def days(self):

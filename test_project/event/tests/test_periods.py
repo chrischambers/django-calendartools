@@ -724,3 +724,31 @@ class TestDateTimeProxiesWithLocalizedOccurrences(TestCase):
                 self.start, occurrences=occurrences, timezone=timezone
             )
             assert_equal(len(localized_week.occurrences), 1)
+
+
+class TestWeeksAttribute(TestCase):
+    def setUp(self):
+        self.month = Month(date(2011, 1, 1))
+
+    def test_weeks_attribute(self):
+        expected = [
+            date(2010, 12, 26),
+            date(2011, 1,  2),
+            date(2011, 1,  9),
+            date(2011, 1,  16),
+            date(2011, 1,  23),
+            date(2011, 1,  30)
+        ]
+        expected = [Week(dt) for dt in expected]
+        assert_equal(self.month.weeks, expected)
+
+        self.month = Month(date(2011, 2, 1))
+        expected = [
+            date(2011, 1,  30),
+            date(2011, 2,  6),
+            date(2011, 2,  13),
+            date(2011, 2,  20),
+            date(2011, 2,  27)
+        ]
+        expected = [Week(dt) for dt in expected]
+        assert_equal(self.month.weeks, expected)

@@ -1,6 +1,7 @@
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils import translation
+from threaded_multihost.threadlocals import get_current_request
 
 register = template.Library()
 
@@ -79,6 +80,13 @@ def clear_query_string(url):
         )
     return new_url
 
+@register.filter(name='get_query_string')
+@stringfilter
+def get_query_string(url, key):
+    parsed_url = urlparse(url)
+    querydict = parse_qs(parsed_url.query)
+    return querydict.get(key, '')
+
 @register.filter(name='set_query_string')
 @stringfilter
 def set_query_string_wrapper(url, arg):
@@ -107,12 +115,32 @@ def set_query_string(url, key, value):
         )
     return new_url
 
-@register.filter(name='get_query_string')
-@stringfilter
-def get_query_string(url, key):
-    parsed_url = urlparse(url)
-    querydict = parse_qs(parsed_url.query)
-    return querydict.get(key, '')
+
+class SetQueryStringNode(template.Node):
+    def __init__(self, url, key, value, varname):
+        self.url = template.Variable(url)
+        self.key = key
+        self.value = template.Variable(value)
+        self.varname = varname
+
+    def render(self, context):
+        url = self.url.resolve(context)
+        value = self.value.resolve(context)
+        context[self.varname] = set_query_string(
+            url, self.key, value
+        )
+        return ''
+
+def do_set_query_string(parser, token):
+    try:
+        tag_name, url, key, value, as_, varname = token.split_contents()
+    except ValueError, e:
+        raise template.TemplateSyntaxError("%r requires 6 arguments" % (
+                token.contents.split()[0],
+        ))
+    return SetQueryStringNode(url, key, value, varname)
+
+register.tag('set_query_string', do_set_query_string)
 
 @register.filter(name='delete_query_string')
 @stringfilter
@@ -134,6 +162,28 @@ def delete_query_string(url, key):
         )
     return new_url
 
+@register.filter(name='persist_query_string')
+@stringfilter
+def persist_query_string(url, from_url=None):
+    """
+    Transfers GET parameters from ``from_url`` to ``url`` as *defaults* (if
+    ``url`` has a different value for that GET parameter, it will
+    remain as-is).
+    """
+    from_url = from_url or get_current_request().get_full_path()
+    parsed_url = urlparse(from_url)
+    querydict = parse_qs(parsed_url.query)
+    if not querydict:
+        return url
+    else:
+        parsed_new_url = urlparse(url)
+        querydict.update(parse_qs(parsed_new_url.query))
+        newquery = urlencode(querydict, doseq=True)
+        new_url = "%s?%s%s" % (
+            parsed_new_url.path, newquery, parsed_new_url.fragment
+        )
+        return new_url
+
 @register.filter()
 def time_relative_to_today(dt):
     from calendartools.periods import Day
@@ -145,3 +195,31 @@ def time_relative_to_today(dt):
         return 'today'
     else:
         return 'future'
+
+
+class DiggPaginationNode(template.Node):
+    def __init__(self, page, varname):
+        self.page = template.Variable(page)
+        self.varname = varname
+        self.max_range = 5
+
+    def render(self, context):
+        page = self.page.resolve(context)
+        current = page.number - 1 # pages are 1-indexed.
+        start, end = current - self.max_range, current + self.max_range
+        if start < 0:
+            start = 0
+        page_list = page.paginator.page_range[start:end]
+        context[self.varname] = page_list
+        return ''
+
+def do_digg_pagination(parser, token):
+    try:
+        tag_name, page, as_, varname = token.split_contents()
+    except ValueError, e:
+        raise template.TemplateSyntaxError("%r requires 4 arguments" % (
+                token.contents.split()[0],
+        ))
+    return DiggPaginationNode(page, varname)
+
+register.tag('digg_pagination', do_digg_pagination)
