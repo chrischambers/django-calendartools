@@ -6,7 +6,7 @@ from calendartools.modelbase import (
     CalendarBase, EventBase, OccurrenceBase, AttendanceBase, CancellationBase
 )
 from calendartools.managers import (
-    CalendarManager, EventManager, OccurrenceManager
+    CalendarManager, EventManager, OccurrenceManager, AttendanceManager
 )
 from calendartools.validators.defaults import activate_default_validators
 
@@ -48,6 +48,7 @@ class Attendance(AttendanceBase):
     occurrence = models.ForeignKey(Occurrence, verbose_name=_('occurrence'),
         related_name='attendances'
     )
+    objects = AttendanceManager()
 
 
     class Meta(AttendanceBase.Meta):

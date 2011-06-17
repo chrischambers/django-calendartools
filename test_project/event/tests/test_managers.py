@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from django.test import TestCase
 from django.contrib.auth.models import User
 from nose.tools import *
-from event.models import Calendar, Event, Occurrence
+from event.models import Calendar, Event, Occurrence, Attendance
 
 
 class TestCommonManager(TestCase):
@@ -187,4 +187,55 @@ class TestOccurrenceManager(TestCommonManager):
         assert_equal(
             set(Occurrence.objects.visible(self.user)),
             set(Occurrence.objects.none())
+        )
+
+
+class TestAttendanceManager(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='TestyMcTesterson')
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
+
+        self.events = []
+        for status, label in Event.STATUS:
+            self.events.append(Event.objects.create(
+                name='Event',
+                slug='%s-event' % label.lower(),
+                creator=self.user,
+                status=status
+            ))
+
+        self.start = datetime.now() + timedelta(minutes=30)
+        self.finish = self.start + timedelta(hours=2)
+
+        self.occurrences = []
+        for status, label in Occurrence.STATUS:
+            self.occurrences.append(Occurrence.objects.create(
+                event=self.events[0], start=self.start, finish=self.finish,
+                status=status, calendar=self.calendar
+            ))
+        self.model = Calendar
+        self.attendance = Attendance.objects.create(
+            user=self.user,
+            occurrence = self.occurrences[0],
+            status=Attendance.STATUS.booked,
+        )
+
+    def test_active_manager_property(self):
+        assert_equal(
+            set(Attendance.objects.active),
+            set(Attendance.objects.all())
+        )
+        for i, state in enumerate(Attendance.objects.inactive_statuses):
+            Attendance.objects.create(
+                user=User.objects.create(username='Test%s' % i),
+                occurrence=self.occurrences[0],
+                status=state
+            )
+        assert_not_equal(
+            set(Attendance.objects.active),
+            set(Attendance.objects.all())
+        )
+        assert_equal(
+            set(Attendance.objects.active),
+            set(Attendance.objects.filter(id=self.attendance.id))
         )

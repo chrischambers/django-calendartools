@@ -75,6 +75,16 @@ class OccurrenceQuerySet(CommonQuerySet):
             )
 
 
+class AttendanceQuerySet(CommonQuerySet):
+    @property
+    def inactive_statuses(self):
+        return [self.model.STATUS.inactive, self.model.STATUS.cancelled]
+
+    @property
+    def active(self):
+        return self.exclude(status__in=self.inactive_statuses)
+
+
 class CalendarManager(DRYManager):
     use_for_related_fields = True
 
@@ -94,3 +104,10 @@ class OccurrenceManager(DRYManager):
 
     def get_query_set(self):
         return OccurrenceQuerySet(self.model)
+
+
+class AttendanceManager(DRYManager):
+    use_for_related_fields = True
+
+    def get_query_set(self):
+        return AttendanceQuerySet(self.model)
