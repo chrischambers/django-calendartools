@@ -15,6 +15,9 @@ class DRYManager(models.Manager):
         try:
             return getattr(self.__class__, attr, *args)
         except AttributeError:
+            # See http://code.djangoproject.com/ticket/15062
+            if attr.startswith('_'):
+                raise AttributeError
             return getattr(self.get_query_set(), attr, *args)
 
 
