@@ -20,7 +20,7 @@ ul.occurrences {margin: 0; padding: 5px;}
 ul.occurrences li {display: inline; list-style: none; text-indent: 0; font-size: 14px;}
 
 table.calendar tr {height: 100%}
-table.calendar td {height: 100%; min-width: 100px; width: 14%}
+table.calendar td {height: 100%; width: 14%}
 table.calendar td.week.day,
 table.calendar td.week-number {width: 2%;}
 
@@ -61,7 +61,7 @@ table.calendar td.busy {background-color: #ffcece;}
 /*Vertical stripes:*/
 /*table.calendar col.alt {background-color: rgba(90, 90, 90, 0.6);}*/
 
-.period-wrapper {margin: 0; width: 100%; height: 100%}
+.period-wrapper {margin: 0; height: 100%}
 table.calendar td.future .period-wrapper {background: rgba(80, 80, 80, 0.1)}
 table.calendar td.today .period-wrapper {background: rgba(255, 158, 206, 0.6)}
 /*table.calendar col.today */
