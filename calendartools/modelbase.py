@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import (
-    CreationDateTimeField, ModificationDateTimeField
+    CreationDateTimeField, ModificationDateTimeField, AutoSlugField
 )
 from threaded_multihost.fields import CreatorField, EditorField
 from calendartools import defaults
@@ -58,7 +58,7 @@ class StatusBase(AuditedModel):
 
 class CalendarBase(StatusBase):
     name = models.CharField(_('name'), max_length=255)
-    slug = models.SlugField(_('slug'), unique=True)
+    slug = AutoSlugField(_('slug'), unique=True, editable=True, populate_from='name')
     description = models.TextField(_('description'), blank=True)
     status = StatusField(_('status'),
         help_text=_(
@@ -89,7 +89,12 @@ class CalendarBase(StatusBase):
 
 class EventBase(StatusBase):
     name = models.CharField(_('name'), max_length=255)
-    slug = models.SlugField(_('slug'), unique=True, max_length=255)
+    slug = AutoSlugField(_('slug'),
+        unique=True,
+        editable=True,
+        max_length=255,
+        populate_from='name'
+    )
     description = models.TextField(_('description'), blank=True)
     status = StatusField(_('status'),
         help_text=_(
