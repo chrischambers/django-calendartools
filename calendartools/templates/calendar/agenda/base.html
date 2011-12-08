@@ -1,14 +1,9 @@
 {% extends "calendar/base.html" %}
 {% load i18n %}
 {% load calendartools_tags %}
-{% block extra_head %}
-  <link rel="stylesheet" type="text/css" media="all"
-        href="{{ STATIC_URL }}css/layout.css" />
-{% endblock %}
 
 {% block primary %}
-{% block heading %}
-{% endblock %}
+{% block heading %}{% endblock %}
 
 <p class="toggle-calendar">{% trans "Switch to" %}
 <a href="{% block calendar_url %}{% endblock %}">
