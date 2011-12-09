@@ -1,10 +1,14 @@
 {% extends "calendar/agenda/base.html" %}
 {% load calendartools_tags %}
 {% load i18n %}
-{% block title %}Week Agenda - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+{% block title %}
+  {{ week.first_day|date:"SHORT_DATE_FORMAT" }} &dash;
+  {{ week.last_day|date:"SHORT_DATE_FORMAT" }} -
+  Weekly Agenda - {{ block.super }}
+{% endblock %}
 
 {% block heading %}
-<h3>{% trans "Week Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
+<h3>{% trans "Weekly Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 {% endblock %}
 
 {% block calendar_url %}{% url week-calendar calendar.slug week.year week.number %}{% endblock %}

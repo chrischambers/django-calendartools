@@ -1,7 +1,7 @@
 {% extends "calendar/calendar/base.html" %}
 {% load i18n %}
 {% load calendartools_tags %}
-{% block title %}Yearly View - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+{% block title %}{{ year.year }} - Yearly View - {{ block.super }}{% endblock %}
 
 {% block heading %}
 <h3>{% trans "Yearly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>

@@ -1,7 +1,9 @@
 {% extends "calendar/agenda/base.html" %}
 {% load calendartools_tags %}
 {% load i18n %}
-{% block title %}Daily Agenda - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+{% block title %}
+  {{ day|date:"SHORT_DATE_FORMAT" }} - Daily Agenda - {{ block.super }}
+{% endblock %}
 
 {% block heading %}
 <h3>{% trans "Daily Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>

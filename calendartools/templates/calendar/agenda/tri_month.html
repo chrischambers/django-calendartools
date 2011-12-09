@@ -1,7 +1,18 @@
 {% extends "calendar/agenda/base.html" %}
 {% load calendartools_tags %}
 {% load i18n %}
-{% block title %}Tri-Monthly Agenda - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+
+{% block title %}
+{% with tri_month.first_month as first_month %}
+{% with tri_month.third_month as third_month %}
+
+  {{ first_month.name }} {{ first_month.year }} &dash;
+  {{ third_month.name }} {{ third_month.year }} -
+  Tri-Monthly Agenda - {{ block.super }}
+
+{% endwith %}
+{% endwith %}
+{% endblock %}
 
 {% block heading %}
 <h3>{% trans "Tri-Monthly Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>

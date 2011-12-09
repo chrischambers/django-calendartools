@@ -1,7 +1,11 @@
 {% extends "calendar/calendar/base.html" %}
-{% load i18n %}
 {% load calendartools_tags %}
-{% block title %}Weekly View - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+{% load i18n %}
+{% block title %}
+  {{ week.first_day|date:"SHORT_DATE_FORMAT" }} &dash;
+  {{ week.last_day|date:"SHORT_DATE_FORMAT" }} -
+  Weekly View - {{ block.super }}
+{% endblock %}
 
 {% block heading %}
 <h3>{% trans "Weekly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>

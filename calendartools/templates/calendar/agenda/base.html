@@ -1,6 +1,7 @@
 {% extends "calendar/base.html" %}
 {% load i18n %}
 {% load calendartools_tags %}
+{% block title %}{{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
 
 {% block primary %}
 {% block heading %}{% endblock %}

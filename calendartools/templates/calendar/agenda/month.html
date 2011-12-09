@@ -1,7 +1,9 @@
 {% extends "calendar/agenda/base.html" %}
 {% load calendartools_tags %}
 {% load i18n %}
-{% block title %}Monthly Agenda - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+{% block title %}
+  {{ month.name }} {{ month.year }} - Monthly Agenda - {{ block.super }}
+{% endblock %}
 
 {% block heading %}
 <h3>{% trans "Monthly Agenda" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>

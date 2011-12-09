@@ -1,7 +1,9 @@
 {% extends "calendar/calendar/base.html" %}
 {% load i18n %}
 {% load calendartools_tags %}
-{% block title %}Daily View - {{ calendar.name }} Calendar - {{ block.super }}{% endblock %}
+{% block title %}
+  {{ day|date:"SHORT_DATE_FORMAT" }} - Daily View - {{ block.super }}
+{% endblock %}
 
 {% block heading %}
 <h3>{% trans "Daily View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
