@@ -42,26 +42,27 @@ class CommonQuerySet(QuerySet):
     def cancelled(self):
         return self.filter(status=self.model.STATUS.cancelled)
 
-    @property
-    def published(self):
-        return self.filter(status=self.model.STATUS.published)
-
     def visible(self, user=None):
         if user and defaults.view_hidden_calendars_check(user=user):
             return self.exclude(status__in=self.hidden_statuses_for_admins)
         else:
             return self.exclude(status__in=self.hidden_statuses)
 
+class NonAttendanceQuerySet(CommonQuerySet):
+    @property
+    def published(self):
+        return self.filter(status=self.model.STATUS.published)
 
-class CalendarQuerySet(CommonQuerySet):
+
+class CalendarQuerySet(NonAttendanceQuerySet):
     pass
 
 
-class EventQuerySet(CommonQuerySet):
+class EventQuerySet(NonAttendanceQuerySet):
     pass
 
 
-class OccurrenceQuerySet(CommonQuerySet):
+class OccurrenceQuerySet(NonAttendanceQuerySet):
     def visible(self, user=None):
         qset = self.select_related('event', 'calendar')
         if user and defaults.view_hidden_occurrences_check(user=user):
