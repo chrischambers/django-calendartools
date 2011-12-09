@@ -41,7 +41,8 @@ table.calendar.small td.day-cell .header {padding: 0px;} /*override*/
 table.calendar a.day-number span {font-size: 16px; font-weight: bold; position: absolute; top: 0; right: 5px;}
 table.calendar.small a.day-number span {font-size: 12px; right: 2px;} /*override*/
 
-table#tri-month-calendar td.month-cell {vertical-align: bottom;}
+table#tri-month-calendar a.month.name {visibility: hidden;}
+table#tri-month-calendar a.month.name.month2 {visibility: visible;}
 
 table.calendar.small {margin: auto;}
 

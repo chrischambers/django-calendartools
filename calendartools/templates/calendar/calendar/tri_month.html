@@ -58,10 +58,9 @@
     <tr>
       {% for month in tri_month %}
       <td class="month-cell">
-        <a class="month name" href="{% url month-calendar calendar.slug month.year month.abbr %}">
-          {% if forloop.counter == 2 %}
+        <a class="month name month{{ forloop.counter }}"
+           href="{% url month-calendar calendar.slug month.year month.abbr %}">
           <span>{{ month.name }}</span>
-          {% endif %}
         </a>
         <table class="tri-month-view month calendar small calendar-{{ forloop.counter }} {% cycle "" "alt" %}">
           {% include "calendar/includes/month_calendar.html" %}
