@@ -1,6 +1,7 @@
 {% extends "calendar/event_list.html" %}
 {% block title %}{{ event.name }} - {{ block.super }}{% endblock %}
 {% block extra_head %}
+  {{ block.super }}
   <link rel="stylesheet" type="text/css" media="all"
         href="{{ STATIC_URL }}css/occurrences_form.css" />
 {% endblock extra_head %}
