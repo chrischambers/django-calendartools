@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block agenda_url %}{% url week-agenda calendar.slug week.year week.number %}{% endblock %}
+{% block current_nav_url %}{% url week-calendar calendar.slug today.year today.get_week.number %}{% endblock %}
 
 {% block calendar_nav %}
 <ul id="calendar-nav" class="nav">

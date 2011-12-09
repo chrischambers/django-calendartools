@@ -15,20 +15,10 @@
 {% endblock %}
 
 {% block current_nav %}
-<ul class="current nav">
-  <li><a href="{% url day-agenda calendar.slug today.year today|date:"b" today.number %}">
-    {% trans "Current Day Agenda" %}
-  </a></li>
-  <li><a href="{% url week-agenda calendar.slug today.year today.get_week.number %}">
-    {% trans "Current Week Agenda" %}
-  </a></li>
-  <li><a href="{% url month-agenda calendar.slug today.year today|date:"b" %}">
-    {% trans "Current Month Agenda" %}
-  </a></li>
-  <li><a href="{% url year-agenda calendar.slug today.year %}">
-    {% trans "Current Year Agenda" %}
-  </a></li>
-</ul>
+<a class="current-button agenda"
+   href="{% block current_nav_url %}{% endblock %}">
+  {% trans "Current" %}
+</a>
 {% endblock %}
 
 {% block filters %}

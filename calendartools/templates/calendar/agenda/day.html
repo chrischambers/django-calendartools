@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block calendar_url %}{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}{% endblock %}
+{% block current_nav_url %}{% url day-agenda calendar.slug today.year today.get_month.abbr today.number %}{% endblock %}
 
 {% block calendar_nav %}
 <ul id="calendar-nav" class="nav">

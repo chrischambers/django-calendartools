@@ -7,11 +7,8 @@
 <h3>{% trans "Yearly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 {% endblock %}
 
-<p class="toggle-agenda">{% trans "Switch to" %}
-<a href="{% block agenda_url %}{% url year-agenda calendar.slug year.number %}{% endblock %}">
-    {% trans "agenda view" %}
-  </a>.
-</p>
+{% block agenda_url %}{% url year-agenda calendar.slug year.number %}{% endblock %}
+{% block current_nav_url %}{% url year-calendar calendar.slug today.year %}{% endblock %}
 
 {% block calendar_nav %}
 <ul id="calendar-nav" class="nav">

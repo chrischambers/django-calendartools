@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block agenda_url %}{% url tri-month-agenda calendar.slug tri_month.second_month.year tri_month.second_month.abbr %}{% endblock %}
+{% block current_nav_url %}{% url tri-month-calendar calendar.slug today.year today.get_month.abbr %}{% endblock %}
 
 {% block calendar_nav %}
 <ul id="calendar-nav" class="nav">
