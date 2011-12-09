@@ -17,7 +17,7 @@ table.calendar {
 table.calendar .daysofweek {height: 20px; text-align: center}
 
 ul.occurrences {margin: 0; padding: 5px;}
-ul.occurrences li {display: inline; list-style: none; text-indent: 0; font-size: 14px;}
+ul.occurrences li {display: inline; list-style: none; margin-left: 0; text-indent: 0; font-size: 14px;}
 
 table.calendar tr {height: 100%}
 table.calendar td {height: 100%; width: 14%}
