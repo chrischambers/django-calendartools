@@ -60,17 +60,19 @@
                       <a class="summary url" href="{{ o.get_absolute_url }}">
                         <span class="name">{{ o.event.name }}</span>
                       </a>
-                      <span class="start time">
-                        <abbr class="dtstart" title="{{ o.start|date:"c" }}">
-                          {{ o.start|date:"TIME_FORMAT" }}
-                        </abbr>
-                      <em> - </em>
-                      </span>
-                      <span class="finish time">
-                        <abbr class="dtend" title="{{ o.finish|date:"c" }}">
-                          {{ o.finish|date:"TIME_FORMAT" }}
-                        </abbr>
-                      </span>
+                      <p class="times">
+                        <span class="start time">
+                          <abbr class="dtstart" title="{{ o.start|date:"c" }}">
+                            {{ o.start|date:"TIME_FORMAT" }}
+                          </abbr>
+                        </span>
+                        <em> - </em>
+                        <span class="finish time">
+                          <abbr class="dtend" title="{{ o.finish|date:"c" }}">
+                            {{ o.finish|date:"TIME_FORMAT" }}
+                          </abbr>
+                        </span>
+                      </p>
                     </li><!-- end .vevent -->
                     {% endfor %}
                   </ul>
