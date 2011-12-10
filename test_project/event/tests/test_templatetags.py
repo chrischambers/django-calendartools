@@ -186,3 +186,20 @@ class TestTimeRelativeToToday(TestCase):
     def test_time_relative_to_today(self):
         for dt, expected in self.mapping:
             assert_equal(time_relative_to_today(dt), expected)
+
+from calendartools.templatetags.calendartools_tags import columns
+
+class TestColumns(TestCase):
+    def setUp(self):
+        self.odd_list = range(9)
+        self.even_list = range(10)
+
+    def test_columns(self):
+        assert_equal(
+            list(columns(self.odd_list, 2)),
+            [[0,1,2,3,4], [5,6,7,8]]
+        )
+        assert_equal(
+            list(columns(self.even_list, 2)),
+            [[0,1,2,3,4], [5,6,7,8,9]]
+        )
