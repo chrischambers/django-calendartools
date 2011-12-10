@@ -137,7 +137,7 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
         #   date filtering?
 
         # Note: It *is* a special case in that it doesn't actually
-        # modify the # queryset the same way as the other filters do,
+        # modify the queryset the same way as the other filters do,
         # which is why we can pass it an empty list, as in this
         # temporary fix...
         timezone = self.filter_params.get('timezone')
