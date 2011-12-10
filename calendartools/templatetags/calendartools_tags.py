@@ -6,7 +6,7 @@ from threaded_multihost.threadlocals import get_current_request
 register = template.Library()
 
 @register.filter
-def columns(lst, cols, pad_columns=False, filler=None):
+def columns(lst, cols, pad_columns=True, filler=None):
     """
     Break a list into ``n`` lists, typically for use in columns.
     Sources:
@@ -14,11 +14,17 @@ def columns(lst, cols, pad_columns=False, filler=None):
         http://herself.movielady.net/2008/07/16/split-list-to-columns-django-template-tag/
 
     >>> lst = range(10)
-    >>> for list in columns(lst, 3):
+    >>> for list in columns(lst, 3, pad_columns=False):
     ...     list
     [0, 1, 2, 3]
     [4, 5, 6, 7]
     [8, 9]
+
+    >>> for list in columns(lst, 3, filler=0):
+    ...     list
+    [0, 1, 2, 3]
+    [4, 5, 6, 7]
+    [8, 9, 0, 0]
 
     If ``pad_columns`` is truthy, the remaining column will be padded with the
     ``filler`` parameter until it is equal in length to the previous ones.
