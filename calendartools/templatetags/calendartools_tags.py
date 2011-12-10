@@ -6,7 +6,7 @@ from threaded_multihost.threadlocals import get_current_request
 register = template.Library()
 
 @register.filter
-def columns(lst, cols):
+def columns(lst, cols, pad_columns=False, filler=None):
     """
     Break a list into ``n`` lists, typically for use in columns.
     Sources:
@@ -17,8 +17,11 @@ def columns(lst, cols):
     >>> for list in columns(lst, 3):
     ...     list
     [0, 1, 2, 3]
-    [4, 5, 6]
-    [7, 8, 9]
+    [4, 5, 6, 7]
+    [8, 9]
+
+    If ``pad_columns`` is truthy, the remaining column will be padded with the
+    ``filler`` parameter until it is equal in length to the previous ones.
     """
     try:
         cols = int(cols)
@@ -27,9 +30,17 @@ def columns(lst, cols):
         raise StopIteration()
 
     start = 0
+    length = 0
     for i in xrange(cols):
-        stop = start + len(lst[i::cols])
-        yield lst[start:stop]
+        length = max(length, len(lst[i::cols]))
+        stop = start + length
+        sliced = lst[start:stop]
+        if pad_columns:
+            padding = length - len(sliced)
+            if padding:
+                for j in xrange(padding):
+                    sliced.append(filler)
+        yield sliced
         start = stop
 
 def force_no_translation(parser, token):

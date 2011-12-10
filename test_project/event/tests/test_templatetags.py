@@ -194,7 +194,7 @@ class TestColumns(TestCase):
         self.odd_list = range(9)
         self.even_list = range(10)
 
-    def test_columns(self):
+    def test_columns_no_padding(self):
         assert_equal(
             list(columns(self.odd_list, 2)),
             [[0,1,2,3,4], [5,6,7,8]]
@@ -202,4 +202,14 @@ class TestColumns(TestCase):
         assert_equal(
             list(columns(self.even_list, 2)),
             [[0,1,2,3,4], [5,6,7,8,9]]
+        )
+
+    def test_columns_padding(self):
+        assert_equal(
+            list(columns(self.odd_list, 2, pad_columns=True)),
+            [[0,1,2,3,4], [5,6,7,8,None]]
+        )
+        assert_equal(
+            list(columns(self.even_list, 3, pad_columns=True, filler='foo')),
+            [[0,1,2,3], [4,5,6,7], [8,9,'foo','foo']]
         )
