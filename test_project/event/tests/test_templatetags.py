@@ -11,6 +11,7 @@ from calendartools.templatetags.calendartools_tags import (
     set_query_string,
     delete_query_string,
     clear_query_string,
+    persist_query_string,
     time_relative_to_today
 )
 from calendartools.periods import Day
@@ -96,6 +97,8 @@ class TestQueryStringManipulation(TestCase):
              'http://example.com/foo/?a=1'),
             ('http://example.com/foo/?a=2&b=2&b=5', 'a', 1,
              'http://example.com/foo/?a=1&b=2&b=5'),
+            ('http://example.com/foo/?b=2&a=2&c=4&b=5', 'a', 1,
+             'http://example.com/foo/?a=1&b=2&b=5&c=4'),
             ('/foo',            'a', 1,
              '/foo?a=1'),
             ('/foo/',           'a', 1,
@@ -132,6 +135,8 @@ class TestQueryStringManipulation(TestCase):
              'http://example.com/foo/',),
             ('http://example.com/foo/?a=2&a=4&b=2&b=5', 'a',
              'http://example.com/foo/?b=2&b=5'),
+            ('http://example.com/foo/?a=2&a=4&c=2&b=5', 'a',
+             'http://example.com/foo/?b=5&c=2'),
             ('/foo',  'a',
              '/foo'),
             ('/foo/', 'a',
@@ -144,6 +149,16 @@ class TestQueryStringManipulation(TestCase):
         for url, key, expected in mapping:
             assert_equal(delete_query_string(url, key), expected)
 
+    def test_persist_query_string(self):
+        from_url = 'http://foo.com/flub/index.html?a=1&b=2&c=3'
+        mapping = (
+            ('/?a=foo',          '/?a=foo&b=2&c=3'),
+            ('/?d=4',            '/?a=1&b=2&c=3&d=4'),
+            ('/?b=bar&d=bing',   '/?a=1&b=bar&c=3&d=bing'),
+            ('/zub/?b=a&d=b',    '/zub/?a=1&b=a&c=3&d=b'),
+        )
+        for url, expected_result in mapping:
+            assert_equal(persist_query_string(url, from_url), expected_result)
 
 class TestTimeRelativeToToday(TestCase):
     def setUp(self):

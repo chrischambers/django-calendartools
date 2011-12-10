@@ -101,10 +101,13 @@ def set_query_string_wrapper(url, arg):
         return ""
 
 def set_query_string(url, key, value):
+    """
+    Also has the side effect of sorting the query-string parameter keys.
+    """
     parsed_url = urlparse(url)
     querydict = parse_qs(parsed_url.query)
     querydict[key] = value
-    newquery = urlencode(querydict, doseq=True)
+    newquery = urlencode(sorted(querydict.items()), doseq=True)
     new_url = "%s?%s%s" % (
         parsed_url.path, newquery, parsed_url.fragment
     )
@@ -145,11 +148,14 @@ register.tag('set_query_string', do_set_query_string)
 @register.filter(name='delete_query_string')
 @stringfilter
 def delete_query_string(url, key):
+    """
+    Also has the side effect of sorting the query-string parameter keys.
+    """
     parsed_url = urlparse(url)
     querydict = parse_qs(parsed_url.query)
     querydict.pop(key, None)
     if querydict:
-        newquery = urlencode(querydict, doseq=True)
+        newquery = urlencode(sorted(querydict.items()), doseq=True)
         new_url = "%s?%s%s" % (
             parsed_url.path, newquery, parsed_url.fragment
         )
@@ -169,6 +175,8 @@ def persist_query_string(url, from_url=None):
     Transfers GET parameters from ``from_url`` to ``url`` as *defaults* (if
     ``url`` has a different value for that GET parameter, it will
     remain as-is).
+
+    Also has the side effect of sorting the query-string parameter keys.
     """
     from_url = from_url or get_current_request().get_full_path()
     parsed_url = urlparse(from_url)
@@ -178,7 +186,7 @@ def persist_query_string(url, from_url=None):
     else:
         parsed_new_url = urlparse(url)
         querydict.update(parse_qs(parsed_new_url.query))
-        newquery = urlencode(querydict, doseq=True)
+        newquery = urlencode(sorted(querydict.items()), doseq=True)
         new_url = "%s?%s%s" % (
             parsed_new_url.path, newquery, parsed_new_url.fragment
         )
