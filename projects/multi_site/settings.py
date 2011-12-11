@@ -10,7 +10,7 @@ DATABASES = {
 }
 
 TIME_ZONE = 'Europe/London'
-LANGUAGE_CODE = 'en_GB'
+LANGUAGE_CODE = 'en_gb'
 
 SITE_ID = 1
 SECRET_KEY = '5^m%rm8(t4&cew1v-hkaq1)$4r603yu6d-#sv0k=!1)_@n473i'

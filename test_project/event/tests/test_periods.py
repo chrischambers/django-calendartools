@@ -59,7 +59,7 @@ class TestSimpleProxy(TestCase):
 
 class TestDateTimeProxies(TestCase):
     def setUp(self):
-        translation.activate('en_GB')
+        translation.activate('en-gb')
         self.datetime = datetime(1982, 8, 17)
         self.year     = Year(self.datetime)
         self.month    = Month(self.datetime)
@@ -272,8 +272,8 @@ class TestDateTimeProxies(TestCase):
 
     def test_month_weeks_iterator(self):
         expected = list(rrule(WEEKLY,
-            dtstart=datetime(1982, 8, 1),
-            until=datetime(1982, 8, 31)
+            dtstart=datetime(1982, 7, 26), # sunday
+            until=datetime(1982, 8, 30)
         ))
         actual = list(i for i in self.month.weeks)
         assert_equal(expected, actual)
@@ -403,41 +403,6 @@ class TestDateTimeProxies(TestCase):
         assert_equal(len(intervals), expected_interval_count)
 
 
-class TestDateAwareProperties(TestCase):
-    def setUp(self):
-        translation.activate('en_GB')
-        now = datetime.now()
-        self.objects = [Period, Year, Month, Week, Day, Hour]
-        self.objects = [obj(now) for obj in self.objects]
-
-    def tearDown(self):
-        translation.deactivate()
-
-    def test_day_names_property(self):
-        for obj in self.objects:
-            assert_equal(obj.day_names, WEEKDAYS.values())
-            assert_equal(obj.day_names[0], 'Monday')
-            assert_equal(obj.day_names[6], 'Sunday')
-
-    def test_day_names_abbr_property(self):
-        for obj in self.objects:
-            assert_equal(obj.day_names_abbr, WEEKDAYS_ABBR.values())
-            assert_equal(obj.day_names_abbr[0], 'Mon')
-            assert_equal(obj.day_names_abbr[6], 'Sun')
-
-    def test_month_names_property(self):
-        for obj in self.objects:
-            assert_equal(obj.month_names, MONTHS.values())
-            assert_equal(obj.month_names[0], 'January')
-            assert_equal(obj.month_names[11], 'December')
-
-    def test_month_names_abbr_property(self):
-        for obj in self.objects:
-            assert_equal(obj.month_names_abbr, MONTHS_3.values())
-            assert_equal(obj.month_names_abbr[0], 'jan')
-            assert_equal(obj.month_names_abbr[11], 'dec')
-
-
 class TestLocalization(TestCase):
     def setUp(self):
         self.datetime = datetime(1982, 8, 17)
@@ -519,27 +484,96 @@ class TestLocalization(TestCase):
         self._test_localization(self.hour, mapping)
 
 
-class TestFirstDayOfWeek(TestCase):
+class TestDateAwareProperties(TestCase):
     def setUp(self):
-        settings.FIRST_DAY_OF_WEEK = 0 # Sunday
-        now = datetime.now()
-        self.objects = [Period, Year, Month, Week, Day, Hour]
-        self.objects = [obj(now) for obj in self.objects]
+        translation.activate('en-gb')
+        self.now = datetime.now()
+        self.periods = [Period, Year, Month, Week, Day, Hour]
+        self.objects = [obj(self.now) for obj in self.periods]
 
     def tearDown(self):
-        settings.FIRST_DAY_OF_WEEK = 1 # Monday
+        translation.deactivate()
 
     def test_day_names_property(self):
         for obj in self.objects:
+            assert_equal(obj.day_names, WEEKDAYS.values())
+            assert_equal(obj.day_names[0], 'Monday')
+            assert_equal(obj.day_names[6], 'Sunday')
+
+    def test_day_names_property_usa(self):
+        translation.activate('en-us')
+        objects = [obj(self.now) for obj in self.periods]
+        for obj in objects:
             assert_equal(obj.day_names[0], 'Sunday')
             assert_equal(obj.day_names[6], 'Saturday')
 
     def test_day_names_abbr_property(self):
         for obj in self.objects:
+            assert_equal(obj.day_names_abbr, WEEKDAYS_ABBR.values())
+            assert_equal(obj.day_names_abbr[0], 'Mon')
+            assert_equal(obj.day_names_abbr[6], 'Sun')
+
+    def test_day_names_abbr_property_usa(self):
+        translation.activate('en-us')
+        objects = [obj(self.now) for obj in self.periods]
+        for obj in objects:
+            assert_equal(obj.day_names_abbr[0], 'Sun')
+            assert_equal(obj.day_names_abbr[6], 'Sat')
+
+    def test_month_names_property(self):
+        for obj in self.objects:
+            assert_equal(obj.month_names, MONTHS.values())
+            assert_equal(obj.month_names[0], 'January')
+            assert_equal(obj.month_names[11], 'December')
+
+    def test_month_names_abbr_property(self):
+        for obj in self.objects:
+            assert_equal(obj.month_names_abbr, MONTHS_3.values())
+            assert_equal(obj.month_names_abbr[0], 'jan')
+            assert_equal(obj.month_names_abbr[11], 'dec')
+
+
+class TestFirstDayOfWeek(TestCase):
+    def setUp(self):
+        translation.activate('en-gb')
+        self.now = datetime.now()
+        self.periods = [Period, Year, Month, Week, Day, Hour]
+        self.objects = [obj(self.now) for obj in self.periods]
+
+    def tearDown(self):
+        translation.deactivate()
+
+    def test_day_names_property(self):
+        for obj in self.objects:
+            assert_equal(obj.day_names[0], 'Monday')
+            assert_equal(obj.day_names[6], 'Sunday')
+
+    def test_day_names_property_usa(self):
+        translation.activate('en-us')
+        objects = [obj(self.now) for obj in self.periods]
+        for obj in objects:
+            assert_equal(obj.day_names[0], 'Sunday')
+            assert_equal(obj.day_names[6], 'Saturday')
+
+    def test_day_names_abbr_property(self):
+        for obj in self.objects:
+            assert_equal(obj.day_names_abbr[0], 'Mon')
+            assert_equal(obj.day_names_abbr[6], 'Sun')
+
+    def test_day_names_abbr_property_usa(self):
+        translation.activate('en-us')
+        objects = [obj(self.now) for obj in self.periods]
+        for obj in objects:
             assert_equal(obj.day_names_abbr[0], 'Sun')
             assert_equal(obj.day_names_abbr[6], 'Sat')
 
     def test_week_properties(self):
+        self.week = Week(datetime(1982, 8, 17))
+        assert_equal(self.week.start, datetime(1982, 8, 16))
+        assert_equal(self.week.finish, datetime(1982, 8, 23) - timedelta.resolution)
+
+    def test_week_properties_usa(self):
+        translation.activate('en-us')
         self.week = Week(datetime(1982, 8, 17))
         assert_equal(self.week.start, datetime(1982, 8, 15))
         assert_equal(self.week.finish, datetime(1982, 8, 22) - timedelta.resolution)
@@ -574,11 +608,12 @@ class TestTripleMonth(TestCase):
 
 class TestWeek(TestCase):
     def setUp(self):
-        translation.activate('en_GB')
-        self.datetime = datetime(1982, 8, 17)
+        translation.activate('en-gb')
+        self.datetime = datetime(1982, 8, 17)   # Tuesday
         self.week = Week(self.datetime)
         self.expected = [
-            datetime(1982, 8, 16), datetime(1982, 8, 22)
+            datetime(1982, 8, 16),              # Monday
+            datetime(1982, 8, 22)
         ]
 
     def tearDown(self):
@@ -586,19 +621,26 @@ class TestWeek(TestCase):
 
     def test_first_day_of_week(self):
         assert_equal(first_day_of_week(self.datetime), self.expected[0])
-        translation.deactivate()
-        assert_equal(first_day_of_week(self.datetime),
-                    self.expected[0] - timedelta(1))
 
     def test_first_day(self):
         assert_equal(self.week.first_day, self.expected[0])
-        translation.deactivate()
-        self.week = Week(self.datetime)
-        assert_equal(self.week.first_day, self.expected[0] - timedelta(1))
 
     def test_last_day(self):
         assert_equal(self.week.last_day, self.expected[1])
-        translation.deactivate()
+
+    def test_first_day_of_week_usa(self):
+        translation.activate('en-us')
+        self.week = Week(self.datetime)
+        assert_equal(first_day_of_week(self.datetime),
+                    self.expected[0] - timedelta(1))
+
+    def test_first_day_usa(self):
+        translation.activate('en-us')
+        self.week = Week(self.datetime)
+        assert_equal(self.week.first_day, self.expected[0] - timedelta(1))
+
+    def test_last_day_usa(self):
+        translation.activate('en-us')
         self.week = Week(self.datetime)
         assert_equal(self.week.last_day, self.expected[1] - timedelta(1))
 
@@ -676,7 +718,7 @@ class TestDateTimeProxiesWithOccurrences(TestCase):
 class TestDateTimeProxiesWithLocalizedOccurrences(TestCase):
     def setUp(self):
         deactivate_default_occurrence_validators()
-        translation.activate('en_GB')
+        translation.activate('en-gb')
         self.user = User.objects.create_user(
             'TestyMcTesterson',
             'Testy@test.com',
@@ -707,7 +749,7 @@ class TestDateTimeProxiesWithLocalizedOccurrences(TestCase):
 
     def tearDown(self):
         activate_default_occurrence_validators()
-        translation.deactivate()
+        translation.activate('en-us')
 
     def test_membership(self):
         assert_equal(len(self.week.occurrences), 2)
@@ -728,27 +770,31 @@ class TestDateTimeProxiesWithLocalizedOccurrences(TestCase):
 
 class TestWeeksAttribute(TestCase):
     def setUp(self):
-        self.month = Month(date(2011, 1, 1))
+        translation.activate('en-gb')
+        self.month = Month(date(2011, 1, 1))       # Saturday
+
+    def tearDown(self):
+        translation.deactivate()
 
     def test_weeks_attribute(self):
         expected = [
-            date(2010, 12, 26),
-            date(2011, 1,  2),
-            date(2011, 1,  9),
-            date(2011, 1,  16),
-            date(2011, 1,  23),
-            date(2011, 1,  30)
+            date(2010, 12, 27),                    # All Mondays
+            date(2011, 1,  3),
+            date(2011, 1,  10),
+            date(2011, 1,  17),
+            date(2011, 1,  24),
+            date(2011, 1,  31),
         ]
         expected = [Week(dt) for dt in expected]
         assert_equal(self.month.weeks, expected)
 
-        self.month = Month(date(2011, 2, 1))
+        self.month = Month(date(2011, 2, 1))       # Tuesday
         expected = [
-            date(2011, 1,  30),
-            date(2011, 2,  6),
-            date(2011, 2,  13),
-            date(2011, 2,  20),
-            date(2011, 2,  27)
+            date(2011, 1,  31),
+            date(2011, 2,  7),
+            date(2011, 2,  14),
+            date(2011, 2,  21),
+            date(2011, 2,  28)
         ]
         expected = [Week(dt) for dt in expected]
         assert_equal(self.month.weeks, expected)

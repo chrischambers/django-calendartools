@@ -23,8 +23,7 @@ MEDIA_URL = '/media/'
 
 USE_I18N = True
 USE_L10N = True
-FIRST_DAY_OF_WEEK = 1 # Monday
-LANGUAGE_CODE = 'en_GB'
+LANGUAGE_CODE = 'en-gb'
 FORMAT_MODULE_PATH = 'calendartools.formats'
 SITE_ID = 1
 
