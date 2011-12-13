@@ -4,6 +4,7 @@
 
 {% with request.get_full_path as here %}
 {% with here|get_query_string:"period" as period %}
+{% block filters %}
 <ul class="filters">
   <li>
     <a class="{% if "past" in period %}on{% endif %}"
@@ -30,7 +31,9 @@
     </a>
   </li>
 </ul>
+{% endblock %}
 
+{% block timezone_form %}
 <form class="timezone" method="get" action="">
   <fieldset>
     {% for field in timezone_form %}
@@ -43,5 +46,6 @@
     </table>
   </fieldset>
 </form>
+{% endblock %}
 {% endwith %}
 {% endwith %}
