@@ -18,61 +18,74 @@
 <h3>{% trans "Tri-Monthly View" %} - <span class="calendarname">{{ calendar.name }}</span> {% trans "Calendar" %}</h3>
 {% endblock %}
 
-{% block agenda_url %}{% url tri-month-agenda calendar.slug tri_month.second_month.year tri_month.second_month.abbr %}{% endblock %}
-{% block current_nav_url %}{% url tri-month-calendar calendar.slug today.year today.get_month.abbr %}{% endblock %}
+{% block agenda_url %}
+{% url tri-month-agenda calendar.slug tri_month.second_month.year tri_month.second_month.abbr as agenda_url %}
+{{ agenda_url|persist_query_string|delete_query_string:"page" }}
+{% endblock %}
+
+{% block current_nav_url %}
+{% url tri-month-calendar calendar.slug today.year today.get_month.abbr as current_nav_url %}
+{{ current_nav_url|persist_query_string|delete_query_string:"page" }}
+{% endblock %}
 
 {% block calendar_nav %}
 <ul id="calendar-nav" class="nav">
+  {% url tri-month-calendar calendar.slug tri_month.first_month.year tri_month.first_month.abbr as previous_url %}
   <li class="first">
     <a rel="{% if tri_month.first_month < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
-      {% url tri-month-calendar calendar.slug tri_month.first_month.year tri_month.first_month.abbr as previous_url %}
-      href="{{ previous_url|persist_query_string }}"
-      title="{% trans "Previous Month" %}">&larr;
+       href="{{ previous_url|persist_query_string|delete_query_string:"page" }}"
+       title="{% trans "Previous Month" %}">&larr;
     </a>
   </li>
   <li>
     {% if today in tri_month.second_month %}
+    {% url day-calendar calendar.slug today.year today.get_month.abbr today.number as day_url %}
     <a title="{% trans "View" %} {{ today|date:"DATE_FORMAT"}}"
-      href="{% url day-calendar calendar.slug today.year today.get_month.abbr today.number %}">
-      {% trans "Day" %}
+       href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
+       {% trans "Day" %}
     </a>
     {% else %}
+    {% url day-calendar calendar.slug tri_month.second_month.get_year.number tri_month.second_month.abbr 1 as day_url %}
     <a title="{% trans "View" %} {{ tri_month.second_month.days.0|date:"jS"}} {{ tri_month.second_month.name }}, {{ tri_month.second_month.get_year.number }}"
-      href="{% url day-calendar calendar.slug tri_month.second_month.get_year.number tri_month.second_month.abbr 1 %}">
-      {% trans "Day" %}
+       href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
+       {% trans "Day" %}
     </a>
     {% endif %}
   </li>
   <li>
     {% if today in tri_month.second_month %}
+    {% url week-calendar calendar.slug today.year today.get_week.number as week_url %}
     <a title="{% trans "View" %} {{ today.get_week.start }} - {{ today.get_week.finish }}"
-      href="{% url week-calendar calendar.slug today.year today.get_week.number %}">
-      {% trans "Week" %}
+       href="{{ week_url|persist_query_string|delete_query_string:"page" }}">
+       {% trans "Week" %}
     </a>
     {% else %}
+    {% url week-calendar calendar.slug tri_month.second_month.get_year.number tri_month.second_month.weeks.0.number as week_url %}
     <a title="{% trans "View" %} {% trans "first week of" %} {{ tri_month.second_month.name }}"
-      href="{% url week-calendar calendar.slug tri_month.second_month.get_year.number tri_month.second_month.weeks.0.number %}">
-      {% trans "Week" %}
+       href="{{ week_url|persist_query_string|delete_query_string:"page" }}">
+       {% trans "Week" %}
     </a>
     {% endif %}
   </li>
+  {% url month-calendar calendar.slug tri_month.second_month.year tri_month.second_month.abbr as month_url %}
   <li>
     <a title="{% trans "View" %} {{ tri_month.second_month.name }}"
-      href="{% url month-calendar calendar.slug tri_month.second_month.year tri_month.second_month.abbr %}">
-      {% trans "Month" %}
+       href="{{ month_url|persist_query_string|delete_query_string:"page" }}">
+       {% trans "Month" %}
     </a>
   </li>
+  {% url year-calendar calendar.slug tri_month.second_month.year as year_url %}
   <li>
     <a title="{% trans "View" %} {{ tri_month.year }}"
-      href="{% url year-calendar calendar.slug tri_month.second_month.year %}">
-      {% trans "Year" %}
+       href="{{ year_url|persist_query_string|delete_query_string:"page" }}">
+       {% trans "Year" %}
     </a>
   </li>
+  {% url tri-month-calendar calendar.slug tri_month.third_month.year tri_month.third_month.abbr as next_url %}
   <li class="last">
     <a rel="{% if month.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
-      {% url tri-month-calendar calendar.slug tri_month.third_month.year tri_month.third_month.abbr as next_url %}
-      href="{{ next_url|persist_query_string }}"
-      title="{% trans "Next Month" %}">&rarr;
+       href="{{ next_url|persist_query_string|delete_query_string:"page" }}"
+       title="{% trans "Next Month" %}">&rarr;
     </a>
   </li>
 </ul>
