@@ -1,5 +1,6 @@
 {% extends "calendar/calendar/base.html" %}
 {% load i18n %}
+{% load calendartools_tags %}
 {% block title %}
   {{ month.name }} {{ month.year }} - Monthly View - {{ block.super }}
 {% endblock %}
@@ -12,76 +13,72 @@
 {% block current_nav_url %}{% url month-calendar calendar.slug today.year today.get_month.abbr %}{% endblock %}
 
 {% block calendar_nav %}
-<div id="calendar-nav" class="nav">
-  <table>
-    <tr>
-      <td class="first">
-        <a rel="{% if month.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
-          {% if size == "small" %}
-          href="{% url small-month-calendar calendar.slug month.previous.year month.previous.abbr %}"
-          {% else %}
-          {% url month-calendar calendar.slug month.previous.year month.previous.abbr as previous_url %}
-          href="{{ previous_url|persist_query_string }}"
-          {% endif %}
-          title="{% trans "Previous Month" %}"><span>{% trans "Previous Month" %}</span>&larr;
-        </a>
-      </td>
-      <td>
-        {% if today in month %}
-        <a title="{% trans "View" %} {{ today|date:"DATE_FORMAT"}}"
-          href="{% url day-calendar calendar.slug today.year today.get_month.abbr today.number %}">
-          {% trans "Day" %}
-        </a>
-        {% else %}
-        <a title="{% trans "View" %} {{ month.name }}, {{ month.get_year.number }}"
-          href="{% url day-calendar calendar.slug month.get_year.number month.abbr 1 %}">
-          {% trans "Day" %}
-        </a>
-        {% endif %}
-      </td>
-      <td>
-        {% if today in month %}
-        <a title="{% trans "View" %} {{ today.get_week.start }} - {{ today.get_week.finish }}"
-          href="{% url week-calendar calendar.slug today.year today.get_week.number %}">
-          {% trans "Week" %}
-        </a>
-        {% else %}
-        <a title="{% trans "View" %} {% trans "First week of month" %}"
-          href="{% url week-calendar calendar.slug month.get_year.number month.weeks.0.number %}">
-          {% trans "Week" %}
-        </a>
-        {% endif %}
-      </td>
-      <td>
-        <a class="active" title="{% trans "View" %} {{ month.name }}"
-          {% if size == "small" %}
-          href="{% url small-month-calendar calendar.slug month.year month.abbr %}">
-          {% else %}
-          href="{% url month-calendar calendar.slug month.year month.abbr %}">
-          {% endif %}
-          {% trans "Month" %}
-        </a>
-      </td>
-      <td>
-        <a title="{% trans "View" %} {{ month.year }}"
-          href="{% url year-calendar calendar.slug month.year %}">
-          {% trans "Year" %}
-        </a>
-      </td>
-      <td class="last">
-        <a rel="{% if month.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
-          {% if size == "small" %}
-          href="{% url small-month-calendar calendar.slug month.next.year month.next.abbr %}"
-          {% else %}
-          {% url month-calendar calendar.slug month.next.year month.next.abbr as next_url %}
-          href="{{ next_url|persist_query_string }}"
-          {% endif %}
-          title="{% trans "Next Month" %}">&rarr;<span>{% trans "Next Month" %}</span>
-        </a>
-      </td>
-    </tr>
-  </table>
-</div>
+<ul id="calendar-nav" class="nav">
+  <li class="first">
+    <a rel="{% if month.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
+      {% if size == "small" %}
+      href="{% url small-month-calendar calendar.slug month.previous.year month.previous.abbr %}"
+      {% else %}
+      {% url month-calendar calendar.slug month.previous.year month.previous.abbr as previous_url %}
+      href="{{ previous_url|persist_query_string }}"
+      {% endif %}
+      title="{% trans "Previous Month" %}">&larr;
+    </a>
+  </li>
+  <li>
+    {% if today in month %}
+    <a title="{% trans "View" %} {{ today|date:"DATE_FORMAT"}}"
+      href="{% url day-calendar calendar.slug today.year today.get_month.abbr today.number %}">
+      {% trans "Day" %}
+    </a>
+    {% else %}
+    <a title="{% trans "View" %} {{ month.days.0|date:"jS"}} {{ month.name }}, {{ month.get_year.number }}"
+      href="{% url day-calendar calendar.slug month.get_year.number month.abbr 1 %}">
+      {% trans "Day" %}
+    </a>
+    {% endif %}
+  </li>
+  <li>
+    {% if today in month %}
+    <a title="{% trans "View" %} {{ today.get_week.start }} - {{ today.get_week.finish }}"
+      href="{% url week-calendar calendar.slug today.year today.get_week.number %}">
+      {% trans "Week" %}
+    </a>
+    {% else %}
+    <a title="{% trans "View" %} {% trans "first week of" %} {{ month.name }}"
+      href="{% url week-calendar calendar.slug month.get_year.number month.weeks.0.number %}">
+      {% trans "Week" %}
+    </a>
+    {% endif %}
+  </li>
+  <li>
+    <a class="active" title="{% trans "View" %} {{ month.name }}"
+      {% if size == "small" %}
+      href="{% url small-month-calendar calendar.slug month.year month.abbr %}">
+      {% else %}
+      href="{% url month-calendar calendar.slug month.year month.abbr %}">
+      {% endif %}
+      {% trans "Month" %}
+    </a>
+  </li>
+  <li>
+    <a title="{% trans "View" %} {{ month.year }}"
+      href="{% url year-calendar calendar.slug month.year %}">
+      {% trans "Year" %}
+    </a>
+  </li>
+  <li class="last">
+    <a rel="{% if month.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
+      {% if size == "small" %}
+      href="{% url small-month-calendar calendar.slug month.next.year month.next.abbr %}"
+      {% else %}
+      {% url month-calendar calendar.slug month.next.year month.next.abbr as next_url %}
+      href="{{ next_url|persist_query_string }}"
+      {% endif %}
+      title="{% trans "Next Month" %}">&rarr;
+    </a>
+  </li>
+</ul>
 {% endblock %}
 
 {% block calendar %}

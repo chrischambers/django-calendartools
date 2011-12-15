@@ -11,78 +11,74 @@
 {% block current_nav_url %}{% url year-agenda calendar.slug today.year %}{% endblock %}
 
 {% block calendar_nav %}
-<div id="calendar-nav" class="nav">
-  <table>
-    <tr>
-      <td class="first">
-        {% url year-agenda calendar.slug year.previous.number as previous_url %} 
-        <a rel="{% if year.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
-          href="{{ previous_url|persist_query_string|delete_query_string:"page" }}"
-          title="{% trans "Previous Year" %}"><span>{% trans "Previous Year" %}</span>&larr;
-        </a>
-      </td>
-      <td>
-        {% if today in year %}
-        <a title="{% trans "View" %} {{ today|date:"DATE_FORMAT"}}"
-          {% url day-agenda calendar.slug today.year today.get_month.abbr today.number as day_url %}
-          href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
-          {% trans "Day" %}
-        </a>
-        {% else %}
-        <a title="{% trans "View" %} {% trans "January, 1st" %}"
-          {% url day-agenda calendar.slug year.number "jan" 1 as day_url %}
-          href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
-          {% trans "Day" %}
-        </a>
-        {% endif %}
-      </td>
-      <td>
-        {% if today in year %}
-        {% url week-agenda calendar.slug today.year today.get_week.number as week_url %}
-        <a title="{% trans "View" %} {{ today.get_week.start }} - {{ today.get_week.finish }}"
-          href="{{ week_url|persist_query_string|delete_query_string:"page" }}">
-          {% trans "Week" %}
-        </a>
-        {% else %}
-        {% url week-agenda calendar.slug year.number 1 as week_url %}
-        <a title="{% trans "View" %} {% trans "First week of year" %}"
-          href="{{ week_url|persist_query_string|delete_query_string:"page" }}">
-          {% trans "Week" %}
-        </a>
-        {% endif %}
-      </td>
-      <td>
-        {% if today in year %}
-        {% url month-agenda calendar.slug today.year today.get_month.abbr as month_url %}
-        <a title="{% trans "View" %} {{ today.get_month.name }}"
-          href="{{ month_url|persist_query_string|delete_query_string:"page" }}">
-          {% trans "Month" %}
-        </a>
-        {% else %}
-        {% url month-agenda calendar.slug year.number "jan" as month_url %}
-        <a title="{% trans "View" %} {% trans "January" %}"
-          href="{{ month_url|persist_query_string|delete_query_string:"page" }}">
-          {% trans "Month" %}
-        </a>
-        {% endif %}
-      </td>
-      <td>
-        {% url year-agenda calendar.slug year.number as year_url %}
-        <a class="active" title="{% trans "View" %} {{ year }}"
-          href="{{ year_url|persist_query_string|delete_query_string:"page" }}">
-          {% trans "Year" %}
-        </a>
-      </td>
-      <td class="last">
-        {% url year-agenda calendar.slug year.next.number as next_url %}
-        <a rel="{% if year.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
-          href="{{ next_url|persist_query_string|delete_query_string:"page" }}"
-          title="{% trans "Next Year" %}">&rarr;<span>{% trans "Next Year" %}</span>
-        </a>
-      </td>
-    </tr>
-  </table>
-</div>
+<ul id="calendar-nav" class="nav">
+  <li class="first">
+    {% url year-agenda calendar.slug year.previous.number as previous_url %} 
+    <a rel="{% if year.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
+      href="{{ previous_url|persist_query_string|delete_query_string:"page" }}"
+      title="{% trans "Previous Year" %}">&larr;
+    </a>
+  </li>
+  <li>
+    {% if today in year %}
+    <a title="{% trans "View" %} {{ today|date:"DATE_FORMAT"}}"
+      {% url day-agenda calendar.slug today.year today.get_month.abbr today.number as day_url %}
+      href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
+      {% trans "Day" %}
+    </a>
+    {% else %}
+    <a title="{% trans "View" %} {% trans "January, 1st" %}"
+      {% url day-agenda calendar.slug year.number "jan" 1 as day_url %}
+      href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
+      {% trans "Day" %}
+    </a>
+    {% endif %}
+  </li>
+  <li>
+    {% if today in year %}
+    {% url week-agenda calendar.slug today.year today.get_week.number as week_url %}
+    <a title="{% trans "View" %} {{ today.get_week.start }} - {{ today.get_week.finish }}"
+      href="{{ week_url|persist_query_string|delete_query_string:"page" }}">
+      {% trans "Week" %}
+    </a>
+    {% else %}
+    {% url week-agenda calendar.slug year.number 1 as week_url %}
+    <a title="{% trans "View" %} {% trans "First week of year" %}"
+      href="{{ week_url|persist_query_string|delete_query_string:"page" }}">
+      {% trans "Week" %}
+    </a>
+    {% endif %}
+  </li>
+  <li>
+    {% if today in year %}
+    {% url month-agenda calendar.slug today.year today.get_month.abbr as month_url %}
+    <a title="{% trans "View" %} {{ today.get_month.name }}"
+      href="{{ month_url|persist_query_string|delete_query_string:"page" }}">
+      {% trans "Month" %}
+    </a>
+    {% else %}
+    {% url month-agenda calendar.slug year.number "jan" as month_url %}
+    <a title="{% trans "View" %} {% trans "January" %}"
+      href="{{ month_url|persist_query_string|delete_query_string:"page" }}">
+      {% trans "Month" %}
+    </a>
+    {% endif %}
+  </li>
+  <li>
+    {% url year-agenda calendar.slug year.number as year_url %}
+    <a class="active" title="{% trans "View" %} {{ year }}"
+      href="{{ year_url|persist_query_string|delete_query_string:"page" }}">
+      {% trans "Year" %}
+    </a>
+  </li>
+  <li class="last">
+    {% url year-agenda calendar.slug year.next.number as next_url %}
+    <a rel="{% if year.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
+      href="{{ next_url|persist_query_string|delete_query_string:"page" }}"
+      title="{% trans "Next Year" %}">&rarr;
+    </a>
+  </li>
+</ul>
 {% endblock %}
 
 {% block agenda %}
