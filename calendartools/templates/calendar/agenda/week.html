@@ -2,7 +2,7 @@
 {% load calendartools_tags %}
 {% load i18n %}
 {% block title %}
-  {{ week.first_day|date:"SHORT_DATE_FORMAT" }} &dash;
+  {{ week.first_day|date:"SHORT_DATE_FORMAT" }} &mdash;
   {{ week.last_day|date:"SHORT_DATE_FORMAT" }} -
   Weekly Agenda - {{ block.super }}
 {% endblock %}
