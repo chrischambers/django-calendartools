@@ -22,66 +22,7 @@
 {% endblock %}
 
 {% block calendar_nav %}
-<ul id="calendar-nav" class="nav">
-  <li class="first">
-    {% url week-calendar calendar.slug week.previous.year week.previous.number as previous_url %}
-    <a rel="{% if week.previous < earliest_occurrence %}nofollow{% else %}prev{% endif %}"
-       href="{{ previous_url|persist_query_string|delete_query_string:"page" }}"
-       title="{% trans "Previous week" %}"><span>&larr;
-    </a>
-  </li>
-  <li>
-    {% if today in week %}
-    {% url day-calendar calendar.slug today.year today.get_month.abbr today.number as day_url %}
-    <a title="{% trans "View" %} {{ today|date:"DATE_FORMAT"}}"
-       href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
-       {% trans "Day" %}
-    </a>
-    {% else %}
-    {% url day-calendar calendar.slug week.year week.get_month.abbr week.start.day as day_url %}
-    <a title="{% trans "View" %} {{ week|date:"DATE_FORMAT"}}"
-       href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
-       {% trans "Day" %}
-    </a>
-    {% endif %}
-  </li>
-  <li>
-    {% if today in week %}
-    {% url week-calendar calendar.slug today.year today.get_week.number as week_url %}
-    <a class="active" title="{% trans "View" %} {{ today.get_week.start }} - {{ today.get_week.finish }}"
-       href="{{ week_url|persist_query_string|delete_query_string:"page" }}">
-       {% trans "Week" %}
-    </a>
-    {% else %}
-    {% url week-calendar calendar.slug week.get_year.number week.number as week_url %}
-    <a class="active" title="{% trans "View" %} {{ week.start }}"
-       href="{{ week_url|persist_query_string|delete_query_string:"page" }}">
-       {% trans "Week" %}
-    </a>
-    {% endif %}
-  </li>
-  <li>
-    {% url month-calendar calendar.slug week.year week.get_month.abbr as month_url %}
-    <a title="{% trans "View" %} {{ week.get_month.name }}"
-       href="{{ month_url|persist_query_string|delete_query_string:"page" }}">
-       {% trans "Month" %}
-    </a>
-  </li>
-  <li>
-    {% url year-calendar calendar.slug week.year as year_url %}
-    <a title="{% trans "View" %} {{ week.year }}"
-       href="{{ year_url|persist_query_string|delete_query_string:"page" }}">
-       {% trans "Year" %}
-    </a>
-  </li>
-  <li class="last">
-    {% url week-calendar calendar.slug week.next.year week.next.number as next_url %}
-    <a rel="{% if week.next > latest_occurrence %}nofollow{% else %}next{% endif %}"
-       href="{{ next_url|persist_query_string|delete_query_string:"page" }}"
-       title="{% trans "Next week" %}">&rarr;
-    </a>
-  </li>
-</ul>
+{% include "calendar/includes/navigation/week.html" with view_type="calendar" %}
 {% endblock %}
 
 {% block calendar %}
