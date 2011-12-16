@@ -1,6 +1,7 @@
 {% extends "calendar/calendar/base.html" %}
 {% load i18n %}
 {% load calendartools_tags %}
+{% load multifor %}
 {% block title %}
   {{ day|date:"SHORT_DATE_FORMAT" }} - Daily View - {{ block.super }}
 {% endblock %}
@@ -32,64 +33,87 @@
       <span class="day finish">{{ day.finish|date:"DATE_FORMAT" }}</span>
     </caption>
 
-    <tbody>
+    <colgroup>
+      <col class="day time {{ day|time_relative_to_today }}" />
+      <col class="day events {{ day|time_relative_to_today }}" />
+      <col class="day time {{ day|time_relative_to_today }}" />
+      <col class="day events {{ day|time_relative_to_today }}" />
+    </colgroup>
+
+    <thead>
       <tr>
-        {% with day.intervals as intervals %}
-        {% for column in intervals|columns:2 %}
-        <td>
-          <table class="day column column-{{ forloop.counter }}{% cycle "" " alt" %}">
-
-            <colgroup>
-              <col class="day time {{ day|time_relative_to_today }}" />
-              <col class="day events {{ day|time_relative_to_today }}" />
-            </colgroup>
-
-            <thead>
-              <tr>
-                <th>{% trans "Time" %}</th>
-                <th>{% trans "Events" %}</th>
-              </tr>
-            </thead>
-
-            <tbody>
-            {% for cell in column %}
-            <tr class="day row {% if forloop.counter|divisibleby:2 %}alt{% endif %}{% if now in cell %} now{% endif %}">
-              {# can't use cycle tag until http://code.djangoproject.com/ticket/5908 lands #}
-                <td class="day time {{ cell|time_relative_to_today }}{% if now in cell %} now{% endif %}">
-                  {{ cell.start|time:"TIME_FORMAT" }}
-                </td>
-                <td class="day events">
-                  {% if cell.occurrences %}
-                  <ul class="occurrences">
-                    {% for o in cell.occurrences %}
-                    <li class="period vevent {{ o.status_slug }}">
-                      <a class="summary url" href="{{ o.get_absolute_url }}">
-                        <span class="name">{{ o.event.name }}</span>
-                      </a>
-                      <span class="start time">
-                        <abbr class="dtstart" title="{{ o.start|date:"c" }}">
-                          {{ o.start|date:"TIME_FORMAT" }}
-                        </abbr>
-                      </span>
-                      <em> - </em>
-                      <span class="finish time">
-                        <abbr class="dtend" title="{{ o.finish|date:"c" }}">
-                          {{ o.finish|date:"TIME_FORMAT" }}
-                        </abbr>
-                      </span>
-                    </li><!-- end .vevent -->
-                    {% endfor %}
-                  </ul>
-                  {% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table><!-- end day-column-{{ forloop.counter }}-->
-        </td>
-        {% endfor %}
-        {% endwith %}
+        <th class="day time">{% trans "Time" %}</th>
+        <th class="day events">{% trans "Events" %}</th>
+        <th class="day time">{% trans "Time" %}</th>
+        <th class="day events">{% trans "Events" %}</th>
       </tr>
+    </thead>
+
+    <tbody>
+      {% with day.intervals as intervals %}
+      {% with cols=intervals|columns:2 %}
+      {% for x in cols.0; y in cols.1 %}
+      <tr class="day row{% cycle "" " alt" %}">
+        <td class="day time {{ cell|time_relative_to_today }}{% if now in x %} now{% endif %}">
+          {{ x.start|time:"TIME_FORMAT" }}
+        </td>
+        <td class="day events">
+          {% block occurrences %}
+          {% if x.occurrences %}
+          <ul class="occurrences">
+            {% for o in x.occurrences %}
+            <li class="period vevent {{ o.status_slug }}">
+              <a class="summary url" href="{{ o.get_absolute_url }}">
+                <span class="name">{{ o.event.name }}</span>
+              </a>
+              <span class="start time">
+                <abbr class="dtstart" title="{{ o.start|date:"c" }}">
+                  {{ o.start|date:"TIME_FORMAT" }}
+                </abbr>
+              </span>
+              <em> - </em>
+              <span class="finish time">
+                <abbr class="dtend" title="{{ o.finish|date:"c" }}">
+                  {{ o.finish|date:"TIME_FORMAT" }}
+                </abbr>
+              </span>
+            </li><!-- end .vevent -->
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endblock occurrences %}
+        </td>
+        <td class="day time {{ cell|time_relative_to_today }}{% if now in y %} now{% endif %}">
+          {{ y.start|time:"TIME_FORMAT" }}
+        </td>
+        <td class="day events">
+          {% if y.occurrences %}
+          <ul class="occurrences">
+            {% for o in y.occurrences %}
+            <li class="period vevent {{ o.status_slug }}">
+              <a class="summary url" href="{{ o.get_absolute_url }}">
+                <span class="name">{{ o.event.name }}</span>
+              </a>
+              <span class="start time">
+                <abbr class="dtstart" title="{{ o.start|date:"c" }}">
+                  {{ o.start|date:"TIME_FORMAT" }}
+                </abbr>
+              </span>
+              <em> - </em>
+              <span class="finish time">
+                <abbr class="dtend" title="{{ o.finish|date:"c" }}">
+                  {{ o.finish|date:"TIME_FORMAT" }}
+                </abbr>
+              </span>
+            </li><!-- end .vevent -->
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      {% endwith %}
+      {% endwith %}
     </tbody>
   </table><!--end .day.calendar -->
 </div>

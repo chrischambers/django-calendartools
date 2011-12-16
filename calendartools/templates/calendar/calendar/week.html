@@ -67,6 +67,7 @@
           <td class="period-cell free {{ cell|time_relative_to_today }}{% if now in cell %} now{% endif %}">
           {% endif %}
             <div class="period-wrapper">
+              {% block occurrences %}
               {% if cell.occurrences %}
               <ul class="occurrences">
                 {% for o in cell.occurrences %}
@@ -89,6 +90,7 @@
                 {% endfor %}
               </ul>
               {% endif %}
+              {% endblock occurrences %}
             </div><!-- end .period-wrapper -->
           </td><!-- end .period-cell -->
           {% endfor %}

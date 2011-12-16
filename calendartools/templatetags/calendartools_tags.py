@@ -35,6 +35,7 @@ def columns(lst, cols, pad_columns=True, filler=None):
     except (ValueError, TypeError):
         raise StopIteration()
 
+    res = []
     start = 0
     length = 0
     for i in xrange(cols):
@@ -46,8 +47,9 @@ def columns(lst, cols, pad_columns=True, filler=None):
             if padding:
                 for j in xrange(padding):
                     sliced.append(filler)
-        yield sliced
+        res.append(sliced)
         start = stop
+    return res
 
 def force_no_translation(parser, token):
     nodelist = parser.parse(('endnotrans',))

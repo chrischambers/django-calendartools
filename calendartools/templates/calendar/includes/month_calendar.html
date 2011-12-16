@@ -53,6 +53,7 @@
                     </a>
                   </div>
 
+                  {% block occurrences %}
                   {% if size != "small" and day.occurrences %}
                   <ul class="occurrences">
                     {% for o in day.occurrences %}
@@ -77,6 +78,7 @@
                     {% endfor %}
                   </ul>
                   {% endif %}
+                  {% endblock occurrences %}
                 </div><!-- end .period-wrapper -->
               </td><!-- end .day-cell -->
               {% endif %}
