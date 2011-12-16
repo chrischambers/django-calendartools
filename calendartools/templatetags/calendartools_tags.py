@@ -1,3 +1,4 @@
+from itertools import izip_longest
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils import translation
@@ -50,6 +51,33 @@ def columns(lst, cols, pad_columns=True, filler=None):
         res.append(sliced)
         start = stop
     return res
+
+
+class ZipNode(template.Node):
+    def __init__(self, args, varname):
+        self.args = (template.Variable(a) for a in args)
+        self.varname = varname
+
+    def zip(self, context):
+        args = (a.resolve(context) for a in self.args)
+        return izip_longest(*args)
+
+    def render(self, context):
+        context[self.varname] = self.zip(context)
+        return ''
+
+def do_zip(parser, token):
+    try:
+        args = token.split_contents()
+        tag_name, varname, args = args[0], args[-1], args[1:-2]
+    except ValueError, e:
+        raise template.TemplateSyntaxError (
+            "%r should be written in the form "
+            "{% zip iter1 iter2 etc. as varname %}" % (tag_name)
+        )
+    return ZipNode(args, varname)
+
+register.tag('zip', do_zip)
 
 def force_no_translation(parser, token):
     nodelist = parser.parse(('endnotrans',))

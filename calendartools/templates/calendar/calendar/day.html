@@ -1,7 +1,7 @@
 {% extends "calendar/calendar/base.html" %}
 {% load i18n %}
 {% load calendartools_tags %}
-{% load multifor %}
+
 {% block title %}
   {{ day|date:"SHORT_DATE_FORMAT" }} - Daily View - {{ block.super }}
 {% endblock %}
@@ -52,7 +52,8 @@
     <tbody>
       {% with day.intervals as intervals %}
       {% with cols=intervals|columns:2 %}
-      {% for x in cols.0; y in cols.1 %}
+      {% zip cols.0 cols.1 as zipped %}
+      {% for x, y in zipped %}
       <tr class="day row{% cycle "" " alt" %}">
         <td class="day time {{ cell|time_relative_to_today }}{% if now in x %} now{% endif %}">
           {{ x.start|time:"TIME_FORMAT" }}

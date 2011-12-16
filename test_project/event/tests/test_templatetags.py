@@ -213,3 +213,49 @@ class TestColumns(TestCase):
             columns(self.even_list, 3, filler='foo'),
             [[0,1,2,3], [4,5,6,7], [8,9,'foo','foo']]
         )
+
+
+class TestZip(TestCase):
+    pass
+
+    def generate_template(self, *args):
+        zipper = "{%% zip %s as zipped %%}" % " ".join(str(a) for a in args)
+        template = Template("""
+            {%% load calendartools_tags %%}
+            %s
+            [{%% for i, j in zipped %%}({{i}},{{j}}),{%% endfor %%}]
+        """ % zipper)
+        return template
+
+    def test_on_single_elem(self):
+        context = Context({'list': [1,2]})
+        template = self.generate_template("list")
+        output = template.render(context).strip()
+        assert_equal(output, "[(1,),(2,),]")
+
+    def test_on_mixed_inputs(self):
+        context = Context({'list': [1,2], 'string': "ab"})
+        template = self.generate_template("list", "string")
+        output = template.render(context).strip()
+        assert_equal(output, "[(1,a),(2,b),]")
+
+    def test_on_equal_length_lists(self):
+        context = Context({'list1': [1,2], 'list2': [3,4]})
+        template = self.generate_template("list1", "list2")
+        output = template.render(context).strip()
+        assert_equal(output, '[(1,3),(2,4),]')
+
+    def test_on_different_length_lists(self):
+        context = Context({'list1': [1,2,3], 'list2': ['a','b']})
+        template = self.generate_template("list1", "list2")
+        output = template.render(context).strip()
+        assert_equal(output, '[(1,a),(2,b),(3,None),]')
+
+    def test_on_generators(self):
+        context = Context({
+            'gen1': (i for i in [1,2,3]),
+            'gen2': (i for i in ['a','b'])
+        })
+        template = self.generate_template("gen1", "gen2")
+        output = template.render(context).strip()
+        assert_equal(output, '[(1,a),(2,b),(3,None),]')
