@@ -59,57 +59,17 @@
           {{ x.start|time:"TIME_FORMAT" }}
         </td>
         <td class="day events">
-          {% block occurrences %}
-          {% if x.occurrences %}
-          <ul class="occurrences">
-            {% for o in x.occurrences %}
-            <li class="period vevent {{ o.status_slug }}">
-              <a class="summary url" href="{{ o.get_absolute_url }}">
-                <span class="name">{{ o.event.name }}</span>
-              </a>
-              <span class="start time">
-                <abbr class="dtstart" title="{{ o.start|date:"c" }}">
-                  {{ o.start|date:"TIME_FORMAT" }}
-                </abbr>
-              </span>
-              <em> - </em>
-              <span class="finish time">
-                <abbr class="dtend" title="{{ o.finish|date:"c" }}">
-                  {{ o.finish|date:"TIME_FORMAT" }}
-                </abbr>
-              </span>
-            </li><!-- end .vevent -->
-            {% endfor %}
-          </ul>
-          {% endif %}
-          {% endblock occurrences %}
+          {% block occurrences1 %}
+          {% include "calendar/includes/occurrences/day.html" with occurrences=x.occurrences %}
+          {% endblock occurrences1 %}
         </td>
         <td class="day time {{ cell|time_relative_to_today }}{% if now in y %} now{% endif %}">
           {{ y.start|time:"TIME_FORMAT" }}
         </td>
         <td class="day events">
-          {% if y.occurrences %}
-          <ul class="occurrences">
-            {% for o in y.occurrences %}
-            <li class="period vevent {{ o.status_slug }}">
-              <a class="summary url" href="{{ o.get_absolute_url }}">
-                <span class="name">{{ o.event.name }}</span>
-              </a>
-              <span class="start time">
-                <abbr class="dtstart" title="{{ o.start|date:"c" }}">
-                  {{ o.start|date:"TIME_FORMAT" }}
-                </abbr>
-              </span>
-              <em> - </em>
-              <span class="finish time">
-                <abbr class="dtend" title="{{ o.finish|date:"c" }}">
-                  {{ o.finish|date:"TIME_FORMAT" }}
-                </abbr>
-              </span>
-            </li><!-- end .vevent -->
-            {% endfor %}
-          </ul>
-          {% endif %}
+          {% block occurrences2 %}
+          {% include "calendar/includes/occurrences/day.html" with occurrences=y.occurrences %}
+          {% endblock occurrences2 %}
         </td>
       </tr>
       {% endfor %}
