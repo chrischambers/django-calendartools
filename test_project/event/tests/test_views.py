@@ -874,13 +874,13 @@ class TestCalendarViews(TestCase):
     def test_occurrences_populated_correctly(self):
         for amount, url in zip(self.expected_occurrences, self.urls):
             response = self.client.get(url, follow=True)
-            assert_equal(response.context[-1].get('occurrences').count(), amount)
+            assert_equal(response.context[-1].get('object_list').count(), amount)
 
     def test_allow_future(self):
         response = self.client.get(
             reverse('year-calendar-no-future',
                     kwargs=self.url_params[0][1]), follow=True)
-        assert_equal(response.context[-1].get('occurrences').count(), 0)
+        assert_equal(response.context[-1].get('object_list').count(), 0)
 
     def test_allow_empty(self):
         response = self.client.get(
@@ -892,12 +892,12 @@ class TestCalendarViews(TestCase):
             for period in ['today', 'past']:
                 url = '%s?period=%s' % (url_part, period)
                 response = self.client.get(url, follow=True)
-                assert_equal(response.context[-1].get('occurrences').count(), 0)
+                assert_equal(response.context[-1].get('object_list').count(), 0)
 
         for amount, url in zip(self.expected_occurrences, self.urls):
             url = '%s?period=future' % url
             response = self.client.get(url, follow=True)
-            assert_equal(response.context[-1].get('occurrences').count(), amount)
+            assert_equal(response.context[-1].get('object_list').count(), amount)
 
     def test_size_context(self):
         small_urls = self.urls[:3]
