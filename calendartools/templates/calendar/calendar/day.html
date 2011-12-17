@@ -60,7 +60,7 @@
         </td>
         <td class="day events">
           {% block occurrences1 %}
-          {% include "calendar/includes/occurrences/day.html" with occurrences=x.occurrences %}
+          {% include "calendar/includes/occurrences/list.html" with occurrences=x.occurrences %}
           {% endblock occurrences1 %}
         </td>
         <td class="day time {{ cell|time_relative_to_today }}{% if now in y %} now{% endif %}">
@@ -68,7 +68,7 @@
         </td>
         <td class="day events">
           {% block occurrences2 %}
-          {% include "calendar/includes/occurrences/day.html" with occurrences=y.occurrences %}
+          {% include "calendar/includes/occurrences/list.html" with occurrences=y.occurrences %}
           {% endblock occurrences2 %}
         </td>
       </tr>
