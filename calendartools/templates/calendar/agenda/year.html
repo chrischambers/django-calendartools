@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block current_nav_url %}
-{% url year-calendar calendar.slug today.year as current_nav_url %}
+{% url year-agenda calendar.slug today.year as current_nav_url %}
 {{ current_nav_url|persist_query_string|delete_query_string:"page" }}
 {% endblock %}
 
