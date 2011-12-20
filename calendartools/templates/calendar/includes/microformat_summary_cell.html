@@ -1,10 +1,16 @@
 {% load calendartools_tags %}
 
-        <td class="summary-cell">
+        <td class="summary-cell vevent">
           <a class="{{ o.status_slug }} summary url"
             href="{{ o.get_absolute_url }}">
             <span class="name">{{ o.event.name }}</span>
           </a>
+          <abbr class="dtstart" title="{{ o.start|date:"c" }}">
+            {{ o.start|date:"TIME_FORMAT" }}
+          </abbr>
+          <abbr class="dtend" title="{{ o.finish|date:"c" }}">
+            {{ o.finish|date:"TIME_FORMAT" }}
+          </abbr>
           <div class="status">Status: <span>{{ o.get_status_display }}</span></div>
           {% if o.event.description %}
           <span class="description">
