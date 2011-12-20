@@ -1,37 +1,45 @@
 {% load calendartools_tags %}
 
       {% if month.occurrences %}
-        <tr class="month-divider {{ month.abbr|notrans|lower }} vevent">
-          <th rowspan="{{ month.occurrences|length }}">
-            <a href="{% url month-agenda calendar.slug month.year month.abbr %}">
+        {% url month-agenda calendar.slug month.year month.abbr as month_url %}
+        <tr class="month-divider {{ month.abbr|notrans|lower }}">
+          <th class="month start date" rowspan="{{ month.occurrences|length }}">
+            <a href="{{ month_url|persist_query_string|delete_query_string:"page" }}">
               {{ month.name }}
             </a>
           </th>
-        {% for o in month.occurrences %}
-          <td class="start date">
-            <a href="{% url day-agenda calendar.slug o.start.year o.start|date:"b" o.start.day %}">
-              {{ o.start|date:"DATE_FORMAT" }}
+        {% for day in month.days %}
+        {% if day.occurrences %}
+        {% for o in day.occurrences %}
+        {% if forloop.first %}
+          <td class="day start date" rowspan="{{ day.occurrences|length }}">
+            {% url day-agenda calendar.slug day.year day.get_month.abbr day.number as day_url %}
+            <a href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
+              {{ day|date:"DATE_FORMAT" }}
             </a>
           </td>
-          <td class="summary">
-            <a class="{{ o.status_slug }} summary url"
-              href="{{ o.get_absolute_url }}">
-              <span class="name">{{ o.event.name }}</span>
-            </a>
-          </td>
-          <td class="start time">
-            <abbr class="dtstart" title="{{ o.start|date:"c" }}">
-              {{ o.start|date:"TIME_FORMAT" }}
-            </abbr>
-          </td>
-          <td class="finish time">
-            <abbr class="dtend" title="{{ o.finish|date:"c" }}">
-              {{ o.finish|date:"TIME_FORMAT" }}
-            </abbr>
-          </td>
+        {% endif %}
+        <td class="start time">
+          <abbr class="dtstart" title="{{ o.start|date:"c" }}">
+            {{ o.start|date:"TIME_FORMAT" }}
+          </abbr>
+        </td>
+        <td class="finish time">
+          <abbr class="dtend" title="{{ o.finish|date:"c" }}">
+            {{ o.finish|date:"TIME_FORMAT" }}
+          </abbr>
+        </td>
+        {% include "calendar/includes/microformat_summary_cell.html" %}
         </tr>
-          {% if not forloop.last %}
-        <tr class="{{ month.abbr|notrans|lower }} vevent">
-          {% endif %}
+        {% if not forloop.last %}
+        <tr class="{{ day.abbr|notrans|lower }}">
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% if day.occurrences %}
+        {% if not day.occurrences|last == month.occurrences|last %}
+        <tr class="{{ month.abbr|notrans|lower }}">
+        {% endif %}
+        {% endif %}
         {% endfor %}
       {% endif %}

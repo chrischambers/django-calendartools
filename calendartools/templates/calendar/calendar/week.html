@@ -46,7 +46,8 @@
         <th>&nbsp;</th>
         {% for day in week.days %}
         <th{% if day == today %} class="today"{% endif %}>
-          <a href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
+          {% url day-calendar calendar.slug day.year day.get_month.abbr day.number as day_url %}
+          <a href="{{ day_url|persist_query_string }}">
             {{ day.name }} {{ day|date:"jS" }}
           </a>
         </th>

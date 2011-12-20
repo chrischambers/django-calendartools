@@ -8,12 +8,6 @@
             </a>
           </th>
         {% for o in day.occurrences %}
-          <td class="summary">
-            <a class="{{ o.status_slug }} summary url"
-               href="{{ o.get_absolute_url }}">
-               <span class="name">{{ o.event.name }}</span>
-            </a>
-          </td>
           <td class="start time">
             <abbr class="dtstart" title="{{ o.start|date:"c" }}">
               {{ o.start|date:"TIME_FORMAT" }}
@@ -24,6 +18,7 @@
               {{ o.finish|date:"TIME_FORMAT" }}
             </abbr>
           </td>
+          {% include "calendar/includes/microformat_summary_cell.html" %}
         </tr>
           {% if not forloop.last %}
         <tr class="{{ day.name|notrans|lower }} vevent">

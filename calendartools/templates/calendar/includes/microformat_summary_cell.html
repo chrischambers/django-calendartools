@@ -1,0 +1,14 @@
+{% load calendartools_tags %}
+
+        <td class="summary-cell">
+          <a class="{{ o.status_slug }} summary url"
+            href="{{ o.get_absolute_url }}">
+            <span class="name">{{ o.event.name }}</span>
+          </a>
+          <div class="status">Status: <span>{{ o.get_status_display }}</span></div>
+          {% if o.event.description %}
+          <span class="description">
+            {{ o.event.description|striptags|truncatewords:40 }}
+          </span>
+          {% endif %}
+        </td>
