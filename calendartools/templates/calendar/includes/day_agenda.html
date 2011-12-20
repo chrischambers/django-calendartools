@@ -1,7 +1,7 @@
 {% load calendartools_tags %}
 
       {% if day.occurrences %}
-        <tr class="day-divider {{ day.name|notrans|lower }} vevent">
+        <tr class="day-divider {{ day.name|notrans|lower }}">
           <th class="start date" rowspan="{{ day.occurrences|length }}">
             <a href="{% url day-agenda calendar.slug day.year day.get_month.abbr day.number %}">
               {{ day|date:"DATE_FORMAT" }}
@@ -21,7 +21,7 @@
           {% include "calendar/includes/microformat_summary_cell.html" %}
         </tr>
           {% if not forloop.last %}
-        <tr class="{{ day.name|notrans|lower }} vevent">
+        <tr class="{{ day.name|notrans|lower }}">
           {% endif %}
         {% endfor %}
       {% endif %}
