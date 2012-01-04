@@ -1,5 +1,5 @@
 {% extends "calendar/event_detail.html" %}
-{% block title %}{{ occurrence.name }} - {{ block.super }}{% endblock %}
+{% block title %}{{ occurrence.event.name }} - {{ block.super }}{% endblock %}
 
 {% block primary %}
   <h1>{{ event.name }}</h1>
