@@ -1,3 +1,4 @@
+{% load url from future %}
 {% load calendartools_tags %}
 
           <caption>
@@ -31,7 +32,8 @@
             {% for week in month.weeks %}
             <tr class="{% cycle "" "alt" %}">
               <td class="week-number">
-                <a href="{% url week-calendar calendar.slug week.year week.number %}">
+                {% url "week-calendar" calendar.slug week.year week.number as week_url %}
+                <a href="{{ week_url|persist_query_string|delete_query_string:"page" }}">
                   {{week.start|date:"W"}}
                 </a>
               </td>
@@ -48,7 +50,8 @@
 
                 <div class="period-wrapper">
                   <div class="header">
-                    <a class="day-number" href="{% url day-calendar calendar.slug day.year day.get_month.abbr day.number %}">
+                    {% url "day-calendar" calendar.slug day.year day.get_month.abbr day.number as day_url %}
+                    <a class="day-number" href="{{ day_url|persist_query_string|delete_query_string:"page" }}">
                       <span >{{ day.number }}</span>
                     </a>
                   </div>
