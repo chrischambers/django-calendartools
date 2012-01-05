@@ -89,7 +89,7 @@ def event_detail(request, slug, template='calendar/event_detail.html',
 def event_create(request, *args, **kwargs):
     pass
 
-def occurrence_detail(request, slug, pk, *args, **kwargs):
+def occurrence_detail(request, slug, pk, show_attending=True, *args, **kwargs):
     occurrence = get_object_or_404(
         Occurrence.objects.visible(request.user).filter(
             event__slug=slug).select_related('event', 'calendar'),
@@ -125,6 +125,8 @@ def occurrence_detail(request, slug, pk, *args, **kwargs):
     }
     if attendance and attendance.status != attendance.STATUS.attended:
         data['form'] = form
+    if show_attending:
+        data['attending'] = Attendance.objects.filter(occurrence=occurrence)
 
     return render_to_response("calendar/occurrence_detail.html", data,
                             context_instance=RequestContext(request))

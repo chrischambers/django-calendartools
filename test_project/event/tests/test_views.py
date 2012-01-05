@@ -275,6 +275,8 @@ class TestEventDetailView2(TestCase):
 
 
 class TestOccurrenceDetailView(TestCase):
+    urls = 'event.tests.test_urls.occurrence_detail_show_attending'
+
     def setUp(self):
         self.user = User.objects.create_user(
             'TestyMcTesterson',
@@ -333,6 +335,22 @@ class TestOccurrenceDetailView(TestCase):
             signals.collect_validators.connect(
                 CannotAttendFutureEventsValidator, sender=Attendance
             )
+
+    def test_occurrence_context_with_show_attending(self):
+        response = self.client.get(
+            reverse('show-attending',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
+        )
+        assert_false(bool(response.context['attending']))
+        attendance = Attendance.objects.create(
+            user=self.user,
+            occurrence=self.occurrence
+        )
+        response = self.client.get(
+            reverse('show-attending',
+                    args=(self.event.slug, self.occurrence.pk)), follow=True
+        )
+        assert_equal([i for i in response.context['attending']], [attendance])
 
     def test_attended_status_does_not_display_form(self):
         try:
