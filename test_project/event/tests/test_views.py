@@ -23,6 +23,21 @@ from calendartools.validators.defaults.attendance import (
 from nose.tools import *
 
 
+class TestTemplateOverrides(TestCase):
+
+    def setUp(self):
+        self.calendar = Calendar.objects.create(name='Basic', slug='basic')
+
+    def test_day_calendar_override(self):
+        url = reverse('day-calendar', args=[self.calendar.slug, 1982, 'aug', 17])
+        response = self.client.get(url)
+        self.assertTemplateUsed(response, 'event/calendar/day.html')
+
+    def test_day_agenda_override(self):
+        url = reverse('day-agenda', args=[self.calendar.slug, 1982, 'aug', 17])
+        response = self.client.get(url)
+        self.assertTemplateUsed(response, 'event/agenda/day.html')
+
 class TestEventListView(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(

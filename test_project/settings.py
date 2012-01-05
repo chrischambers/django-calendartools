@@ -1,7 +1,7 @@
 # Minimal settings used for testing.
 from os import path
 CURRENT_DIR = path.abspath(path.dirname(__file__))
-APPLICATION_DIR = path.abspath(path.dirname(path.dirname(__file__)))
+CALENDARTOOLS_DIR = path.abspath(path.dirname(path.dirname(__file__)))
 
 APPEND_SLASH = True
 DEBUG = TEMPLATE_DEBUG = True
@@ -17,9 +17,15 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'threaded_multihost.middleware.ThreadLocalMiddleware',
 ]
-STATIC_DOC_ROOT = path.join(path.split(APPLICATION_DIR)[0], 'static')
-MEDIA_ROOT = STATIC_DOC_ROOT
+
+STATIC_ROOT      = ''
+STATICFILES_DIRS = (path.join(CURRENT_DIR, 'static'),)
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
 
 USE_I18N = True
 USE_L10N = True
@@ -34,8 +40,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django_extensions',
-    'calendartools',
     'event',
+    'calendartools',
 )
 
 TEMPLATE_LOADERS = (
@@ -43,13 +49,15 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.load_template_source',
 )
 
-TEMPLATE_DIRS = [path.join(APPLICATION_DIR, 'templates'),
+TEMPLATE_DIRS = [path.join(CALENDARTOOLS_DIR, 'templates'),
                  path.join(CURRENT_DIR, 'templates')]
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.auth',
     'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
     'django.core.context_processors.media',
     'django.core.context_processors.request',
+    "django.core.context_processors.static",
     'calendartools.context_processors.current_datetime',
     'calendartools.context_processors.current_site',
 )

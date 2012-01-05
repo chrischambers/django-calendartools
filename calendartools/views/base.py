@@ -33,6 +33,16 @@ class CalendarViewBase(DateMixin, BaseListView, TemplateResponseMixin):
         self.extra_context = getattr(self, 'extra_context', {})
         self.extra_context.update(kwargs.pop('extra_context', {}))
 
+    def get_template_names(self):
+        if self.template_name is None:
+            return []
+        else:
+            app_label = defaults.CALENDAR_APP_LABEL
+            return [
+                self.template_name.replace('calendar',  app_label, 1),
+                self.template_name
+            ]
+
     @property
     def queryset(self):
         return Occurrence.objects.visible().select_related(
