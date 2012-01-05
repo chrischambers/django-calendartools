@@ -63,11 +63,11 @@ class CalendarBase(StatusBase):
     status = StatusField(_('status'),
         help_text=_(
             "Toggle calendars inactive rather than deleting them. "
-            "Changing a Calendar from 'published' to "
+            "Changing a calendar from 'published' to "
             "inactive/hidden/cancelled will deactivate/hide/cancel "
-            "all its events and their occurrences. "
+            "all its event occurrences. "
             "Toggling it back to 'published' will restore all of the "
-            "Events/Occurrences to their former states."
+            "event occurrences to their former states."
         )
     )
 
