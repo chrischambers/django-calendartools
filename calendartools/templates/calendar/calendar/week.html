@@ -69,7 +69,7 @@
           {% endif %}
             <div class="period-wrapper">
               {% block occurrences %}
-              {% include "calendar/includes/occurrences/list.html" with occurrences=cell.occurrences %}
+              {% include "calendar/includes/occurrences/list.html" with occs=cell.occurrences %}
               {% endblock occurrences %}
             </div><!-- end .period-wrapper -->
           </td><!-- end .period-cell -->

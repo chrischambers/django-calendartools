@@ -58,7 +58,7 @@
 
                   {% if size != "small" and day.occurrences %}
                   {% block occurrences %}
-                  {% include "calendar/includes/occurrences/list.html" with occurrences=day.occurrences %}
+                  {% include "calendar/includes/occurrences/list.html" with occs=day.occurrences %}
                   {% endblock occurrences %}
                   {% endif %}
                 </div><!-- end .period-wrapper -->

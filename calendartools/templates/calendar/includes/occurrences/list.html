@@ -1,6 +1,6 @@
-          {% if occurrences %}
+          {% if occs %}
           <ul class="occurrences">
-            {% for o in occurrences %}
+            {% for o in occs %}
             <li class="period vevent {{ o.status_slug }}">
               <a class="summary url" href="{{ o.get_absolute_url }}">
                 <span class="name">{{ o.event.name }}</span>
