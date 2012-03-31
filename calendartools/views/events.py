@@ -6,6 +6,7 @@ from django.template import RequestContext
 from django.views.generic import list_detail
 
 from calendartools import forms, defaults, decorators
+from calendartools.periods import Day
 from django.db.models.loading import get_model
 
 Event = get_model(defaults.CALENDAR_APP_LABEL, 'Event')
@@ -122,6 +123,8 @@ def occurrence_detail(request, slug, pk, show_attending=True, *args, **kwargs):
         'event': occurrence.event,
         'attendance': attendance,
         'occurrence': occurrence,
+        'calendar': occurrence.calendar,
+        'day': Day(occurrence.start)
     }
     if attendance and attendance.status != attendance.STATUS.attended:
         data['form'] = form
